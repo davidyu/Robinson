@@ -1,0 +1,10 @@
+{
+    "name": "ed_server",
+    "version": "0.0.1",
+    "repository":"n/a",
+    "description": "private server for editor",
+    "readme": "n/a",
+    "dependencies" : {
+        "node-static":"0.7.6"
+    }
+}

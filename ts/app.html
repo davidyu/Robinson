@@ -1,0 +1,35 @@
+<html>
+<head>
+  <style>
+    .main-container:after {
+      clear   : both;
+      content : "";
+      display : block;
+      width   : 100%;
+    }
+
+    .viewport-container-container {
+      float: left;
+    }
+  </style>
+  <script src="./lib/tsm-0.7.js" type="text/javascript"></script>
+  <script src="./lib/mousetrap.js" type="text/javascript"></script>
+  <script src="./app.js" type="text/javascript"></script>
+  <title>Ed</title>
+</head>
+<body onload="StartEd()">
+  <div class="main-container">
+    <div style="width:200px; height:100%; display:block; float:left">
+      <!-- toolbox goes here -->
+    </div>
+    <div class="viewport-container-container">
+      <div class="stacked-viewport-container">
+        <!-- stacked div 1, single pane viewport -->
+        <canvas id="big-viewport" width="640" height="480">
+          Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
+        </canvas>
+      </div>
+    </div>
+  </div>
+  </body>
+</html>
