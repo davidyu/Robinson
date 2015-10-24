@@ -50,7 +50,7 @@ func main(args: [String]) -> Int {
     var window: NSWindow = NSWindow( contentRect : NSMakeRect( 0, 0, 800, 600 )
                                    , styleMask   : NSTitledWindowMask | NSClosableWindowMask | NSResizableWindowMask
                                    , backing     : NSBackingStoreType.Buffered
-                                   , defer       : true )
+                                   , `defer`     : true )
 
     window.center()
     window.title = "Dots"
