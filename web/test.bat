@@ -1,1 +1,0 @@
-call "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --no-startup-window --flag-switches-begin --enable-npapi --flag-switches-end --flag-switches-begin --enable-npapi --flag-switches-end --allow-file-access-from-files
