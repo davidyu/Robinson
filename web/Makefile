@@ -32,5 +32,5 @@ update:
 	pushd $(SRC)/lib && sh update.sh && popd
 
 lib:
-	pushd $(SRC); cp -r configs/lib.json tsconfig.json; tsc; popd
-	pushd $(SRC); cp -r configs/dec.json tsconfig.json; tsc; popd
+	pushd $(SRC); cp -r tsconfigs/lib.json tsconfig.json; tsc; popd
+	pushd $(SRC); cp -r tsconfigs/dec.json tsconfig.json; tsc; popd
