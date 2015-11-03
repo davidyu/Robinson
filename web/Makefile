@@ -1,4 +1,4 @@
-.PHONY: folders app server update lib
+.PHONY: folders app update lib
 SHELL = /bin/bash
 
 SRC=src
@@ -17,10 +17,7 @@ shaders: folders
 	@( pushd $(DIST)/test && npm install && popd ) > /dev/null
 	@pushd $(DIST) > /dev/null && node test/compileshader.js && popd > /dev/null
 
-all: app server
-
-server: folders
-	cp server/* $(DIST)/
+all: app
 
 folders:
 	@mkdir -p $(DIST)
