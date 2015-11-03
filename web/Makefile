@@ -4,11 +4,11 @@ SHELL = /bin/bash
 SRC=src
 DIST=dist
 
-app: folders jslib shaders
-	pushd $(SRC); export PATH=/Users/ly58/Documents/Projects/Coursework/2015/webgl/ed/node_modules/typescript/bin:$$PATH; tsc; popd
+app: folders vendor shaders
+	pushd $(SRC); tsc; popd
 	cp app.html $(DIST)/index.html
 
-jslib: folders
+vendor: folders
 	cp $(SRC)/lib/*.js $(DIST)/lib/
 
 shaders: folders
@@ -30,3 +30,6 @@ folders:
 
 update:
 	pushd $(SRC)/lib && sh update.sh && popd
+
+lib:
+	pushd $(SRC); tsc; popd
