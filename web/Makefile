@@ -1,11 +1,11 @@
-.PHONY: folders app server update
+.PHONY: folders app server update lib
 SHELL = /bin/bash
 
 SRC=src
 DIST=dist
 
 app: folders vendor shaders
-	pushd $(SRC); tsc; popd
+	pushd $(SRC); cp -f oldconf.json tsconfig.json; tsc; popd
 	cp app.html $(DIST)/index.html
 
 vendor: folders
@@ -32,4 +32,5 @@ update:
 	pushd $(SRC)/lib && sh update.sh && popd
 
 lib:
-	pushd $(SRC); tsc; popd
+	pushd $(SRC); find . -name "*.ts" -type f >src.txt; tsc @src.txt --target ES5 --sourceMap --out ../dist/robinson.js; rm src.txt; popd
+	pushd $(SRC); find . -name "*.ts" -type f >src.txt; tsc @src.txt --target ES5 --declaration --out ../dist/robinson.d.ts; rm src.txt; popd
