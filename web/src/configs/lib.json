@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "out": "../dist/Robinson.js",
+    "target": "ES5"
+  }
+}

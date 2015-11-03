@@ -32,5 +32,5 @@ update:
 	pushd $(SRC)/lib && sh update.sh && popd
 
 lib:
-	pushd $(SRC); find . -name "*.ts" -type f >src.txt; tsc @src.txt --target ES5 --sourceMap --out ../dist/robinson.js; rm src.txt; popd
-	pushd $(SRC); find . -name "*.ts" -type f >src.txt; tsc @src.txt --target ES5 --declaration --out ../dist/robinson.d.ts; rm src.txt; popd
+	pushd $(SRC); cp -r configs/lib.json tsconfig.json; tsc; popd
+	pushd $(SRC); cp -r configs/dec.json tsconfig.json; tsc; popd
