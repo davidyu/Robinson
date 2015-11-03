@@ -5,7 +5,7 @@ SRC=src
 DIST=dist
 
 app: folders vendor shaders
-	pushd $(SRC); cp -f oldconf.json tsconfig.json; tsc; popd
+	pushd $(SRC); find . -name "*.ts" -type f >src.txt; tsc @src.txt --target ES5 --sourceMap --out ../dist/app.js; rm src.txt; popd
 	cp app.html $(DIST)/index.html
 
 vendor: folders
