@@ -5,7 +5,7 @@ class Cone extends Primitive implements Renderable {
   constructor( size: number = 1 ) {
     super();
     this.transform = this.transform.scale( new TSM.vec3( [ size, size, size ] ) );
-    this.material = new Material( color );
+    this.material = new BlinnPhongMaterial();
     this.renderData = new RenderData();
     // trigger a rebuild when the renderer updates
     this.renderData.dirty = true;
@@ -59,7 +59,7 @@ class Cone extends Primitive implements Renderable {
       if ( !this.material.isTextureMapped ) {
         var colors = [];
         for ( var i = 0; i < 24; i++ ) {
-          colors = colors.concat( this.material.color.rgba );
+          colors = [];
         }
         this.renderData.colors = new Float32Array( colors );
       }
