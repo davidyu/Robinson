@@ -6,7 +6,6 @@ DIST=dist
 
 app: folders vendor shaders
 	pushd $(SRC); find . -name "*.ts" -type f >src.txt; tsc @src.txt --target ES5 --sourceMap --out ../dist/app.js; rm src.txt; popd
-	cp app.html $(DIST)/index.html
 
 vendor: folders
 	cp $(SRC)/lib/*.js $(DIST)/lib/
