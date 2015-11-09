@@ -10,8 +10,8 @@ debug: folders update
 	rm files.txt
 
 release: folders
-	pushd ../ && make lib && popd
-	cp ../dist/robinson.d.ts .
+	pushd ../../ && make lib && popd
+	cp ../../dist/robinson.d.ts .
 	tsc
 
 update:
