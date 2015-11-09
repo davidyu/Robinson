@@ -1,6 +1,9 @@
 # include library files
 
-find ../../src -name "*.ts" -type f > files.txt;
+if [ "$1" = "debug" ]
+then
+    find ../../src -name "*.ts" -type f > files.txt;
+fi
 
 # include sample source files
 
