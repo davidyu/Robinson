@@ -5,14 +5,17 @@ SRC=src
 DIST=dist
 
 debug: folders update
-	sh files.sh
+	sh files.sh debug
 	tsc @files.txt --target ES5 --sourceMap --out $(DIST)/app.js
 	rm files.txt
 
-release: folders
+release: folders update
 	pushd ../../ && make lib && popd
 	cp ../../dist/robinson.d.ts .
-	tsc
+	cp ../../dist/robinson.js $(DIST)/
+	sh files.sh
+	tsc @files.txt --target ES5 --out $(DIST)/app.js
+	rm files.txt robinson.d.ts
 
 update:
 	pushd vendor && sh update.sh && popd
