@@ -34,18 +34,17 @@ class OrbitApp {
   }
 }
 
-var editor: Ed = null;
+var app: OrbitApp = null;
 
 function StartEd() {
-  if ( editor == null ) {
-
+  if ( app == null ) {
     pcam = new Camera( new TSM.vec3( [ 3, 5, 9 ] ), new TSM.vec3( [ -3, -5, -9 ] ), new TSM.vec3( [ 0, 1, 0 ] ), new TSM.vec3( [ 1, 0, 0 ] ) );
 
     var params : AppParams = {
       vp : <HTMLCanvasElement> document.getElementById( "big-viewport" ),
     };
 
-    shaderRepo = new ShaderRepository( ( repo ) => { editor = new OrbitApp( params, repo ); } );
+    shaderRepo = new ShaderRepository( ( repo ) => { app = new OrbitApp( params, repo ); } );
 
     var testScene = new Scene()
     Scene.setActiveScene( testScene );
