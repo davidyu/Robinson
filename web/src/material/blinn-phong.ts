@@ -1,13 +1,13 @@
 class BlinnPhongMaterial extends Material {
-  ambient: TSM.vec4;
-  diffuse: TSM.vec4;
-  specular: TSM.vec4;
-  emissive: TSM.vec4;
+  ambient: gml.Vec4;
+  diffuse: gml.Vec4;
+  specular: gml.Vec4;
+  emissive: gml.Vec4;
   shininess: number;
-  constructor( ambient: TSM.vec4 = new TSM.vec4( [ 0.5, 0.5, 0.5, 1 ] )
-             , diffuse: TSM.vec4 = new TSM.vec4( [ 0.5, 0.5, 0.5, 1 ] )
-             , specular: TSM.vec4 = new TSM.vec4( [ 0.5, 0.5, 0.5, 1 ] )
-             , emissive: TSM.vec4 = new TSM.vec4( [ 0.5, 0.5, 0.5, 1 ] )
+  constructor( ambient: gml.Vec4 = new gml.Vec4( 0.5, 0.5, 0.5, 1 )
+             , diffuse: gml.Vec4 = new gml.Vec4( 0.5, 0.5, 0.5, 1 )
+             , specular: gml.Vec4 = new gml.Vec4( 0.5, 0.5, 0.5, 1 )
+             , emissive: gml.Vec4 = new gml.Vec4( 0.5, 0.5, 0.5, 1 )
              , shininess: number = 1.0 ) {
     super();
     this.ambient = ambient;
