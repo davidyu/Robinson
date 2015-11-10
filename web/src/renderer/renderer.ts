@@ -280,7 +280,7 @@ class Renderer {
 
             scene.lights.forEach( ( l, i ) => {
               gl.uniform4fv( this.uLights[i].position, l.position.Float32Array );
-              gl.uniform4fv( this.uLights[i].color, l.color.rgba );
+              gl.uniform4fv( this.uLights[i].color, l.color.Float32Array );
               gl.uniform1i( this.uLights[i].enabled, l.enabled ? 1 : 0 );
             } );
 
