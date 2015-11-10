@@ -1,6 +1,6 @@
 var shaderRepo: ShaderRepository = null; // global for debugging
 
-interface EditorParams {
+interface AppParams {
   vp : HTMLCanvasElement;
 }
 
@@ -11,12 +11,12 @@ enum VIEWMODE {
 
 var pcam: Camera = null;
 
-class Ed {
+class OrbitApp {
   renderer: Renderer;
   viewMode: VIEWMODE;
   camera: Camera; // TODO map cameras to each viewport
 
-  constructor( params: EditorParams, shaderRepo: ShaderRepository ) {
+  constructor( params: AppParams, shaderRepo: ShaderRepository ) {
     this.viewMode = VIEWMODE.SINGLE_LARGE_VIEWPORT;
     this.renderer = new Renderer( params.vp, shaderRepo );
     this.camera = pcam;
@@ -41,11 +41,11 @@ function StartEd() {
 
     pcam = new Camera( new TSM.vec3( [ 3, 5, 9 ] ), new TSM.vec3( [ -3, -5, -9 ] ), new TSM.vec3( [ 0, 1, 0 ] ), new TSM.vec3( [ 1, 0, 0 ] ) );
 
-    var params : EditorParams = {
+    var params : AppParams = {
       vp : <HTMLCanvasElement> document.getElementById( "big-viewport" ),
     };
 
-    shaderRepo = new ShaderRepository( ( repo ) => { editor = new Ed( params, repo ); } );
+    shaderRepo = new ShaderRepository( ( repo ) => { editor = new OrbitApp( params, repo ); } );
 
     var testScene = new Scene()
     Scene.setActiveScene( testScene );
