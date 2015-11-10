@@ -1,10 +1,12 @@
+/// <reference path='vec.ts'/>
+
 module gml {
-  export class Vec4 {
+  export class Vec4 extends Vector {
     values: Float32Array;
-    static size: number = 4;
+    size: number;
 
     constructor( x, y, z, w ) {
-      this.values = new Float32Array( [ x, y, z, w ] );
+      super( 4, x, y, z, w );
     }
   }
 }

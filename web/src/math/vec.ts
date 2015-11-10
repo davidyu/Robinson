@@ -1,18 +1,4 @@
 module gml {
-  // internal vector implementation; hidden
-  class Vector {
-    values: Float32Array;
-    size: number;
-
-    constructor( size, ...array: number[] ) {
-      this.size = size;
-      this.values = new Float32Array( array );
-      if ( this.values.length != this.size ) {
-        console.warn( "input array " + array + " is not " + this.size + " elements long!" );
-      }
-    }
-  }
-
   /* public-facing vector (constructor sugar)
     
      usage:
@@ -24,6 +10,20 @@ module gml {
   export class Vec {
     constructor( size ) {
       return ( ...array: number[] ) => { return Vector.apply( Vector, array.unshift( size ) ); }
+    }
+  }
+
+  // internal vector implementation; exported because Vec2, Vec3, Vec4 needs access
+  export class Vector {
+    values: Float32Array;
+    size: number;
+
+    constructor( size, ...array: number[] ) {
+      this.size = size;
+      this.values = new Float32Array( array );
+      if ( this.values.length != this.size ) {
+        console.warn( "input array " + array + " is not " + this.size + " elements long!" );
+      }
     }
   }
 }
