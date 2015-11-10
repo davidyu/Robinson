@@ -15,7 +15,7 @@ module gml {
 
   // internal vector implementation; exported because Vec2, Vec3, Vec4 needs access
   export class Vector {
-    values: Float32Array;
+    private values: Float32Array;
     size: number;
 
     constructor( size, ...array: number[] ) {
@@ -24,6 +24,10 @@ module gml {
       if ( this.values.length != this.size ) {
         console.warn( "input array " + array + " is not " + this.size + " elements long!" );
       }
+    }
+
+    public get Float32Array(): Float32Array {
+      return this.values;
     }
   }
 }
