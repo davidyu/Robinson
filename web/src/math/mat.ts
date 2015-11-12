@@ -30,5 +30,13 @@ module gml {
     public get Float32Array(): Float32Array {
       return this.values;
     }
+
+    public get( r, c ): number {
+      return this.values[ r * this.cols + c ];
+    }
+
+    public set( r, c, v ) {
+      this.values[ r * this.cols + c ] = v;
+    }
   }
 }
