@@ -6,7 +6,7 @@ class WindowDelegate: NSObject, NSWindowDelegate {
     }
 
     func windowDidResize( notification: NSNotification ) {
-        var window = notification.object as! NSWindow
+        let window = notification.object as! NSWindow
         window.backgroundColor = NSColor( red   : CGFloat( 1.0 )
                                         , green : CGFloat( 0.0 )
                                         , blue  : CGFloat( 0.0 )
@@ -44,16 +44,16 @@ class ApplicationDelegate: NSObject, NSApplicationDelegate {
 }
 
 func main(args: [String]) -> Int {
-    var app: NSApplication = NSApplication.sharedApplication()
+    let app: NSApplication = NSApplication.sharedApplication()
     app.setActivationPolicy( NSApplicationActivationPolicy.Regular ) // this tells OS X that this is a standard application that appears in the dock
 
-    var window: NSWindow = NSWindow( contentRect : NSMakeRect( 0, 0, 800, 600 )
+    let window: NSWindow = NSWindow( contentRect : NSMakeRect( 0, 0, 800, 600 )
                                    , styleMask   : NSTitledWindowMask | NSClosableWindowMask | NSResizableWindowMask
                                    , backing     : NSBackingStoreType.Buffered
                                    , `defer`     : true )
 
     window.center()
-    window.title = "Dots"
+    window.title = "Robinson demo"
     window.makeKeyAndOrderFront( window )
 
     let windDelegate = WindowDelegate()
