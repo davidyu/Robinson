@@ -1,6 +1,6 @@
 module gml {
 
-  export class Mat3 {
+  export class Mat3 extends Matrix {
     /*
 
       an expanded homogenous transformation matrix looks like this (assuming cw of theta):
@@ -31,19 +31,9 @@ module gml {
     */
 
     values: Float32Array;
-    static rows: number = 3;
-    static cols: number = 3;
 
     constructor( r00, r01, tx, r10, r11, ty, m20, m21, m22 ) {
-      this.values = new Float32Array( [ r00, r01, tx, r10, r11, ty, m20, m21, m22 ] );
-    }
-
-    public get( r, c ): number {
-      return this.values[ r * Mat3.cols + c ];
-    }
-
-    public set( r, c, v ) {
-      this.values[ r * Mat3.cols + c ] = v;
+      super( 3, r00, r01, tx, r10, r11, ty, m20, m21, m22 );
     }
 
     public get tx(): number {
