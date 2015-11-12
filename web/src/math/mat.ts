@@ -13,6 +13,7 @@ module gml {
   }
   
   // internal matrix implementation; exported because Mat3, Mat4 needs access
+  // note that matrices are stored in column major order to conform to WebGL
   export class Matrix {
     values: Float32Array;
     rows: number;
@@ -32,11 +33,11 @@ module gml {
     }
 
     public get( r, c ): number {
-      return this.values[ r * this.cols + c ];
+      return this.values[ c * this.rows + r ];
     }
 
     public set( r, c, v ) {
-      this.values[ r * this.cols + c ] = v;
+      this.values[ c * this.rows + r ] = v;
     }
   }
 }
