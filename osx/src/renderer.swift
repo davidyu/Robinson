@@ -46,7 +46,7 @@ class Renderer {
         var contents = String( contentsOfFile: path!, encoding: NSUTF8StringEncoding, error: &error )
 
         if contents == nil {
-            println( "failed to read contents of shader file: " )
+            print( "failed to read contents of shader file: " )
         }
 
         var shaderHandle: GLuint = glCreateShader( GLenum( type ) )
@@ -63,7 +63,7 @@ class Renderer {
         glGetShaderiv( shaderHandle, GLenum( GL_COMPILE_STATUS ), &compileSuccess )
 
         if compileSuccess == GL_FALSE {
-            println("Failed to compile shader!")
+            print("Failed to compile shader!")
         }
     }
 
