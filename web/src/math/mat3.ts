@@ -116,5 +116,21 @@ module gml {
       this.set( 1, 0, v * Math.sin( rad ) );
       this.set( 1, 1, v * Math.cos( rad ) );
     }
+
+    public row( r ): Vec3 {
+      var row = [];
+      for ( var i = 0; i < 3; i++ ) {
+        row.push( this.get( r, i ) );
+      }
+      return Vec3.apply( Vec3, row );
+    }
+
+    public column( c ): Vec3 {
+      var column = [];
+      for ( var i = 0; i < 3; i++ ) {
+        column.push( this.get( i, c ) );
+      }
+      return Vec3.apply( Vec3, column );
+    }
   }
 }
