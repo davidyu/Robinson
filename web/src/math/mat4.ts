@@ -35,6 +35,23 @@ module gml {
     public set w( v: number ) {
       this.set( 3, 3, v );
     }
+
+    public row( r ): Vec4 {
+      var row = [];
+      for ( var i = 0; i < 4; i++ ) {
+        row.push( this.get( r, i ) );
+      }
+      return Vec4.apply( Vec4, row );
+    }
+
+    public column( c ): Vec4 {
+      var column = [];
+      for ( var i = 0; i < 4; i++ ) {
+        column.push( this.get( i, c ) );
+      }
+      return Vec4.apply( Vec4, column );
+    }
+
   }
 
   export function makePerspective( fov: Angle, aspectRatio: number, near: number, far: number ): Mat4 {
