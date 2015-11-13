@@ -8,12 +8,12 @@ BIN = osx_main.app
 OBJ = obj
 
 CC = gcc
-LDFLAGS= -framework OpenGL
+LDFLAGS= -framework Metal
 
 all: build shaders osx_main
 
 osx_main: main.swift osx_main.swift renderer.swift
-	xcrun -sdk macosx swiftc -framework OpenGL -o $(BIN)/$@ $^
+	xcrun -sdk macosx swiftc -framework Metal -o $(BIN)/$@ $^
 
 shaders:
 	@mkdir -p $(BIN)/shaders

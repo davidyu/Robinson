@@ -62,8 +62,7 @@ func main(args: [String]) -> Int {
     let appDelegate = ApplicationDelegate( window: window )
 
     if appDelegate.renderer.ready {
-        let view = appDelegate.renderer.glview!
-        view.openGLContext = appDelegate.renderer.context!
+        let view = appDelegate.renderer.view!
         window.contentView = view
     }
 
