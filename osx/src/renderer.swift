@@ -9,6 +9,8 @@ class Renderer {
 
     init( window: NSWindow ) {
         let device = MTLCreateSystemDefaultDevice()
+        view = MTKView( frame: window.contentLayoutRect
+                      , device: device )
         ready = true
     }
 
