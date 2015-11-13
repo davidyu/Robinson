@@ -37,7 +37,7 @@ module gml {
     }
   }
 
-  export function makePerspective( fov: Angle, aspectRatio: number, near: number, far: number ) {
+  export function makePerspective( fov: Angle, aspectRatio: number, near: number, far: number ): Mat4 {
     let t = near * Math.tan( fov.toRadians() );
     let r = t * aspectRatio;
     let l = -r;
@@ -45,9 +45,13 @@ module gml {
     let n = near;
     let f = far;
 
-    return new Mat4( ( n * 2 ) / ( r - l ) , 0                                   , 0                          , 0
-                   , 0                     , ( n * 2 ) / ( top - bottom )        , 0                          , 0
-                   , ( r + l ) / ( r - l ) , ( top + bottom ) / ( top - bottom ) , -( f + n ) / ( f - n )     , -1
-                   , 0                     , 0                                   , -( f * n * 2 ) / ( f - n ) , 0 );
+    return new Mat4( ( n * 2 ) / ( r - l ) , 0                     , 0                          , 0
+                   , 0                     , ( n * 2 ) / ( t - b ) , 0                          , 0
+                   , ( r + l ) / ( r - l ) , ( t + b ) / ( t - b ) , -( f + n ) / ( f - n )     , -1
+                   , 0                     , 0                     , -( f * n * 2 ) / ( f - n ) , 0 );
+  }
+
+  export function makeLookAt( pos, aim /* target */, up, right ): Mat4 {
+    return new Mat4( 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 );
   }
 }

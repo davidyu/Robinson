@@ -39,5 +39,21 @@ module gml {
     public set( r, c, v ) {
       this.values[ c * this.rows + r ] = v;
     }
+
+    public row( r ): Vector {
+      var row = [];
+      for ( var i = 0; i < this.cols; i++ ) {
+        row.push( this.get( r, i ) );
+      }
+      return Vector.apply( Vector, row.unshift( this.cols ) );
+    }
+
+    public column( c ): Vector {
+      var column = [];
+      for ( var i = 0; i < this.rows; i++ ) {
+        column.push( this.get( i, c ) );
+      }
+      return Vector.apply( Vector, column.unshift( this.rows ) );
+    }
   }
 }
