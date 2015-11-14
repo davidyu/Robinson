@@ -4,7 +4,7 @@ src = $(wildcard *.cpp)
 obj = $(src:.cpp=.o)
 VPATH = src src/platform obj
 
-BIN = osx_main_t3.app
+BIN = osx_main.app
 BUNDLE_CONTENTS = $(BIN)/Contents
 OBJ = obj
 
@@ -26,3 +26,6 @@ shaders:
 build:
 	@mkdir -p $(BIN)
 	@mkdir -p $(OBJ)
+
+clean:
+	@rm -rf *.app
