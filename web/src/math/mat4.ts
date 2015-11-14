@@ -44,6 +44,12 @@ module gml {
       return Vec4.apply( Vec4, row );
     }
 
+    public setRow( r, v: Vec4 ) {
+      for ( var i = 0; i < 4; i++ ) {
+        this.set( r, i, v[i] );
+      }
+    }
+
     public column( c ): Vec4 {
       var column = [];
       for ( var i = 0; i < 4; i++ ) {
@@ -52,6 +58,11 @@ module gml {
       return Vec4.apply( Vec4, column );
     }
 
+    public setColumn( c, v: Vec4 ) {
+      for ( var i = 0; i < 4; i++ ) {
+        this.set( i, c, v[i] );
+      }
+    }
   }
 
   export function makeMat4FromRows( r1, r2, r3, r4 ) {
