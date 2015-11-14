@@ -47,5 +47,31 @@ module gml {
       return new Vector( diff.unshift( this.size ) );
     }
 
+    public get len(): number {
+      return Math.sqrt( this.lensq );
+    }
+
+    public get lensq(): number {
+      return this.values.reduce( ( acc, v ) => {
+        return acc + v * v;
+      }, 0 );
+    }
+
+    // this alters the underlying vector!
+    public normalize(): void {
+      const l = this.len;
+      this.values = this.values.map( v => {
+        return v / l;
+      } );
+    }
+
+    public get normalized(): Vector {
+      const l = this.len;
+      var vs = [];
+      for ( var i = 0; i < this.size; i++ ) {
+        vs.push( this.values[i] / l );
+      }
+      return new Vector( vs.unshift( this.size ) );
+    }
   }
 }

@@ -69,7 +69,7 @@ module gml {
   }
 
   export function makeLookAt( pos: Vec4, aim: Vec4 /* target */, up: Vec4, right: Vec4 ): Mat4 {
-    var z = aim.sub( pos );
+    var z = aim.sub( pos ).normalized;
     return new Mat4( 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 );
   }
 }
