@@ -1,2 +1,14 @@
+<key>CFBundleName</key>
+<string>robinsonosx</string>
+<key>CFBundleExecutable</key>
+<string>osx_main</string>
+<key>CFBundlePackageType</key>
+<string>APPL</string>
+<key>CFBundleIdentifier</key>
+<string>com.lewenyu.Robinson</string>
+<key>CFBundleDisplayName</key>
+<string>Robinson Demo</string>
+<key>CFBundleSignature</key>
+<string>rbso</string>
 <key>NSHighResolutionCapable</key>
 <true/>
