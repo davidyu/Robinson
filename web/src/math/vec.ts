@@ -29,5 +29,23 @@ module gml {
     public get Float32Array(): Float32Array {
       return this.values;
     }
+
+    public get( index: number ): number {
+      return this.values[index];
+    }
+
+    public sub( rhs: Vector ): Vector {
+      if ( this.size != rhs.size ) {
+        console.warn( "rhs not " + this.size + " elements long!" );
+        return null;
+      }
+
+      var diff = [];
+      for ( var i = 0; i < this.size; i++ ) {
+        diff.push( this.values[i] - rhs.get( i ) );
+      }
+      return new Vector( diff.unshift( this.size ) );
+    }
+
   }
 }
