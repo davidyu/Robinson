@@ -1,0 +1,11 @@
+{
+    "name": "robinson_karma_test",
+    "version": "0.1",
+    "repository":"n/a",
+    "description": "testing suite for robinson",
+    "readme": "n/a",
+    "dependencies" : {
+        "karma":"0.13.x",
+        "karma-qunit":"0.1.x"
+    }
+}
