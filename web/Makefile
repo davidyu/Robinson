@@ -1,7 +1,8 @@
-.PHONY: folders app update lib
+.PHONY: folders app update lib test
 SHELL = /bin/bash
 
 SRC=src
+TEST=test
 DIST=dist
 
 app: folders vendor shaders
@@ -12,7 +13,7 @@ vendor: folders
 
 shaders: folders
 	@cp $(SRC)/renderer/shaders/* $(DIST)/shaders 
-	@cp $(SRC)/test/* $(DIST)/test/
+	@cp $(TEST)/* $(DIST)/test/
 	@( pushd $(DIST)/test && npm install && popd ) > /dev/null
 	@pushd $(DIST) > /dev/null && node test/compileshader.js && popd > /dev/null
 
@@ -30,3 +31,6 @@ update:
 lib:
 	pushd $(SRC); cp -r tsconfigs/lib.json tsconfig.json; tsc; popd
 	pushd $(SRC); cp -r tsconfigs/dec.json tsconfig.json; tsc; popd
+
+test: folders
+	pushd $(SRC); 
