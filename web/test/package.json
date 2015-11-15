@@ -4,8 +4,8 @@
     "repository":"n/a",
     "description": "testing suite for robinson",
     "readme": "n/a",
-    "dependencies" : {
+    "devDependencies" : {
         "karma":"0.13.x",
-        "karma-qunit":"0.1.x"
+        "karma-jasmine":"0.3.x"
     }
 }
