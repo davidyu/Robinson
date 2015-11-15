@@ -260,7 +260,7 @@ class Renderer {
         if ( scene ) {
 
           // set up constant uniforms/matrix stacks/etc
-          let perspective = TSM.mat4.perspective( 45, 640.0/480.0, 0.1, 100.0 );
+          let perspective = gml.makePerspective( gml.fromDegrees( 45 ), 640.0/480.0, 0.1, 100.0 );
 
           var mvStack = [];
           if ( this.camera != null ) {
@@ -284,7 +284,7 @@ class Renderer {
               gl.uniform1i( this.uLights[i].enabled, l.enabled ? 1 : 0 );
             } );
 
-            gl.uniformMatrix4fv( this.uPerspective, false, new Float32Array( perspective.all() ) );
+            gl.uniformMatrix4fv( this.uPerspective, false, new Float32Array( perspective.Float32Array ) );
 
             let primitiveModelView = TSM.mat4.product( p.transform, mvStack[ mvStack.length - 1 ] );
             gl.uniformMatrix4fv( this.uModelView, false, new Float32Array( primitiveModelView.all() ) );
