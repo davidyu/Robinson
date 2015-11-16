@@ -55,5 +55,26 @@ module gml {
       }
       return Vector.apply( Vector, column.unshift( this.rows ) );
     }
+
+    public matmul( lhs: Matrix, rhs: Matrix ): Matrix {
+      var out = [];
+
+      if ( lhs.rows != rhs.cols ) {
+        console.warn( "lhs and rhs incompatible for matrix multiplication!" );
+        return null;
+      }
+
+      for ( let i = 0; i < lhs.cols; i++ ) {
+        for ( let j = 0; j < rhs.rows; j++ ) {
+          var sum = 0;
+          for ( let k = 0; k < lhs.rows; k++ ) {
+            sum += lhs.get( i, k ) * rhs.get( k, j );
+          }
+          out.push( sum );
+        }
+      }
+
+      return Matrix.apply( out.unshift( lhs.cols, rhs.rows ) );
+    }
   }
 }
