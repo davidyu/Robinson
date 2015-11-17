@@ -76,5 +76,17 @@ module gml {
 
       return Matrix.apply( out.unshift( lhs.cols, rhs.rows ) );
     }
+
+    public static identity( size ) {
+      var v = [];
+      for ( let i = 0; i < size; i++ ) {
+        for ( let j = 0; j < size; j++ ) {
+          if ( i == j ) v.push( 1 );
+          else          v.push( 0 );
+        }
+      }
+
+      return Matrix.apply( v.unshift( size, size ) );
+    }
   }
 }
