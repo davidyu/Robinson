@@ -33,4 +33,7 @@ lib:
 	pushd $(SRC); cp -r tsconfigs/dec.json tsconfig.json; tsc; popd
 
 test: folders
-	pushd $(SRC); 
+	pushd $(SRC);
+	cp $(TEST)/* $(DIST)/test/
+	@( pushd $(DIST)/test && npm install && popd ) > /dev/null
+	@pushd $(DIST)/test && node math.js && popd > /dev/null
