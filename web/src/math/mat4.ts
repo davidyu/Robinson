@@ -64,6 +64,14 @@ module gml {
       }
     }
 
+    public get translation(): Vec4 {
+      return this.column( 3 );
+    }
+
+    public set translation( t: Vec4 ) {
+      this.setColumn( 3, t );
+    }
+
     public static identity(): Mat4 {
       return new Mat4( 1, 0, 0, 0
                      , 0, 1, 0, 0
