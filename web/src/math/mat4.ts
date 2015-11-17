@@ -63,6 +63,13 @@ module gml {
         this.set( i, c, v[i] );
       }
     }
+
+    public static identity(): Mat4 {
+      return new Mat4( 1, 0, 0, 0
+                     , 0, 1, 0, 0
+                     , 0, 0, 1, 0
+                     , 0, 0, 0, 1 );
+    }
   }
 
   export function makeMat4FromRows( r1, r2, r3, r4 ) {

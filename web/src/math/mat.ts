@@ -77,7 +77,7 @@ module gml {
       return Matrix.apply( out.unshift( lhs.cols, rhs.rows ) );
     }
 
-    public static identity( size ) {
+    public static identity( size ): Matrix {
       var v = [];
       for ( let i = 0; i < size; i++ ) {
         for ( let j = 0; j < size; j++ ) {
