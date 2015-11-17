@@ -56,7 +56,7 @@ module gml {
       return Vector.apply( Vector, column.unshift( this.rows ) );
     }
 
-    public matmul( lhs: Matrix, rhs: Matrix ): Matrix {
+    public static matmul( lhs: Matrix, rhs: Matrix ): Matrix {
       var out = [];
 
       if ( lhs.rows != rhs.cols ) {
