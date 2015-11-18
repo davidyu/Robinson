@@ -19,12 +19,16 @@ module gml {
     rows: number;
     cols: number;
 
-    constructor( rows, cols, ...values: number[] ) {
+    constructor( rows, cols, ...args: any[] ) {
       this.rows = rows;
       this.cols = cols;
-      this.values = new Float32Array( values );
+      if ( args.length === 1 && args[0] instanceof Float32Array ) {
+        this.values = args[0];
+      } else {
+        this.values = new Float32Array( args );
+      }
       if ( this.values.length != this.rows * this.cols ) {
-        console.warn( "input values " + values + " is not " + this.rows * this.cols + " elements long!" );
+        console.warn( "input values " + args + " is not " + this.rows * this.cols + " elements long!" );
       }
     }
 
