@@ -28,19 +28,19 @@ module gml {
       this.cols = cols;
       if ( args.length === 1 ) {
         if ( args[0] instanceof Float32Array ) {
-          this.values = this.transpose( args[0], rows, cols );
+          this.values = this.transpose_Float32Array( args[0], rows, cols );
         } else if ( args[0] instanceof Array ) {
-          this.values = this.transpose( new Float32Array( args[0] ), rows, cols );
+          this.values = this.transpose_Float32Array( new Float32Array( args[0] ), rows, cols );
         }
       } else {
-        this.values = this.transpose( new Float32Array( args ), rows, cols );
+        this.values = this.transpose_Float32Array( new Float32Array( args ), rows, cols );
       }
       if ( this.values.length != this.rows * this.cols ) {
         console.warn( "input values " + args + " is not " + this.rows * this.cols + " elements long!" );
       }
     }
 
-    private transpose( values: Float32Array, rows: number, cols: number ): Float32Array {
+    private transpose_Float32Array( values: Float32Array, rows: number, cols: number ): Float32Array {
       var out = new Float32Array( rows * cols );
       for ( let i = 0; i < cols; i++ ) {
         for ( let j = 0; j < rows; j++ ) {
@@ -48,6 +48,12 @@ module gml {
         }
       }
       return out;
+    }
+
+    public transpose(): Matrix {
+      // use the fact that we transpose upon construction; the internal values array is already transposed;
+      // just pass it into the constructor to get an instance of Matrix that contains the transposed flat array
+      return new Matrix( this.cols, this.rows, this.values );
     }
 
     public get Float32Array(): Float32Array {
