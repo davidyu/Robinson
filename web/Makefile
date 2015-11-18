@@ -13,7 +13,8 @@ vendor: folders
 
 shaders: folders
 	@cp $(SRC)/renderer/shaders/* $(DIST)/shaders 
-	@cp $(TEST)/* $(DIST)/test/
+	@cp -rf $(TEST)/shaders $(DIST)/test/
+	@cp $(SRC)/renderer/shaders/* $(DIST)/test/shaders/
 	@( pushd $(DIST)/test && npm install && popd ) > /dev/null
 	@pushd $(DIST) > /dev/null && node test/compileshader.js && popd > /dev/null
 

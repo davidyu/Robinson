@@ -9,9 +9,9 @@ function ProgramSource( vs, fs ) {
 }
 
 var sources = [
-  new ProgramSource( 'shaders/basic.vert', 'shaders/unlit.frag' ),
-  new ProgramSource( 'shaders/basic.vert', 'shaders/lit.frag' ),
-  new ProgramSource( 'shaders/basic.vert', 'shaders/debug.frag' )
+  new ProgramSource( 'basic.vert', 'unlit.frag' ),
+  new ProgramSource( 'basic.vert', 'lit.frag' ),
+  new ProgramSource( 'basic.vert', 'debug.frag' )
 ];
 
 var logs = sources.map( function( source ) {
