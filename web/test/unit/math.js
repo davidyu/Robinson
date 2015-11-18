@@ -9,3 +9,22 @@ describe( "vector tests", function() {
     expect( b.get(1) ).toBe( 3 );
   } );
 } );
+
+describe( "mat4 tests", function() {
+  it( "tests vector accessors", function() {
+    var a = new gml.Mat4( 1, 2, 3, 4
+                        , 5, 6, 7, 8
+                        , 9,10,11,12
+                        ,13,14,15,16 );
+
+    var row0 = new gml.Vec4( 1, 2, 3, 4 );
+    var row1 = new gml.Vec4( 5, 6, 7, 8 );
+    var row2 = new gml.Vec4( 9,10,11,12 );
+    var row3 = new gml.Vec4( 13,14,15,16 );
+
+    expect( a.row(0) ).toBe( row0 );
+    expect( a.row(1) ).toBe( row1 );
+    expect( a.row(2) ).toBe( row2 );
+    expect( a.row(3) ).toBe( row3 );
+  } );
+} );
