@@ -1,3 +1,4 @@
+///<reference path='material.ts' />
 class BlinnPhongMaterial extends Material {
   ambient: gml.Vec4;
   diffuse: gml.Vec4;

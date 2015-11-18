@@ -1,3 +1,4 @@
+///<reference path='prim.ts' />
 class Cube extends Primitive implements Renderable {
   material: Material;
   renderData: RenderData;

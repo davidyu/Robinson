@@ -1,3 +1,4 @@
+///<reference path='prim.ts' />
 class Quad extends Primitive implements Renderable {
   renderData: RenderData;
   material: Material;
