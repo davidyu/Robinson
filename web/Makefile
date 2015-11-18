@@ -36,4 +36,4 @@ test: folders
 	pushd $(SRC);
 	cp $(TEST)/* $(DIST)/test/
 	@( pushd $(DIST)/test && npm install && popd ) > /dev/null
-	@pushd $(DIST)/test && node math.js && popd > /dev/null
+	@pushd $(DIST)/test && karma start && karma run *.js

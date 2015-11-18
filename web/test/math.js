@@ -1,5 +1,5 @@
-var colors = require( 'colors' );
-var Jasmine = require( 'jasmine' );
-var jasmine = new Jasmine();
-
-process.stdout.write( ( "Success!" ).green + "\n" );
+describe( "hello", function() {
+  it( "world", function() {
+    expect( true ).toBe( true );
+  } );
+} );
