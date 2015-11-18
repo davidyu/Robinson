@@ -33,7 +33,8 @@ lib:
 	pushd $(SRC); cp -r tsconfigs/lib.json tsconfig.json; tsc; popd
 	pushd $(SRC); cp -r tsconfigs/dec.json tsconfig.json; tsc; popd
 
-test: folders
+test: lib folders
 	pushd $(SRC);
 	cp -rf $(TEST)/* $(DIST)/test/
+	cp $(DIST)/robinson.js $(DIST)/test/
 	@( pushd $(DIST)/test && npm install && popd ) > /dev/null

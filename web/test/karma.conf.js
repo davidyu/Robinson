@@ -1,9 +1,9 @@
-// karma.conf.js
 module.exports = function(config) {
   config.set({
     frameworks: ['jasmine'],
     files: [
-      'unit/*.js'
+      'unit/math.js',
+      { pattern: 'robinson.js', included: true  }
     ],
 
     autoWatch: true,
