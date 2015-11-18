@@ -34,5 +34,5 @@ lib:
 
 test: folders
 	pushd $(SRC);
-	cp $(TEST)/* $(DIST)/test/
+	cp -rf $(TEST)/* $(DIST)/test/
 	@( pushd $(DIST)/test && npm install && popd ) > /dev/null
