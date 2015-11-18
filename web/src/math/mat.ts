@@ -28,16 +28,26 @@ module gml {
       this.cols = cols;
       if ( args.length === 1 ) {
         if ( args[0] instanceof Float32Array ) {
-          this.values = args[0];
+          this.values = this.transpose( args[0], rows, cols );
         } else if ( args[0] instanceof Array ) {
-          this.values = new Float32Array( args[0] );
+          this.values = this.transpose( new Float32Array( args[0] ), rows, cols );
         }
       } else {
-        this.values = new Float32Array( args );
+        this.values = this.transpose( new Float32Array( args ), rows, cols );
       }
       if ( this.values.length != this.rows * this.cols ) {
         console.warn( "input values " + args + " is not " + this.rows * this.cols + " elements long!" );
       }
+    }
+
+    private transpose( values: Float32Array, rows: number, cols: number ): Float32Array {
+      var out = new Float32Array( rows * cols );
+      for ( let i = 0; i < cols; i++ ) {
+        for ( let j = 0; j < rows; j++ ) {
+          out[ i * cols + j] = values[ j * cols + i ];
+        }
+      }
+      return out;
     }
 
     public get Float32Array(): Float32Array {
