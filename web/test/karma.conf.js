@@ -3,7 +3,7 @@ module.exports = function(config) {
     frameworks: ['jasmine'],
     files: [
       'unit/math.js',
-      { pattern: 'robinson.js', included: true  }
+      { pattern: '../robinson.js', included: true },
     ],
 
     autoWatch: true,

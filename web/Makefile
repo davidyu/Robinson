@@ -36,5 +36,4 @@ lib:
 test: lib folders
 	pushd $(SRC);
 	cp -rf $(TEST)/* $(DIST)/test/
-	cp $(DIST)/robinson.js $(DIST)/test/
 	@( pushd $(DIST)/test && npm install && popd ) > /dev/null
