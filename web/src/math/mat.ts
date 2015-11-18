@@ -19,11 +19,19 @@ module gml {
     rows: number;
     cols: number;
 
+    constructor( rows, cols, args: Float32Array );
+    constructor( rows, cols, args: number[] );
+    constructor( rows, cols, ...args: number[] );
+
     constructor( rows, cols, ...args: any[] ) {
       this.rows = rows;
       this.cols = cols;
       if ( args.length === 1 && args[0] instanceof Float32Array ) {
-        this.values = args[0];
+        if ( args[0] instanceof Float32Array ) {
+          this.values = args[0];
+        } else if ( args[0] instanceof Array ) {
+          this.values = new Float32Array( args[0] );
+        }
       } else {
         this.values = new Float32Array( args );
       }
