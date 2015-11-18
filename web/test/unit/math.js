@@ -22,9 +22,9 @@ describe( "mat4 tests", function() {
     var row2 = new gml.Vec4( 9,10,11,12 );
     var row3 = new gml.Vec4( 13,14,15,16 );
 
-    expect( a.row(0) ).toBe( row0 );
-    expect( a.row(1) ).toBe( row1 );
-    expect( a.row(2) ).toBe( row2 );
-    expect( a.row(3) ).toBe( row3 );
+    expect( a.row( 0 ) ).toEqual( row0 );
+    expect( a.row( 1 ) ).toEqual( row1 );
+    expect( a.row( 2 ) ).toEqual( row2 );
+    expect( a.row( 3 ) ).toEqual( row3 );
   } );
 } );

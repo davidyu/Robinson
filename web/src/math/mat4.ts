@@ -41,7 +41,7 @@ module gml {
       for ( var i = 0; i < 4; i++ ) {
         row.push( this.get( r, i ) );
       }
-      return Vec4.apply( Vec4, row );
+      return new ( Function.prototype.bind.apply( Vec4, row ) );
     }
 
     public setRow( r, v: Vec4 ) {
@@ -55,7 +55,7 @@ module gml {
       for ( var i = 0; i < 4; i++ ) {
         column.push( this.get( i, c ) );
       }
-      return Vec4.apply( Vec4, column );
+      return new ( Function.prototype.bind.apply( Vec4, column ) );
     }
 
     public setColumn( c, v: Vec4 ) {
