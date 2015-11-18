@@ -18,11 +18,24 @@ module gml {
     private values: Float32Array;
     size: number;
 
-    constructor( size, ...array: number[] ) {
+    constructor( size, args: Float32Array );
+    constructor( size, args: number[] );
+    constructor( size, ...args: number[] );
+
+    constructor( size, ...args: any[] ) {
       this.size = size;
-      this.values = new Float32Array( array );
+      if ( args.length === 1 ) {
+        if ( args[0] instanceof Float32Array ) {
+          this.values = args[0];
+        } else if ( args[0] instanceof Array ) {
+          this.values = new Float32Array( args[0] );
+        }
+      } else {
+        this.values = new Float32Array( args );
+      }
+
       if ( this.values.length != this.size ) {
-        console.warn( "input array " + array + " is not " + this.size + " elements long!" );
+        console.warn( "input array " + args + " is not " + this.size + " elements long!" );
       }
     }
 

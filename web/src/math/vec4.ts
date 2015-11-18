@@ -2,8 +2,16 @@
 
 module gml {
   export class Vec4 extends Vector {
-    constructor( x, y, z, w ) {
-      super( 4, x, y, z, w );
+    constructor( v: number[] );
+    constructor( v: Float32Array );
+    constructor( x: number, y: number, z: number, w: number );
+
+    constructor( ...args: any[] ) {
+      if ( args.length == 4 ) {
+        super( 4, args[0], args[1], args[2], args[3] );
+      } else if ( args.length == 1 ) {
+        super( 4, args[0] );
+      }
     }
 
     public get x(): number {

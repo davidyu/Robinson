@@ -26,7 +26,7 @@ module gml {
     constructor( rows, cols, ...args: any[] ) {
       this.rows = rows;
       this.cols = cols;
-      if ( args.length === 1 && args[0] instanceof Float32Array ) {
+      if ( args.length === 1 ) {
         if ( args[0] instanceof Float32Array ) {
           this.values = args[0];
         } else if ( args[0] instanceof Array ) {
