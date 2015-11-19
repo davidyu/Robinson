@@ -77,6 +77,16 @@ module gml {
       this.setColumn( 3, t );
     }
 
+    public get scale(): Vec3 {
+      return new Vec3( this.get( 0, 0 ), this.get( 1, 1 ), this.get( 2, 2 ) );
+    }
+
+    public set scale( s: Vec3 ) {
+      this.set( 0, 0, s.x );
+      this.set( 1, 1, s.y );
+      this.set( 2, 2, s.z );
+    }
+
     public mul( rhs: Mat4 ): Mat4 {
       var m = super.mul( rhs );
       return new Mat4( m.Float32Array );
