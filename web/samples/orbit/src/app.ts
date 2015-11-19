@@ -38,7 +38,7 @@ var app: OrbitApp = null;
 
 function StartEd() {
   if ( app == null ) {
-    pcam = new Camera( new TSM.vec3( [ 3, 5, 9 ] ), new TSM.vec3( [ -3, -5, -9 ] ), new TSM.vec3( [ 0, 1, 0 ] ), new TSM.vec3( [ 1, 0, 0 ] ) );
+    pcam = new Camera( new gml.Vec4( 3, 5, 9, 0 ), new gml.Vec4( -3, -5, -9, 0 ), new gml.Vec4( 0, 1, 0, 0 ), new gml.Vec4( 1, 0, 0, 0 ) );
 
     var params : AppParams = {
       vp : <HTMLCanvasElement> document.getElementById( "big-viewport" ),
@@ -50,6 +50,6 @@ function StartEd() {
     Scene.setActiveScene( testScene );
     // testScene.addRenderable( new Cube( 1 ) );
     testScene.addRenderable( new Quad( 1, new DebugMaterial() ) );
-    testScene.addLight( new PointLight( new TSM.vec4( [ 9.0, 0, 0, 1.0 ] ), new TSM.vec4( [ 1.0, 0, 0, 1.0 ] ) ) );
+    testScene.addLight( new PointLight( new gml.Vec4( 9.0, 0, 0, 1.0 ), new gml.Vec4( 1.0, 0, 0, 1.0 ) ) );
   }
 }
