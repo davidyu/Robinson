@@ -137,6 +137,11 @@ module gml {
       return Vec3.apply( Vec3, column );
     }
 
+    public mul( rhs: Mat3 ): Mat3 {
+      var m = super.mul( rhs );
+      return new Mat3( m.Float32Array );
+    }
+
     public static identity(): Mat3 {
       return new Mat3( 1, 0, 0
                      , 0, 1, 0
