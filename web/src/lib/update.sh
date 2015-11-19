@@ -11,9 +11,7 @@ download() {
 echo "updating vendor code..."
 
 echo updating libraries...
-download https://raw.githubusercontent.com/vexator/TSM/master/TSM/tsm-0.7.js tsm-0.7.js
 
 echo updating typescript definition files...
-download https://raw.githubusercontent.com/vexator/TSM/master/TSM/tsm-0.7.d.ts tsm-0.7.d.ts
 
 echo all done.
