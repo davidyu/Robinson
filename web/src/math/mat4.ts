@@ -1,7 +1,12 @@
 module gml {
   export class Mat4 extends Matrix {
-    constructor( r00, r01, r02, tx, r10, r11, r12, ty, r20, r21, r22, tz, m30, m31, m32, m33 ) {
-      super( 4, 4, r00, r01, r02, tx, r10, r11, r12, ty, r20, r21, r22, tz, m30, m31, m32, m33 );
+
+    constructor( args: Float32Array );
+    constructor( args: number[] );
+    constructor( r00, r01, r02, tx, r10, r11, r12, ty, r20, r21, r22, tz, m30, m31, m32, m33 );
+
+    constructor( ...args: any[] ) {
+      super( 4, 4, args );
     }
 
     public get tx(): number {
@@ -70,6 +75,11 @@ module gml {
 
     public set translation( t: Vec4 ) {
       this.setColumn( 3, t );
+    }
+
+    public mul( rhs: Mat4 ): Mat4 {
+      var m = super.mul( rhs );
+      return new Mat4( m.Float32Array );
     }
 
     public static identity(): Mat4 {

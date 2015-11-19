@@ -82,6 +82,10 @@ module gml {
       return Vector.apply( Vector, column.unshift( this.rows ) );
     }
 
+    public mul( rhs: Matrix ): Matrix {
+      return Matrix.matmul( this, rhs );
+    }
+
     public static matmul( lhs: Matrix, rhs: Matrix ): Matrix {
       var out = [];
 
