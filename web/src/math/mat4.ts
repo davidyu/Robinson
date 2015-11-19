@@ -155,7 +155,7 @@ module gml {
 
     public setRow( r, v: Vec4 ) {
       for ( var i = 0; i < 4; i++ ) {
-        this.set( r, i, v[i] );
+        this.set( r, i, v.get( i ) );
       }
     }
 
@@ -169,7 +169,7 @@ module gml {
 
     public setColumn( c, v: Vec4 ) {
       for ( var i = 0; i < 4; i++ ) {
-        this.set( i, c, v[i] );
+        this.set( i, c, v.get( i ) );
       }
     }
 
