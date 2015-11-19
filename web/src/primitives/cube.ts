@@ -5,7 +5,7 @@ class Cube extends Primitive implements Renderable {
 
   constructor( size: number = 1, mat: Material = new BlinnPhongMaterial() ) {
     super();
-    this.transform = this.transform.scale( new TSM.vec3( [ size, size, size ] ) );
+    this.transform.scale = new gml.Vec3( size, size, size );
     this.material = mat;
     this.renderData = new RenderData();
     // trigger a rebuild when the renderer updates

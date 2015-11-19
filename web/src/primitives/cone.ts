@@ -5,7 +5,7 @@ class Cone extends Primitive implements Renderable {
 
   constructor( size: number = 1 ) {
     super();
-    this.transform = this.transform.scale( new TSM.vec3( [ size, size, size ] ) );
+    this.transform.scale = new gml.Vec3( size, size, size );
     this.material = new BlinnPhongMaterial();
     this.renderData = new RenderData();
     // trigger a rebuild when the renderer updates

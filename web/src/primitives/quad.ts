@@ -5,7 +5,7 @@ class Quad extends Primitive implements Renderable {
 
   constructor( size: number = 1, mat: Material = new BlinnPhongMaterial() ) {
     super();
-    this.transform = TSM.mat4.identity.scale( new TSM.vec3( [ size, size, size ] ) );
+    this.transform.scale = new gml.Vec3( size, size, size );
     this.renderData = new RenderData();
     this.material = mat;
     // trigger a rebuild when the renderer updates

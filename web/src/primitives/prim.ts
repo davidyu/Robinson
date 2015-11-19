@@ -22,17 +22,17 @@ class RenderData {
 
 class Primitive {
   // properties
-  transform: TSM.mat4;
+  transform: gml.Mat4;
 
-  constructor() { this.transform = TSM.mat4.identity.copy(); }
+  constructor() { this.transform = gml.Mat4.identity(); }
 
-  translate( dist: TSM.vec3 ) {
-    this.transform = this.transform.translate( dist );
+  translate( dist: gml.Vec4 ) {
+    this.transform.translation = dist;
   }
 }
 
 interface Renderable {
-  transform: TSM.mat4;
+  transform: gml.Mat4;
   material: Material;
   renderData: RenderData;
 
