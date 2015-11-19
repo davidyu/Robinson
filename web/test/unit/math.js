@@ -12,10 +12,10 @@ describe( "vector tests", function() {
 
 describe( "mat4 tests", function() {
   it( "tests vector accessors", function() {
-    var a = new gml.Mat4( 1, 2, 3, 4
-                        , 5, 6, 7, 8
-                        , 9,10,11,12
-                        ,13,14,15,16 );
+    var a = new gml.Mat4( 1, 5, 9,13
+                        , 2, 6,10,14
+                        , 3, 7,11,15
+                        , 4, 8,12,16 );
 
     var row0 = new gml.Vec4( 1, 2, 3, 4 );
     var row1 = new gml.Vec4( 5, 6, 7, 8 );

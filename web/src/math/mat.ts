@@ -28,12 +28,12 @@ module gml {
       this.cols = cols;
       if ( args.length === 1 ) {
         if ( args[0] instanceof Float32Array ) {
-          this.values = this.transpose_Float32Array( args[0], rows, cols );
+          this.values = args[0];
         } else if ( args[0] instanceof Array ) {
-          this.values = this.transpose_Float32Array( new Float32Array( args[0] ), rows, cols );
+          this.values = new Float32Array( args[0] );
         }
       } else {
-        this.values = this.transpose_Float32Array( new Float32Array( args ), rows, cols );
+        this.values = new Float32Array( args );
       }
       if ( this.values.length != this.rows * this.cols ) {
         console.warn( "input values " + args + " is not " + this.rows * this.cols + " elements long!" );
@@ -51,9 +51,7 @@ module gml {
     }
 
     public transpose(): Matrix {
-      // use the fact that we transpose upon construction; the internal values array is already transposed;
-      // just pass it into the constructor to get an instance of Matrix that contains the transposed flat array
-      return new Matrix( this.cols, this.rows, this.values );
+      return new Matrix( this.cols, this.rows, this.transpose_Float32Array( this.values, this.rows, this.cols ) );
     }
 
     public get Float32Array(): Float32Array {
