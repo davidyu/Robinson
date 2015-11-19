@@ -266,7 +266,7 @@ class Renderer {
           if ( this.camera != null ) {
             mvStack.push( this.camera.matrix );
           } else {
-            mvStack.push( TSM.mat4.identity );
+            mvStack.push( gml.Mat4.identity() );
           }
 
           scene.renderables.forEach( ( p, i ) => {
@@ -286,12 +286,12 @@ class Renderer {
 
             gl.uniformMatrix4fv( this.uPerspective, false, new Float32Array( perspective.Float32Array ) );
 
-            let primitiveModelView = TSM.mat4.product( p.transform, mvStack[ mvStack.length - 1 ] );
-            gl.uniformMatrix4fv( this.uModelView, false, new Float32Array( primitiveModelView.all() ) );
+            let primitiveModelView = p.transform.mul( mvStack[ mvStack.length - 1 ] );
+            gl.uniformMatrix4fv( this.uModelView, false, new Float32Array( primitiveModelView.Float32Array ) );
 
             // the normal matrix is defined as the upper 3x3 block of transpose( inverse( model-view ) )
-            let primitiveNormalMatrix = primitiveModelView.copy().inverse().transpose().toMat3();
-            gl.uniformMatrix3fv( this.uNormal, false, new Float32Array( primitiveNormalMatrix.all() ) );
+            let primitiveNormalMatrix = primitiveModelView.invert().transpose().mat3;
+            gl.uniformMatrix3fv( this.uNormal, false, new Float32Array( primitiveNormalMatrix.Float32Array ) );
 
             gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
             gl.bufferData( gl.ARRAY_BUFFER, p.renderData.vertices, gl.STATIC_DRAW );

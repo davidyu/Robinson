@@ -9,6 +9,30 @@ module gml {
       super( 4, 4, args );
     }
 
+    public get r00(): number {
+      return this.get( 0, 0 );
+    }
+
+    public set r00( v: number ) {
+      this.set( 0, 0, v );
+    }
+
+    public get r01(): number {
+      return this.get( 0, 1 );
+    }
+
+    public set r01( v: number ) {
+      this.set( 0, 1, v );
+    }
+
+    public get r02(): number {
+      return this.get( 0, 2 );
+    }
+
+    public set r02( v: number ) {
+      this.set( 0, 2, v );
+    }
+
     public get tx(): number {
       return this.get( 0, 3 );
     }
@@ -90,6 +114,18 @@ module gml {
     public mul( rhs: Mat4 ): Mat4 {
       var m = super.mul( rhs );
       return new Mat4( m.Float32Array );
+    }
+
+    public invert(): Mat4 {
+      return null;
+    }
+
+    public transpose(): Mat4 {
+      return null;
+    }
+
+    public get mat3(): Mat3 {
+      return null;
     }
 
     public static identity(): Mat4 {
