@@ -95,10 +95,10 @@ module gml {
     let n = near;
     let f = far;
 
-    return new Mat4( ( n * 2 ) / ( r - l ) , 0                     , 0                          , 0
-                   , 0                     , ( n * 2 ) / ( t - b ) , 0                          , 0
-                   , ( r + l ) / ( r - l ) , ( t + b ) / ( t - b ) , -( f + n ) / ( f - n )     , -1
-                   , 0                     , 0                     , -( f * n * 2 ) / ( f - n ) , 0 );
+    return new Mat4( ( n * 2 ) / ( r - l ) , 0                     , ( r + l ) / ( r - l )      , 0
+                   , 0                     , ( n * 2 ) / ( t - b ) , ( t + b ) / ( t - b )      , 0
+                   , 0                     , 0                     , -( f + n ) / ( f - n )     , -( f * n * 2 ) / ( f - n )
+                   , 0                     , 0                     , -1                         , 0 );
   }
 
   export function makeLookAt( pos: Vec4, aim: Vec4 /* target */, up: Vec4, right: Vec4 ): Mat4 {
