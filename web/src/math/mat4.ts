@@ -21,6 +21,46 @@ module gml {
       return this.get( 0, 2 );
     }
 
+    public get r10(): number {
+      return this.get( 1, 0 );
+    }
+
+    public get r11(): number {
+      return this.get( 1, 1 );
+    }
+
+    public get r12(): number {
+      return this.get( 1, 2 );
+    }
+
+    public get r20(): number {
+      return this.get( 2, 0 );
+    }
+
+    public get r21(): number {
+      return this.get( 2, 1 );
+    }
+
+    public get r22(): number {
+      return this.get( 2, 2 );
+    }
+
+    public get m30(): number {
+      return this.get( 3, 0 );
+    }
+
+    public get m31(): number {
+      return this.get( 3, 1 );
+    }
+
+    public get m32(): number {
+      return this.get( 3, 2 );
+    }
+
+    public get m33(): number {
+      return this.get( 3, 3 );
+    }
+
     public set r00( v: number ) {
       this.set( 0, 0, v );
     }
@@ -31,6 +71,46 @@ module gml {
 
     public set r02( v: number ) {
       this.set( 0, 2, v );
+    }
+
+    public set r10( v: number ) {
+      this.set( 1, 0, v );
+    }
+
+    public set r11( v: number ) {
+      this.set( 1, 1, v );
+    }
+
+    public set r12( v: number ) {
+      this.set( 1, 2, v );
+    }
+
+    public set r20( v: number ) {
+      this.set( 2, 0, v );
+    }
+
+    public set r21( v: number ) {
+      this.set( 2, 1, v );
+    }
+
+    public set r22( v: number ) {
+      this.set( 2, 2, v );
+    }
+
+    public set m30( v: number ) {
+      this.set( 3, 0, v );
+    }
+
+    public set m31( v: number ) {
+      this.set( 3, 1, v );
+    }
+
+    public set m32( v: number ) {
+      this.set( 3, 2, v );
+    }
+
+    public set m33( v: number ) {
+      this.set( 3, 3, v );
     }
 
     public get tx(): number {
