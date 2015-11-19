@@ -9,7 +9,7 @@ module gml {
 
   export class Vec {
     constructor( size ) {
-      return ( ...array: number[] ) => { return Vector.apply( Vector, array.unshift( size ) ); }
+      return ( ...array: number[] ) => { return new Vector( size, array ); }
     }
   }
 
