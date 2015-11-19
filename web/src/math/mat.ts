@@ -8,7 +8,7 @@ module gml {
   */
   export class Mat {
     constructor( r, c ) {
-      return ( ...values: number[] ) => { return Matrix.apply( Matrix, values.unshift( r, c ) ); }
+      return ( ...values: number[] ) => { return new Matrix( r, c, values ); }
     }
   }
   
@@ -71,7 +71,7 @@ module gml {
       for ( var i = 0; i < this.cols; i++ ) {
         row.push( this.get( r, i ) );
       }
-      return Vector.apply( Vector, row.unshift( this.cols ) );
+      return new Vector( this.cols, row );
     }
 
     public column( c ): Vector {
@@ -79,7 +79,7 @@ module gml {
       for ( var i = 0; i < this.rows; i++ ) {
         column.push( this.get( i, c ) );
       }
-      return Vector.apply( Vector, column.unshift( this.rows ) );
+      return new Vector( this.rows, column );
     }
 
     public mul( rhs: Matrix ): Matrix {
@@ -116,7 +116,7 @@ module gml {
         }
       }
 
-      return Matrix.apply( v.unshift( size, size ) );
+      return new Matrix( size, size, v );
     }
   }
 }
