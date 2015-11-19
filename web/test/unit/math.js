@@ -11,6 +11,21 @@ describe( "vector tests", function() {
 } );
 
 describe( "mat4 tests", function() {
+  it( "tests matrix getters", function() {
+    var a = new gml.Mat4( 1, 5, 9,13
+                        , 2, 6,10,14
+                        , 3, 7,11,15
+                        , 4, 8,12,16 );
+
+
+    expect( a.r00 ).toBe( 1 );
+    expect( a.r01 ).toBe( 2 );
+    expect( a.r02 ).toBe( 3 );
+    expect( a.tx ).toBe( 4 );
+    expect( a.ty ).toBe( 8 );
+    expect( a.tz ).toBe( 12 );
+  } );
+
   it( "tests vector accessors", function() {
     var a = new gml.Mat4( 1, 5, 9,13
                         , 2, 6,10,14

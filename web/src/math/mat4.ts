@@ -13,20 +13,20 @@ module gml {
       return this.get( 0, 0 );
     }
 
-    public set r00( v: number ) {
-      this.set( 0, 0, v );
-    }
-
     public get r01(): number {
       return this.get( 0, 1 );
     }
 
-    public set r01( v: number ) {
-      this.set( 0, 1, v );
-    }
-
     public get r02(): number {
       return this.get( 0, 2 );
+    }
+
+    public set r00( v: number ) {
+      this.set( 0, 0, v );
+    }
+
+    public set r01( v: number ) {
+      this.set( 0, 1, v );
     }
 
     public set r02( v: number ) {
