@@ -26,7 +26,7 @@ module gml {
     constructor( rows, cols, ...args: any[] ) {
       this.rows = rows;
       this.cols = cols;
-      if ( args.length === 1 ) {
+      if ( args.length == 1 ) {
         if ( args[0] instanceof Float32Array ) {
           this.values = args[0];
         } else if ( args[0] instanceof Array ) {
@@ -100,7 +100,8 @@ module gml {
           for ( let k = 0; k < lhs.rows; k++ ) {
             sum += lhs.get( i, k ) * rhs.get( k, j );
           }
-          out.push( sum );
+
+          out[ j * lhs.cols + i ] = sum;
         }
       }
 

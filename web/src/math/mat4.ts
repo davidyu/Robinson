@@ -6,7 +6,11 @@ module gml {
     constructor( r00, r01, r02, tx, r10, r11, r12, ty, r20, r21, r22, tz, m30, m31, m32, m33 );
 
     constructor( ...args: any[] ) {
-      super( 4, 4, args );
+      if ( args.length === 1 ) {
+        super( 4, 4, args[0] );
+      } else {
+        super( 4, 4, args );
+      }
     }
 
     public get r00(): number {

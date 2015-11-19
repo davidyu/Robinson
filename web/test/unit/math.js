@@ -134,4 +134,14 @@ describe( "mat4 tests", function() {
     expect( a.column( 2 ) ).toEqual( col2 );
     expect( a.column( 3 ) ).toEqual( col3 );
   } );
+
+  it( "tests mat4 matrix multiplication", function() {
+    var a = gml.Mat4.identity();
+    var b = new gml.Mat4( 1, 5, 9,13
+                        , 2, 6,10,14
+                        , 3, 7,11,15
+                        , 4, 8,12,16 );
+
+    expect( a.mul( b ) ).toEqual( b );
+  } );
 } );
