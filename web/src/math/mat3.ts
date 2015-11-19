@@ -126,7 +126,7 @@ module gml {
       for ( var i = 0; i < 3; i++ ) {
         row.push( this.get( r, i ) );
       }
-      return Vec3.apply( Vec3, row );
+      return new Vec3( row );
     }
 
     public column( c ): Vec3 {
@@ -134,7 +134,7 @@ module gml {
       for ( var i = 0; i < 3; i++ ) {
         column.push( this.get( i, c ) );
       }
-      return Vec3.apply( Vec3, column );
+      return new Vec3( column );
     }
 
     public mul( rhs: Mat3 ): Mat3 {
