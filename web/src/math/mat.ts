@@ -100,7 +100,7 @@ module gml {
         }
       }
 
-      return Matrix.apply( out.unshift( lhs.cols, rhs.rows ) );
+      return new Matrix( lhs.cols, rhs.rows, out );
     }
 
     public static identity( size ): Matrix {
