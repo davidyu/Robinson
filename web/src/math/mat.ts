@@ -94,7 +94,7 @@ module gml {
     public lu(): { l: Matrix, u: Matrix } {
       if ( this.rows != this.cols ) {
         console.warn( "matrix not square, cannot perform LU decomposition!" );
-        return { l: this.identity( this.rows ), u: this.identity( this.rows ) };
+        return { l: Matrix.identity( this.rows ), u: Matrix.identity( this.rows ) };
       }
       return null;
     }
