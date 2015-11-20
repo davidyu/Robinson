@@ -118,6 +118,20 @@ module gml {
       return { l: l, u: u };
     }
 
+    public get determinant(): number {
+      if ( this.rows != this.cols ) {
+        console.warn( "matrix not square, cannot perform LU decomposition!" );
+        return 0;
+      }
+
+      let { l, u } = this.lu();
+      var det = 1;
+      for ( let i = 0; i < this.rows; i++ ) {
+        det *= u.get( i, i );
+      }
+      return det;
+    }
+
     public set( r, c, v ) {
       this.values[ c * this.rows + r ] = v;
     }
