@@ -62,23 +62,6 @@ module gml {
       return this.values[ c * this.rows + r ];
     }
 
-    public get trace(): number {
-      if ( this.rows != this.cols ) {
-        console.warn( "matrix not square, cannot compute trace!" );
-        return 0;
-      }
-
-      var tr = 0;
-      for ( let i = 0; i < this.rows; i++ ) {
-        tr += this.get( i, i );
-      }
-      return tr;
-    }
-
-    public set( r, c, v ) {
-      this.values[ c * this.rows + r ] = v;
-    }
-
     public row( r ): Vector {
       var row = [];
       for ( var i = 0; i < this.cols; i++ ) {
@@ -93,6 +76,31 @@ module gml {
         column.push( this.get( i, c ) );
       }
       return new Vector( this.rows, column );
+    }
+
+    public get trace(): number {
+      if ( this.rows != this.cols ) {
+        console.warn( "matrix not square, cannot compute trace!" );
+        return 0;
+      }
+
+      var tr = 0;
+      for ( let i = 0; i < this.rows; i++ ) {
+        tr += this.get( i, i );
+      }
+      return tr;
+    }
+
+    public lu(): { l: Matrix, u: Matrix } {
+      if ( this.rows != this.cols ) {
+        console.warn( "matrix not square, cannot perform LU decomposition!" );
+        return { l: this.identity( this.rows ), u: this.identity( this.rows ) };
+      }
+      return null;
+    }
+
+    public set( r, c, v ) {
+      this.values[ c * this.rows + r ] = v;
     }
 
     public mul( rhs: Matrix ): Matrix {
