@@ -96,7 +96,26 @@ module gml {
         console.warn( "matrix not square, cannot perform LU decomposition!" );
         return { l: Matrix.identity( this.rows ), u: Matrix.identity( this.rows ) };
       }
-      return null;
+
+      let l = new Matrix( this.rows, this.cols, this.values );
+      let u = new Matrix( this.rows, this.cols, this.values );
+
+      for ( let i = 1; i < this.rows; i++ ) {
+        let l_i = Matrix.identity( this.rows );
+        let l_i_inv = Matrix.identity( this.rows );
+        // when multiplied with u, l_i eliminates elements below the main diagonal in the n-th column of matrix u
+        // l_i_inv is the inverse to l_i, and is very easy to construct if we already have l_i
+        for ( let n = i; n < this.cols; n++ ) {
+          let l_i_n = -u.get( i, n ) / u.get( n, n );
+          l_i.set( i, n, l_i_n );
+          l_i_inv.set( i, n, -l_i_n );
+        }
+
+        l = l_i_inv.mul( l );
+        u = l_i.mul( u );
+      }
+
+      return { l: l, u: u };
     }
 
     public set( r, c, v ) {
