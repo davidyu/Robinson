@@ -62,6 +62,19 @@ module gml {
       return this.values[ c * this.rows + r ];
     }
 
+    public get trace(): number {
+      if ( this.rows != this.cols ) {
+        console.warn( "matrix not square, cannot compute trace!" );
+        return 0;
+      }
+
+      var tr = 0;
+      for ( let i = 0; i < this.rows; i++ ) {
+        tr += this.get( i, i );
+      }
+      return tr;
+    }
+
     public set( r, c, v ) {
       this.values[ c * this.rows + r ] = v;
     }
