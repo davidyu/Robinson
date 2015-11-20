@@ -135,32 +135,7 @@ describe( "mat4 tests", function() {
     expect( a.column( 3 ) ).toEqual( col3 );
   } );
 
-  it( "tests mat4 matrix multiplication", function() {
-    var a = gml.Mat4.identity();
-    var b = new gml.Mat4( 1, 5, 9,13
-                        , 2, 6,10,14
-                        , 3, 7,11,15
-                        , 4, 8,12,16 );
-
-    expect( a.mul( b ) ).toEqual( b );
-
-    var c = new gml.Mat4( 1, 5, 9,13
-                        , 2, 6,10,14
-                        , 3, 7,11,15
-                        , 4, 8,12,16 );
-    var d = new gml.Mat4( 1, 2, 3, 4
-                        , 5, 6, 7, 8
-                        , 9,10,11,12
-                        ,13,14,15,16 );
-    var e = new gml.Mat4( 30, 70,110,150
-                        , 70,174,278,382
-                        ,110,278,446,614
-                        ,150,382,614,846);
-
-    expect( c.mul( d ) ).toEqual( e );
-  } );
-
-  it( "tests LU decomposition", function() {
+  it( "tests mat4 row and column setters", function() {
     var a = gml.Mat4.identity();
 
     var row0 = new gml.Vec4( 1, 2, 3, 4 );
@@ -195,6 +170,31 @@ describe( "mat4 tests", function() {
   } );
 
   it( "tests mat4 matrix multiplication", function() {
+    var a = gml.Mat4.identity();
+    var b = new gml.Mat4( 1, 5, 9,13
+                        , 2, 6,10,14
+                        , 3, 7,11,15
+                        , 4, 8,12,16 );
+
+    expect( a.mul( b ) ).toEqual( b );
+
+    var c = new gml.Mat4( 1, 5, 9,13
+                        , 2, 6,10,14
+                        , 3, 7,11,15
+                        , 4, 8,12,16 );
+    var d = new gml.Mat4( 1, 2, 3, 4
+                        , 5, 6, 7, 8
+                        , 9,10,11,12
+                        ,13,14,15,16 );
+    var e = new gml.Mat4( 30, 70,110,150
+                        , 70,174,278,382
+                        ,110,278,446,614
+                        ,150,382,614,846);
+
+    expect( c.mul( d ) ).toEqual( e );
+  } );
+
+  it( "tests LU decomposition", function() {
     var a = new gml.Mat4( 1, 5, 9,13
                         , 2, 6,10,14
                         , 3, 7,11,15
