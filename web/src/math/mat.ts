@@ -113,15 +113,17 @@ module gml {
       let l = Matrix.identity( this.rows );
       let u = new Matrix( this.rows, this.cols, this.values );
 
-      for ( let n = 0; n < this.rows; n++ ) {
-        let l_i = Matrix.identity( this.rows );
-        let l_i_inv = Matrix.identity( this.rows );
+      let size = this.rows;
+
+      for ( let n = 0; n < size; n++ ) {
+        let l_i = Matrix.identity( size );
+        let l_i_inv = Matrix.identity( size );
         // when multiplied with u, l_i eliminates elements below the main diagonal in the n-th column of matrix u
         // l_i_inv is the inverse to l_i, and is very easy to construct if we already have l_i
-        for ( let i = n+1; i < this.rows; i++ ) {
+        for ( let i = n+1; i < size; i++ ) {
           if ( u.get( n, n ) == 0 ) {
             let success = false;
-            for ( let j = n+1; j < this.rows; j++ ) {
+            for ( let j = n+1; j < size; j++ ) {
               if ( u.get( n, j ) != 0 ) {
                 u.swapRows( n, j );
                 success = true;
