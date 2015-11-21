@@ -200,6 +200,11 @@ module gml {
       return new Mat4( m.Float32Array );
     }
 
+    public scalarmul( s: number ): Mat4 {
+      var m = super.scalarmul( s );
+      return new Mat4( m.Float32Array );
+    }
+
     public invert(): Mat4 {
       return null;
     }

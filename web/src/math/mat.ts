@@ -140,6 +140,10 @@ module gml {
       return Matrix.matmul( this, rhs );
     }
 
+    public scalarmul( s: number ): Matrix {
+      return new Matrix( this.rows, this.cols, this.values.map( v => { return v * s; } ) );
+    }
+
     public static matmul( lhs: Matrix, rhs: Matrix ): Matrix {
       var out = [];
 
