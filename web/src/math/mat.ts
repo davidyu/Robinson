@@ -97,7 +97,7 @@ module gml {
         return { l: Matrix.identity( this.rows ), u: Matrix.identity( this.rows ) };
       }
 
-      let l = new Matrix( this.rows, this.cols, this.values );
+      let l = Matrix.identity( this.rows );
       let u = new Matrix( this.rows, this.cols, this.values );
 
       for ( let i = 1; i < this.rows; i++ ) {
@@ -172,6 +172,24 @@ module gml {
       }
 
       return new Matrix( size, size, v );
+    }
+
+    public toString() {
+      var str = "{";
+
+      for ( var i = 0; i < this.rows; i++ ) {
+        str += "{";
+        for ( var j = 0; j < this.cols; j++ ) {
+          str += this.get( i, j ) + ",";
+        }
+        str = str.slice( 0, -1 );
+        str += "},"
+      }
+
+      str = str.slice( 0, -1 );
+
+      str += "}";
+      return str;
     }
   }
 }
