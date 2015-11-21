@@ -122,8 +122,8 @@ module gml {
           if ( u.get( n, n ) == 0 ) {
             let success = false;
             for ( let j = n+1; j < this.rows; j++ ) {
-              u.swapRows( n, j );
-              if ( u.get( n, n ) != 0 ) {
+              if ( u.get( n, j ) != 0 ) {
+                u.swapRows( n, j );
                 success = true;
                 break;
               }
