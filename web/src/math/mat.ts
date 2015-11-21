@@ -70,6 +70,19 @@ module gml {
       return new Vector( this.cols, row );
     }
 
+    public setRow( r, v: Vector ) {
+      for ( var i = 0; i < this.cols; i++ ) {
+        this.set( r, i, v.get( i ) );
+      }
+    }
+
+    public swapRows( r1: number, r2: number ) {
+      var row1 = this.row( r1 );
+      var row2 = this.row( r2 );
+      this.setRow( r2, row1 );
+      this.setRow( r1, row2 );
+    }
+
     public column( c ): Vector {
       var column = [];
       for ( var i = 0; i < this.rows; i++ ) {
@@ -93,26 +106,42 @@ module gml {
 
     public lu(): { l: Matrix, u: Matrix } {
       if ( this.rows != this.cols ) {
-        console.warn( "matrix not square, cannot perform LU decomposition!" );
-        return { l: Matrix.identity( this.rows ), u: Matrix.identity( this.rows ) };
+        console.warn( "matrix not square; cannot perform LU decomposition!" );
+        return null;
       }
 
       let l = Matrix.identity( this.rows );
       let u = new Matrix( this.rows, this.cols, this.values );
 
-      for ( let i = 1; i < this.rows; i++ ) {
+      for ( let n = 0; n < this.rows; n++ ) {
         let l_i = Matrix.identity( this.rows );
         let l_i_inv = Matrix.identity( this.rows );
         // when multiplied with u, l_i eliminates elements below the main diagonal in the n-th column of matrix u
         // l_i_inv is the inverse to l_i, and is very easy to construct if we already have l_i
-        for ( let n = i; n < this.cols; n++ ) {
+        for ( let i = n+1; i < this.rows; i++ ) {
+          if ( u.get( n, n ) == 0 ) {
+            let success = false;
+            for ( let j = n+1; j < this.rows; j++ ) {
+              u.swapRows( n, j );
+              if ( u.get( n, n ) != 0 ) {
+                success = true;
+                break;
+              }
+            }
+
+            if ( !success ) {
+              console.warn( "matrix is singular; cannot perform LU decomposition!" );
+              return null;
+            }
+          }
           let l_i_n = -u.get( i, n ) / u.get( n, n );
           l_i.set( i, n, l_i_n );
-          l_i_inv.set( i, n, -l_i_n );
+          l_i_inv.set( n, i, -l_i_n );
         }
 
         l = l_i_inv.mul( l );
         u = l_i.mul( u );
+        console.log( u.toString() );
       }
 
       return { l: l, u: u };

@@ -199,10 +199,12 @@ describe( "mat4 tests", function() {
   } );
 
   it( "tests LU decomposition", function() {
-    var a = new gml.Mat4( 1, 5, 9,13
-                        , 2, 6,10,14
-                        , 3, 7,11,15
-                        , 4, 8,12,16 );
+    var a = new gml.Mat4( 0, 5, 9,13
+                        , 2, 0,10,14
+                        , 3, 7, 0,15
+                        , 4, 8,12, 0 );
+
+    console.log( a.toString() );
 
     var lu = a.lu();
     var l = lu.l;
