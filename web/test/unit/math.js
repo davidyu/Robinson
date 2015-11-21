@@ -169,6 +169,33 @@ describe( "mat4 tests", function() {
     expect( a.column( 3 ) ).toEqual( col3 );
   } );
 
+  it( "tests matrix row swapping", function() {
+    var a = new gml.Mat4( 1, 5, 9,13
+                        , 2, 6,10,14
+                        , 3, 7,11,15
+                        , 4, 8,12,16 );
+
+    var row0 = new gml.Vec4( 1, 2, 3, 4 );
+    var row1 = new gml.Vec4( 5, 6, 7, 8 );
+    var row2 = new gml.Vec4( 9,10,11,12 );
+    var row3 = new gml.Vec4( 13,14,15,16 );
+
+    a.swapRows( 0, 1 );
+
+    expect( a.row( 0 ) ).toEqual( row1 );
+    expect( a.row( 1 ) ).toEqual( row0 );
+
+    a.swapRows( 2, 3 );
+
+    expect( a.row( 2 ) ).toEqual( row3 );
+    expect( a.row( 3 ) ).toEqual( row2 );
+
+    a.swapRows( 0, 2 );
+
+    expect( a.row( 0 ) ).toEqual( row3 );
+    expect( a.row( 2 ) ).toEqual( row1 );
+ } );
+
   it( "tests mat4 matrix multiplication", function() {
     var a = gml.Mat4.identity();
     var b = new gml.Mat4( 1, 5, 9,13
