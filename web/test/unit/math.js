@@ -182,16 +182,20 @@ describe( "mat4 tests", function() {
                         , 2, 6,10,14
                         , 3, 7,11,15
                         , 4, 8,12,16 );
-    var d = new gml.Mat4( 1, 2, 3, 4
-                        , 5, 6, 7, 8
-                        , 9,10,11,12
-                        ,13,14,15,16 );
-    var e = new gml.Mat4( 30, 70,110,150
-                        , 70,174,278,382
-                        ,110,278,446,614
-                        ,150,382,614,846);
 
-    expect( c.mul( d ) ).toEqual( e );
+    var d = new gml.Mat4(17,21,25,29
+                        ,18,22,26,30
+                        ,19,23,27,31
+                        ,20,24,28,32 );
+
+    var e = new gml.Mat4(125,309,493,677
+                        ,130,322,514,706 
+                        ,135,335,535,735
+                        ,140,348,556,764).scalarmul( 2 );
+
+    var f = c.mul( d );
+
+    expect( f ).toEqual( e );
   } );
 
   it( "tests LU decomposition", function() {
@@ -206,7 +210,6 @@ describe( "mat4 tests", function() {
 
     // make sure l is a lower triangular matrix
     for ( var i = 0; i < l.rows; i++ ) {
-      expect( l.get( i, i ) ).toBe( 1 );
       for ( var j = i + 1; j < l.cols; j++ ) {
         expect( l.get( i, j ) ).toBe( 0 );
       }
@@ -214,9 +217,8 @@ describe( "mat4 tests", function() {
 
     // make sure u is a upper triangular matrix
     for ( var i = 0; i < l.rows; i++ ) {
-      expect( l.get( i, i ) ).toBe( 1 );
       for ( var j = 0; j < i; j++ ) {
-        expect( l.get( i, j ) ).toBe( 0 );
+        expect( u.get( i, j ) ).toBe( 0 );
       }
     }
   } );

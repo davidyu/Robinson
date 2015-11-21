@@ -141,29 +141,31 @@ module gml {
     }
 
     public scalarmul( s: number ): Matrix {
-      return new Matrix( this.rows, this.cols, this.values.map( v => { return v * s; } ) );
+      let vs = [];
+      for ( let i = 0; i < this.values.length; i++ ) {
+        vs.push( this.values[i] * s );
+      }
+      return new Matrix( this.rows, this.cols, vs );
     }
 
     public static matmul( lhs: Matrix, rhs: Matrix ): Matrix {
-      var out = [];
-
       if ( lhs.rows != rhs.cols ) {
         console.warn( "lhs and rhs incompatible for matrix multiplication!" );
         return null;
       }
 
-      for ( let i = 0; i < lhs.cols; i++ ) {
-        for ( let j = 0; j < rhs.rows; j++ ) {
-          var sum = 0;
-          for ( let k = 0; k < lhs.rows; k++ ) {
+      var out = [];
+      for ( let i = 0; i < lhs.rows; i++ ) {
+        for ( let j = 0; j < rhs.cols; j++ ) {
+          let sum = 0;
+          for ( let k = 0; k < lhs.cols; k++ ) {
             sum += lhs.get( i, k ) * rhs.get( k, j );
           }
-
-          out[ j * lhs.cols + i ] = sum;
+          out[ j * lhs.rows + i ] = sum;
         }
       }
 
-      return new Matrix( lhs.cols, rhs.rows, out );
+      return new Matrix( lhs.rows, rhs.cols, out );
     }
 
     public static identity( size ): Matrix {
