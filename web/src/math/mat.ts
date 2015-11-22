@@ -120,30 +120,30 @@ module gml {
         let l_i_inv = Matrix.identity( size );
         // when multiplied with u, l_i eliminates elements below the main diagonal in the n-th column of matrix u
         // l_i_inv is the inverse to l_i, and is very easy to construct if we already have l_i
-        for ( let i = n+1; i < size; i++ ) {
-          if ( u.get( n, n ) == 0 ) {
-            let success = false;
-            for ( let j = n+1; j < size; j++ ) {
-              if ( u.get( n, j ) != 0 ) {
-                u.swapRows( n, j );
-                success = true;
-                break;
-              }
-            }
-
-            if ( !success ) {
-              console.warn( "matrix is singular; cannot perform LU decomposition!" );
-              return null;
+        // partial pivot
+        if ( u.get( n, n ) == 0 ) {
+          let success = false;
+          for ( let j = n+1; j < size; j++ ) {
+            if ( u.get( j, n ) != 0 ) {
+              u.swapRows( n, j );
+              success = true;
+              break;
             }
           }
-          let l_i_n = -u.get( i, n ) / u.get( n, n );
-          l_i.set( i, n, l_i_n );
-          l_i_inv.set( n, i, -l_i_n );
+          if ( !success ) {
+            console.warn( "matrix is singular; cannot perform LU decomposition!" );
+            return null;
+          }
         }
 
-        l = l_i_inv.mul( l );
+        for ( let i = n+1; i < size; i++ ) {
+          let l_i_n = -u.get( i, n ) / u.get( n, n );
+          l_i.set( i, n, l_i_n );
+          l_i_inv.set( i, n, -l_i_n );
+        }
+
+        l = l.mul( l_i_inv );
         u = l_i.mul( u );
-        console.log( u.toString() );
       }
 
       return { l: l, u: u };
