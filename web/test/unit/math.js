@@ -231,8 +231,6 @@ describe( "mat4 tests", function() {
                         , 3, 7, 0,15
                         , 4, 8,12, 0 );
 
-    console.log( a.toString() );
-
     var lu = a.lu();
     var l = lu.l;
     var u = lu.u;
@@ -240,15 +238,23 @@ describe( "mat4 tests", function() {
     // make sure l is a lower triangular matrix
     for ( var i = 0; i < l.rows; i++ ) {
       for ( var j = i + 1; j < l.cols; j++ ) {
-        expect( l.get( i, j ) ).toBe( 0 );
+        expect( l.get( i, j ) ).toBeCloseTo( 0 );
       }
     }
 
     // make sure u is a upper triangular matrix
     for ( var i = 0; i < l.rows; i++ ) {
       for ( var j = 0; j < i; j++ ) {
-        expect( u.get( i, j ) ).toBe( 0 );
+        expect( u.get( i, j ) ).toBeCloseTo( 0 );
       }
     }
+
+    var b = new gml.Mat4( 1, 5, 9,13
+                        , 2, 6,10,14
+                        , 3, 7,11,15
+                        , 4, 8,12,16 );
+
+    var lub = b.lu();
+    expect( lub ).toBe( null );
   } );
 } );
