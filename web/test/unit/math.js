@@ -255,6 +255,16 @@ describe( "mat4 tests", function() {
                         , 4, 8,12,16 );
 
     var lub = b.lu();
-    expect( lub ).toBe( null );
+    expect( lub.l ).toBe( null );
+    expect( lub.u ).toBe( null );
+  } );
+
+  it( "tests determinants", function() {
+    var a = new gml.Mat4( 1, 5, 9,13
+                        , 2, 6,10,14
+                        , 3, 7,11,15
+                        , 4, 8,12,16 );
+
+    expect( a.determinant ).toBe( 0 );
   } );
 } );

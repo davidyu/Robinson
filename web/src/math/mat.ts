@@ -107,7 +107,7 @@ module gml {
     public lu(): { l: Matrix, u: Matrix } {
       if ( this.rows != this.cols ) {
         console.warn( "matrix not square; cannot perform LU decomposition!" );
-        return null;
+        return { l: null, u: null };
       }
 
       let l = Matrix.identity( this.rows );
@@ -132,7 +132,7 @@ module gml {
           }
           if ( !success ) {
             console.warn( "matrix is singular; cannot perform LU decomposition!" );
-            return null;
+            return { l: null, u: null };
           }
         }
 
@@ -156,6 +156,11 @@ module gml {
       }
 
       let { l, u } = this.lu();
+
+      if ( l == null || u == null ) {
+        return 0;
+      }
+
       var det = 1;
       for ( let i = 0; i < this.rows; i++ ) {
         det *= u.get( i, i );
