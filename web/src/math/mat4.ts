@@ -204,7 +204,7 @@ module gml {
     }
 
     public transpose(): Mat4 {
-      return null;
+      return new Mat4( super.transpose().Float32Array );
     }
 
     public get mat3(): Mat3 {
