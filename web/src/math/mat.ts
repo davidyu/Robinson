@@ -115,6 +115,7 @@ module gml {
 
       let size = this.rows;
 
+      // apply doolittle algorithm
       for ( let n = 0; n < size; n++ ) {
         let l_i = Matrix.identity( size );
         let l_i_inv = Matrix.identity( size );

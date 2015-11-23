@@ -208,7 +208,9 @@ module gml {
     }
 
     public get mat3(): Mat3 {
-      return null;
+      return new Mat3( this.r00, this.r10, this.r20
+                     , this.r01, this.r11, this.r21
+                     , this.r02, this.r21, this.r22 );
     }
 
     public static identity(): Mat4 {
