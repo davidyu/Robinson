@@ -267,4 +267,17 @@ describe( "mat4 tests", function() {
 
     expect( a.determinant ).toBe( 0 );
   } );
+
+  it( "tests inverse", function() {
+    var a = new gml.Mat4( 0, 5, 9,13
+                        , 2, 0,10,14
+                        , 3, 7, 0,15
+                        , 4, 8,12, 0 );
+
+    var b = a.invert();
+
+    console.log( a.mul( b ).toString() );
+
+    expect( a.mul( b ) ).toBe( gml.Mat4.identity() );
+  } );
 } );
