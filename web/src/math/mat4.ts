@@ -199,8 +199,26 @@ module gml {
       return new Mat4( m.Float32Array );
     }
 
+    public sub( rhs: Matrix ): Mat4 {
+      var m = super.sub( rhs );
+      return new Mat4( m.Float32Array );
+    }
+
+    public add( rhs: Matrix ): Mat4 {
+      var m = super.add( rhs );
+      return new Mat4( m.Float32Array );
+    }
+
     public invert(): Mat4 {
-      return null;
+      let d = this.determinant;
+      let tr = this.trace;
+      let m2 = this.mul( this );
+      let m3 = this.mul( m2 );
+      let tr2 = m2.trace;
+      let tr3 = m3.trace;
+      let a = ( 1 / 6 ) * ( tr * tr * tr ) - ( 3 * tr * tr2 ) + ( 2 * tr3 );
+      let b = ( 1 / 2 ) * ( tr * tr - tr2 );
+      return Mat4.identity().scalarmul( a ).sub( this.scalarmul( b ) ).add( m2.scalarmul( tr ) ).sub( m3 ).scalarmul( 1 / d );
     }
 
     public transpose(): Mat4 {
