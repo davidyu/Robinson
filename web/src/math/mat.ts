@@ -177,6 +177,15 @@ module gml {
       return Matrix.matmul( this, rhs );
     }
 
+    public sub( rhs: Matrix ): Matrix {
+      let vs = [];
+      let rvs = rhs.Float32Array;
+      for ( let i = 0; i < this.values.length; i++ ) {
+        vs.push( this.values[i] - rvs[i] );
+      }
+      return new Matrix( this.rows, this.cols, vs );
+    }
+
     public add( rhs: Matrix ): Matrix {
       let vs = [];
       let rvs = rhs.Float32Array;
