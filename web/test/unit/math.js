@@ -1,3 +1,17 @@
+var customMatchers = {
+  matrixToBeCloseTo: function( util, customEqualityTesters ) {
+    return {
+      compare: function( actual, expected ) {
+        var result = {};
+        result.pass = util.toBeCloseTo( actual, expected, customEqualityTesters );
+        if ( !result.pass ) {
+          result.message = "Expected " + actual.toString + "\nto be close to " + expected.toString;
+        }
+      }
+    };
+  }
+}
+
 describe( "vector tests", function() {
   it( "tests vector accessors", function() {
     var a = new gml.Vector( 2, 0, 1 );
@@ -11,6 +25,22 @@ describe( "vector tests", function() {
 } );
 
 describe( "mat4 tests", function() {
+  var matrixEquality = function( a, b ) {
+    var e = 1e-6;
+    if ( a instanceof gml.Matrix && b instanceof gml.Matrix ) {
+      for ( var i = 0; i < a.rows; i++ ) {
+        for ( var j = 0; j < a.cols; j++ ) {
+          if ( Math.abs( a.get( 0, 0 ) - b.get( 0, 0 ) ) >= e ) return false;
+        }
+      }
+      return true;
+    }
+  }
+
+  beforeEach( function() {
+    jasmine.addCustomEqualityTester( matrixEquality );
+  } );
+
   it( "tests mat4 getters", function() {
     var a = new gml.Mat4( 1, 5, 9,13
                         , 2, 6,10,14
@@ -276,8 +306,6 @@ describe( "mat4 tests", function() {
 
     var b = a.invert();
 
-    console.log( a.mul( b ).toString() );
-
-    expect( a.mul( b ) ).toBe( gml.Mat4.identity() );
+    expect( a.mul( b ) ).toEqual( gml.Mat4.identity() );
   } );
 } );
