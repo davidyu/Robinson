@@ -279,19 +279,19 @@ class Renderer {
             }
 
             scene.lights.forEach( ( l, i ) => {
-              gl.uniform4fv( this.uLights[i].position, l.position.Float32Array );
-              gl.uniform4fv( this.uLights[i].color, l.color.Float32Array );
+              gl.uniform4fv( this.uLights[i].position, l.position.v );
+              gl.uniform4fv( this.uLights[i].color, l.color.v );
               gl.uniform1i( this.uLights[i].enabled, l.enabled ? 1 : 0 );
             } );
 
-            gl.uniformMatrix4fv( this.uPerspective, false, new Float32Array( perspective.Float32Array ) );
+            gl.uniformMatrix4fv( this.uPerspective, false, perspective.Float32Array );
 
             let primitiveModelView = p.transform.mul( mvStack[ mvStack.length - 1 ] );
-            gl.uniformMatrix4fv( this.uModelView, false, new Float32Array( primitiveModelView.Float32Array ) );
+            gl.uniformMatrix4fv( this.uModelView, false, primitiveModelView.Float32Array );
 
             // the normal matrix is defined as the upper 3x3 block of transpose( inverse( model-view ) )
             let primitiveNormalMatrix = primitiveModelView.invert().transpose().mat3;
-            gl.uniformMatrix3fv( this.uNormal, false, new Float32Array( primitiveNormalMatrix.Float32Array ) );
+            gl.uniformMatrix3fv( this.uNormal, false, primitiveNormalMatrix.Float32Array );
 
             gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
             gl.bufferData( gl.ARRAY_BUFFER, p.renderData.vertices, gl.STATIC_DRAW );
