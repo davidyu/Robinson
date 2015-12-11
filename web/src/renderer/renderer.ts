@@ -284,14 +284,14 @@ class Renderer {
               gl.uniform1i( this.uLights[i].enabled, l.enabled ? 1 : 0 );
             } );
 
-            gl.uniformMatrix4fv( this.uPerspective, false, perspective.Float32Array );
+            gl.uniformMatrix4fv( this.uPerspective, false, perspective.m );
 
-            let primitiveModelView = p.transform.mul( mvStack[ mvStack.length - 1 ] );
-            gl.uniformMatrix4fv( this.uModelView, false, primitiveModelView.Float32Array );
+            let primitiveModelView = p.transform.multiply( mvStack[ mvStack.length - 1 ] );
+            gl.uniformMatrix4fv( this.uModelView, false, primitiveModelView.m );
 
             // the normal matrix is defined as the upper 3x3 block of transpose( inverse( model-view ) )
             let primitiveNormalMatrix = primitiveModelView.invert().transpose().mat3;
-            gl.uniformMatrix3fv( this.uNormal, false, primitiveNormalMatrix.Float32Array );
+            gl.uniformMatrix3fv( this.uNormal, false, primitiveNormalMatrix.m );
 
             gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
             gl.bufferData( gl.ARRAY_BUFFER, p.renderData.vertices, gl.STATIC_DRAW );
@@ -300,7 +300,7 @@ class Renderer {
             gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
             gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, p.renderData.indices, gl.STATIC_DRAW );
             if ( !p.renderData.isTextureMapped ) {
-              gl.uniform4fv( this.uMaterial.diffuse, [ 1, 1, 1, 1 ] );
+              gl.uniform4fv( this.uMaterial.diffuse, new Float32Array( [ 1, 1, 1, 1 ] ) );
             }
 
             gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexNormalBuffer );

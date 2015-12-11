@@ -5,9 +5,6 @@
     "description": "test suite for robinson",
     "readme": "n/a",
     "devDependencies" : {
-        "karma":"0.13.x",
-        "karma-jasmine":"0.3.x",
-        "karma-phantomjs-launcher": "~0.1",
         "colors": "1.x",
         "gl":"2.x",
         "webgl-compile-shader":"2.x"
