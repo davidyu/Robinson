@@ -68,11 +68,18 @@ class OrbitApp {
       // update camera
       let baseAim = new gml.Vec4( 0, 0, -1, 0 );
       let baseRight = new gml.Vec4( 1, 0, 0, 0 );
+
       let rotY = gml.Mat4.rotateY( this.yaw );
-      let rotAim = rotY.transform( baseAim );
+
       let rotRight = rotY.transform( baseRight );
+
+      let rotX = gml.Mat4.rotate( rotRight, this.pitch );
+      let rotAim = rotX.transform( rotY.transform( baseAim ) ).normalized;
+      let rotUp = rotRight.cross( rotAim );
+
       let rotPos = this.orbitCenter.add( rotAim.negate().multiply( this.orbitDistance ) );
-      this.camera = new Camera( rotPos, rotAim, new gml.Vec4( 0, 1, 0, 0 ), rotRight );
+
+      this.camera = new Camera( rotPos, rotAim, rotUp, rotRight );
       this.renderer.setCamera( this.camera );
       this.renderer.update();
       this.renderer.render();
