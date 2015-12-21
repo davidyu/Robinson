@@ -20,6 +20,7 @@ class OrbitApp {
   orbitCenter: gml.Vec4;;
   orbitDistance: number;
   yaw: gml.Angle;
+  dirty: boolean;
   pitch: gml.Angle;
   hammer: HammerManager;
 
@@ -32,6 +33,7 @@ class OrbitApp {
     this.yaw = gml.fromDegrees( 0 );
     this.pitch = gml.fromDegrees( 0 );
     this.renderer.setCamera( this.camera );
+    this.dirty = true;
 
     // camera parameters - save camera distance from target
     // construct location along viewing sphere
@@ -47,8 +49,12 @@ class OrbitApp {
     this.hammer = new Hammer( params.vp, { preventDefault: true } );
     this.hammer.get('pan').set( { direction: Hammer.DIRECTION_ALL } );
     this.hammer.on( "panmove", e => {
-      this.yaw = this.yaw.add( gml.fromDegrees( e.deltaX / 100 ) ).reduceToOneTurn();
-      this.pitch = this.pitch.add( gml.fromDegrees( e.deltaY / 100 ) ).reduceToOneTurn();
+      if ( Math.abs( e.deltaX ) > 0.0001 || Math.abs( e.deltaY ) > 0.0001 ) {
+        this.yaw = this.yaw.add( gml.fromDegrees( e.deltaX / 100 ) ).reduceToOneTurn();
+        console.log( this.yaw );
+        this.pitch = this.pitch.add( gml.fromDegrees( e.deltaY / 100 ) ).reduceToOneTurn();
+        this.dirty = true;
+      }
     } );
   }
 
@@ -56,17 +62,20 @@ class OrbitApp {
   }
 
   public fixedUpdate() {
-    // update camera
-    let baseAim = new gml.Vec4( 0, 0, -1, 0 );
-    let baseRight = new gml.Vec4( 1, 0, 0, 0 );
-    let rotY = gml.Mat4.rotateY( this.yaw );
-    let rotAim = rotY.transform( baseAim );
-    let rotRight = rotY.transform( baseRight );
-    let rotPos = this.orbitCenter.add( rotAim.negate().multiply( this.orbitDistance ) );
-    this.camera = new Camera( rotPos, rotAim, new gml.Vec4( 0, 1, 0, 0 ), rotRight );
-    this.renderer.setCamera( this.camera );
-    this.renderer.update();
-    this.renderer.render();
+    if ( this.dirty ) {
+      // update camera
+      let baseAim = new gml.Vec4( 0, 0, -1, 0 );
+      let baseRight = new gml.Vec4( 1, 0, 0, 0 );
+      let rotY = gml.Mat4.rotateY( this.yaw );
+      let rotAim = rotY.transform( baseAim );
+      let rotRight = rotY.transform( baseRight );
+      let rotPos = this.orbitCenter.add( rotAim.negate().multiply( this.orbitDistance ) );
+      this.camera = new Camera( rotPos, rotAim, new gml.Vec4( 0, 1, 0, 0 ), rotRight );
+      this.renderer.setCamera( this.camera );
+      this.renderer.update();
+      this.renderer.render();
+      this.dirty = false;
+    }
   }
 }
 
