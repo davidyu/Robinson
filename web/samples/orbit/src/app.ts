@@ -44,7 +44,7 @@ class OrbitApp {
     window.addEventListener( 'wheel', e => {
       // reconstruct camera matrix from dx and dy
       e.preventDefault();
-      this.yaw = this.yaw.add( gml.fromRadians( e.deltaX * WHEEL_PIXEL_TO_RADIAN ) ).reduceToOneTurn();
+      this.yaw = this.yaw.add( gml.fromRadians( e.deltaX * WHEEL_PIXEL_TO_RADIAN ).negate() ).reduceToOneTurn();
       this.pitch = this.pitch.add( gml.fromRadians( e.deltaY * WHEEL_PIXEL_TO_RADIAN ) ).reduceToOneTurn();
       this.dirty = true;
     } );
@@ -54,7 +54,7 @@ class OrbitApp {
 
     const PAN_PIXEL_TO_RADIAN = 1/10;
     this.hammer.on( "panmove", e => {
-      this.yaw = this.yaw.add( gml.fromRadians( e.velocityX * PAN_PIXEL_TO_RADIAN ) ).reduceToOneTurn();
+      this.yaw = this.yaw.add( gml.fromRadians( e.velocityX * PAN_PIXEL_TO_RADIAN ).negate() ).reduceToOneTurn();
       this.pitch = this.pitch.add( gml.fromRadians( e.velocityY * PAN_PIXEL_TO_RADIAN ) ).reduceToOneTurn();
       this.dirty = true;
     } );
