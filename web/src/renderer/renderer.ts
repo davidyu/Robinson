@@ -318,5 +318,6 @@ class Renderer {
 
   setCamera( camera: Camera ) {
     this.camera = camera;
+    this.dirty = true;
   }
 }

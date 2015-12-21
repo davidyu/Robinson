@@ -47,8 +47,8 @@ class OrbitApp {
     this.hammer = new Hammer( params.vp, { preventDefault: true } );
     this.hammer.get('pan').set( { direction: Hammer.DIRECTION_ALL } );
     this.hammer.on( "panmove", e => {
-      this.yaw = this.yaw.add( gml.fromDegrees( e.deltaX ) ).reduceToOneTurn();
-      this.pitch = this.pitch.add( gml.fromDegrees( e.deltaY ) ).reduceToOneTurn();
+      this.yaw = this.yaw.add( gml.fromDegrees( e.deltaX / 100 ) ).reduceToOneTurn();
+      this.pitch = this.pitch.add( gml.fromDegrees( e.deltaY / 100 ) ).reduceToOneTurn();
     } );
   }
 
@@ -57,7 +57,14 @@ class OrbitApp {
 
   public fixedUpdate() {
     // update camera
-    // gml.Mat4.rotateY( this.yaw );
+    let baseAim = new gml.Vec4( 0, 0, -1, 0 );
+    let baseRight = new gml.Vec4( 1, 0, 0, 0 );
+    let rotY = gml.Mat4.rotateY( this.yaw );
+    let rotAim = rotY.transform( baseAim );
+    let rotRight = rotY.transform( baseRight );
+    let rotPos = this.orbitCenter.add( rotAim.negate().multiply( this.orbitDistance ) );
+    this.camera = new Camera( rotPos, rotAim, new gml.Vec4( 0, 1, 0, 0 ), rotRight );
+    this.renderer.setCamera( this.camera );
     this.renderer.update();
     this.renderer.render();
   }
@@ -67,7 +74,7 @@ var app: OrbitApp = null;
 
 function StartOrbit() {
   if ( app == null ) {
-    pcam = new Camera( new gml.Vec4( 0, 0, 5, 0 ), new gml.Vec4( 0, 0, -1, 0 ), new gml.Vec4( 0, 1, 0, 0 ), new gml.Vec4( 1, 0, 0, 0 ) );
+    pcam = new Camera( new gml.Vec4( 0, 0, 5, 1 ), new gml.Vec4( 0, 0, -1, 0 ), new gml.Vec4( 0, 1, 0, 0 ), new gml.Vec4( 1, 0, 0, 0 ) );
 
     var params : AppParams = {
       vp : <HTMLCanvasElement> document.getElementById( "big-viewport" ),
