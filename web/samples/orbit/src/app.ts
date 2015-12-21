@@ -65,7 +65,7 @@ class OrbitApp {
 
 var app: OrbitApp = null;
 
-function StartEd() {
+function StartOrbit() {
   if ( app == null ) {
     pcam = new Camera( new gml.Vec4( 0, 0, 5, 0 ), new gml.Vec4( 0, 0, -1, 0 ), new gml.Vec4( 0, 1, 0, 0 ), new gml.Vec4( 1, 0, 0, 0 ) );
 
