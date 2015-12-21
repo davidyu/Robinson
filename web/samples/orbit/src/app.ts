@@ -2,6 +2,8 @@ var shaderRepo: ShaderRepository = null; // global for debugging
 
 interface AppParams {
   vp : HTMLCanvasElement;
+  orbitCenter: gml.Vec4;
+  orbitDistance: number;
 }
 
 enum VIEWMODE {
@@ -15,20 +17,39 @@ class OrbitApp {
   renderer: Renderer;
   viewMode: VIEWMODE;
   camera: Camera; // TODO map cameras to each viewport
+  orbitCenter: gml.Vec4;;
+  orbitDistance: number;
+  yaw: gml.Angle;
+  pitch: gml.Angle;
 
   constructor( params: AppParams, shaderRepo: ShaderRepository ) {
     this.viewMode = VIEWMODE.SINGLE_LARGE_VIEWPORT;
     this.renderer = new Renderer( params.vp, shaderRepo );
     this.camera = pcam;
+    this.orbitCenter = params.orbitCenter;
+    this.orbitDistance = params.orbitDistance;
+    this.yaw = gml.fromDegrees( 0 );
+    this.pitch = gml.fromDegrees( 0 );
     this.renderer.setCamera( this.camera );
 
+    // camera parameters - save camera distance from target
+    // construct location along viewing sphere
+
     setInterval( () => { this.fixedUpdate() }, 1000/30 );
+
+    window.addEventListener( 'wheel', e => {
+      // reconstruct camera matrix from dx and dy
+      // start from dx
+      this.yaw = this.yaw.add( gml.fromDegrees( e.deltaX ) ).reduceToOneTurn();
+    } );
   }
 
   buildSingleViewport() {
   }
 
   public fixedUpdate() {
+    // update camera
+
     this.renderer.update();
     this.renderer.render();
   }
@@ -42,6 +63,8 @@ function StartEd() {
 
     var params : AppParams = {
       vp : <HTMLCanvasElement> document.getElementById( "big-viewport" ),
+      orbitCenter: new gml.Vec4( 0, 0, 0, 1 ),
+      orbitDistance: 10
     };
 
     shaderRepo = new ShaderRepository( ( repo ) => { app = new OrbitApp( params, repo ); } );
