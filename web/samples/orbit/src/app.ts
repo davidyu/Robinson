@@ -21,6 +21,7 @@ class OrbitApp {
   orbitDistance: number;
   yaw: gml.Angle;
   pitch: gml.Angle;
+  hammer: HammerManager;
 
   constructor( params: AppParams, shaderRepo: ShaderRepository ) {
     this.viewMode = VIEWMODE.SINGLE_LARGE_VIEWPORT;
@@ -39,8 +40,15 @@ class OrbitApp {
 
     window.addEventListener( 'wheel', e => {
       // reconstruct camera matrix from dx and dy
-      // start from dx
       this.yaw = this.yaw.add( gml.fromDegrees( e.deltaX ) ).reduceToOneTurn();
+      this.pitch = this.pitch.add( gml.fromDegrees( e.deltaY ) ).reduceToOneTurn();
+    } );
+
+    this.hammer = new Hammer( params.vp, { preventDefault: true } );
+    this.hammer.get('pan').set( { direction: Hammer.DIRECTION_ALL } );
+    this.hammer.on( "panmove", e => {
+      this.yaw = this.yaw.add( gml.fromDegrees( e.deltaX ) ).reduceToOneTurn();
+      this.pitch = this.pitch.add( gml.fromDegrees( e.deltaY ) ).reduceToOneTurn();
     } );
   }
 
@@ -49,7 +57,7 @@ class OrbitApp {
 
   public fixedUpdate() {
     // update camera
-
+    // gml.Mat4.rotateY( this.yaw );
     this.renderer.update();
     this.renderer.render();
   }
