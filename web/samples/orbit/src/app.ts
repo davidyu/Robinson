@@ -40,21 +40,23 @@ class OrbitApp {
 
     setInterval( () => { this.fixedUpdate() }, 1000/30 );
 
+    const WHEEL_PIXEL_TO_RADIAN = 1/30;
     window.addEventListener( 'wheel', e => {
       // reconstruct camera matrix from dx and dy
-      this.yaw = this.yaw.add( gml.fromDegrees( e.deltaX ) ).reduceToOneTurn();
-      this.pitch = this.pitch.add( gml.fromDegrees( e.deltaY ) ).reduceToOneTurn();
+      e.preventDefault();
+      this.yaw = this.yaw.add( gml.fromRadians( e.deltaX * WHEEL_PIXEL_TO_RADIAN ) ).reduceToOneTurn();
+      this.pitch = this.pitch.add( gml.fromRadians( e.deltaY * WHEEL_PIXEL_TO_RADIAN ) ).reduceToOneTurn();
+      this.dirty = true;
     } );
 
     this.hammer = new Hammer( params.vp, { preventDefault: true } );
     this.hammer.get('pan').set( { direction: Hammer.DIRECTION_ALL } );
+
+    const PAN_PIXEL_TO_RADIAN = 1/10;
     this.hammer.on( "panmove", e => {
-      if ( Math.abs( e.deltaX ) > 0.0001 || Math.abs( e.deltaY ) > 0.0001 ) {
-        this.yaw = this.yaw.add( gml.fromDegrees( e.deltaX / 100 ) ).reduceToOneTurn();
-        console.log( this.yaw );
-        this.pitch = this.pitch.add( gml.fromDegrees( e.deltaY / 100 ) ).reduceToOneTurn();
-        this.dirty = true;
-      }
+      this.yaw = this.yaw.add( gml.fromRadians( e.velocityX * PAN_PIXEL_TO_RADIAN ) ).reduceToOneTurn();
+      this.pitch = this.pitch.add( gml.fromRadians( e.velocityY * PAN_PIXEL_TO_RADIAN ) ).reduceToOneTurn();
+      this.dirty = true;
     } );
   }
 
