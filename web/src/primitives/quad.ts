@@ -18,10 +18,10 @@ class Quad extends Primitive implements Renderable {
       this.renderData.dirty = false;
       var vertices = [
         // Front face
-        -1.0,  1.0,  1.0,
-         1.0,  1.0,  1.0,
-         1.0, -1.0,  1.0,
-        -1.0, -1.0,  1.0,
+        -1.0,  1.0,  0.0,
+         1.0,  1.0,  0.0,
+         1.0, -1.0,  0.0,
+        -1.0, -1.0,  0.0,
       ];
 
       this.renderData.vertices = new Float32Array( vertices );
