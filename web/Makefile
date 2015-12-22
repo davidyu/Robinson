@@ -27,6 +27,6 @@ folders:
 update:
 	pushd $(SRC)/lib && sh update.sh && popd
 
-lib:
+lib: shaders
 	pushd $(SRC); cp -r tsconfigs/lib.json tsconfig.json; tsc; popd
 	pushd $(SRC); cp -r tsconfigs/dec.json tsconfig.json; tsc; popd
