@@ -13,18 +13,6 @@ struct Light {
 uniform Light lights[10];
 
 void main( void ) {
-    // visualize light properties
-    if ( gl_FragCoord.y == 0.5 ) {
-        if ( gl_FragCoord.x < 10.0 ) {
-            gl_FragColor = vec4( 1, 0, 0, 1 );
-            return;
-        }
-    }
-
-    if ( vNormal.z > 0.0 )
-        gl_FragColor = vec4( 1, 1, 0, 1 );
-    else if ( vNormal.z == 0.0 )
-        gl_FragColor = vec4( 0, 0, 1, 1 );
-    else
-        gl_FragColor = vec4( 1, 0, 0, 1 );
+    // color based on normal
+    gl_FragColor = vec4( ( normalize( vNormal ) * 0.5 + vec3( 0.5, 0.5, 0.5 ) ), 1 );
 }
