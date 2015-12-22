@@ -6,27 +6,20 @@ interface AppParams {
   orbitDistance: number;
 }
 
-enum VIEWMODE {
-  SINGLE_LARGE_VIEWPORT,
-  SPLIT_SMALL_VIEWPORTS,
-}
-
-var pcam: Camera = null;
-
 class OrbitApp {
   renderer: Renderer;
-  viewMode: VIEWMODE;
   camera: Camera;
+
+  // camera building parameters
   orbitCenter: gml.Vec4;;
   orbitDistance: number;
   yaw: gml.Angle;
   pitch: gml.Angle;
+
   dirty: boolean;
 
   constructor( params: AppParams, shaderRepo: ShaderRepository ) {
-    this.viewMode = VIEWMODE.SINGLE_LARGE_VIEWPORT;
     this.renderer = new Renderer( params.vp, shaderRepo );
-    this.camera = pcam;
     this.orbitCenter = params.orbitCenter;
     this.orbitDistance = params.orbitDistance;
     this.yaw = gml.fromDegrees( 0 );
@@ -59,18 +52,13 @@ class OrbitApp {
     } );
   }
 
-  buildSingleViewport() {
-  }
-
   public fixedUpdate() {
     if ( this.dirty ) {
-      // update camera
+      // rebuild camera
       let baseAim = new gml.Vec4( 0, 0, -1, 0 );
-      let baseRight = new gml.Vec4( 1, 0, 0, 0 );
 
       let rotY = gml.Mat4.rotateY( this.yaw );
-
-      let rotRight = rotY.transform( baseRight );
+      let rotRight = rotY.transform( gml.Vec4.right );
 
       let rotX = gml.Mat4.rotate( rotRight, this.pitch );
       let rotAim = rotX.transform( rotY.transform( baseAim ) ).normalized;
@@ -91,8 +79,6 @@ var app: OrbitApp = null;
 
 function StartOrbit() {
   if ( app == null ) {
-    pcam = new Camera( new gml.Vec4( 0, 0, 5, 1 ), new gml.Vec4( 0, 0, -1, 0 ), new gml.Vec4( 0, 1, 0, 0 ), new gml.Vec4( 1, 0, 0, 0 ) );
-
     var params : AppParams = {
       vp : <HTMLCanvasElement> document.getElementById( "big-viewport" ),
       orbitCenter: new gml.Vec4( 0, 0, 0, 1 ),
