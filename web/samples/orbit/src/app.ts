@@ -20,9 +20,8 @@ class OrbitApp {
   orbitCenter: gml.Vec4;;
   orbitDistance: number;
   yaw: gml.Angle;
-  dirty: boolean;
   pitch: gml.Angle;
-  hammer: HammerManager;
+  dirty: boolean;
 
   constructor( params: AppParams, shaderRepo: ShaderRepository ) {
     this.viewMode = VIEWMODE.SINGLE_LARGE_VIEWPORT;
@@ -49,11 +48,11 @@ class OrbitApp {
       this.dirty = true;
     } );
 
-    this.hammer = new Hammer( params.vp, { preventDefault: true } );
-    this.hammer.get('pan').set( { direction: Hammer.DIRECTION_ALL } );
+    var hammer = new Hammer( params.vp, { preventDefault: true } );
+    hammer.get('pan').set( { direction: Hammer.DIRECTION_ALL } );
 
     const PAN_PIXEL_TO_RADIAN = 1/10;
-    this.hammer.on( "panmove", e => {
+    hammer.on( "panmove", e => {
       this.yaw = this.yaw.add( gml.fromRadians( e.velocityX * PAN_PIXEL_TO_RADIAN ).negate() ).reduceToOneTurn();
       this.pitch = this.pitch.add( gml.fromRadians( e.velocityY * PAN_PIXEL_TO_RADIAN ) ).reduceToOneTurn();
       this.dirty = true;
