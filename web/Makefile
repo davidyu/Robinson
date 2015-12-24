@@ -6,7 +6,7 @@ TEST=test
 DIST=dist
 
 app: folders shaders
-	pushd $(SRC); find . -name "*.ts" -type f >src.txt; tsc @src.txt --target ES5 --sourceMap --out ../dist/app.js; rm src.txt; popd
+	pushd $(SRC); find . -name "*.ts" -type f -not -path "*/dist/*" >src.txt; tsc @src.txt --target ES5 --sourceMap --out ../dist/app.js; rm src.txt; popd
 
 shaders: folders
 	@cp $(SRC)/renderer/shaders/* $(DIST)/shaders 
