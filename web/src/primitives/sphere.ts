@@ -20,7 +20,7 @@ class Sphere extends Primitive implements Renderable {
   public rebuildRenderData() {
     let vertices = [];
     let indices = [];
-    const parallels = 3;
+    const parallels = 10;
     const meridians = 20;
     if ( this.renderData.dirty ) {
       for ( let j = 0; j <= parallels; j++ ) {
@@ -40,13 +40,13 @@ class Sphere extends Primitive implements Renderable {
         for ( let i = 0; i <= meridians; i++) {
           let nextj = ( j + 1 ) % ( parallels + 1 );
           let nexti = ( i + 1 ) % ( meridians + 1 );
-          indices.push( j * meridians + i );
-          indices.push( j * meridians + nexti );
-          indices.push( nextj * meridians + nexti );
+          indices.push( j * ( meridians + 1 ) + i );
+          indices.push( j * ( meridians + 1 ) + nexti );
+          indices.push( nextj * ( meridians + 1 ) + nexti );
 
-          indices.push( j * meridians + i );
-          indices.push( nextj * meridians + nexti );
-          indices.push( nextj * meridians + i );
+          indices.push( j * ( meridians + 1 ) + i );
+          indices.push( nextj * ( meridians + 1 ) + nexti );
+          indices.push( nextj * ( meridians + 1 ) + i );
         }
       }
 
