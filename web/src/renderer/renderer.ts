@@ -117,7 +117,6 @@ class Renderer {
   currentProgram: WebGLProgram;
 
   aVertexPosition: number;
-  aVertexColor: number;
   aVertexNormal: number;
   uModelView: WebGLUniformLocation;
   uModelToWorld: WebGLUniformLocation;
@@ -175,11 +174,6 @@ class Renderer {
     this.aVertexNormal = gl.getAttribLocation( program, "aVertexNormal" );
     gl.enableVertexAttribArray( this.aVertexNormal );
 
-    if ( false ) {
-      this.aVertexColor = gl.getAttribLocation( program, "aVertexColor" );
-      gl.enableVertexAttribArray( this.aVertexColor );
-    }
-
     this.uModelView = gl.getUniformLocation( program, "uMVMatrix" );
     this.uModelToWorld = gl.getUniformLocation( program, "uMMatrix" );
     this.uPerspective = gl.getUniformLocation( program, "uPMatrix" );
@@ -227,8 +221,9 @@ class Renderer {
       var program = gl.createProgram();
       gl.attachShader( program, vertexShader );
       gl.attachShader( program, fragmentShader );
+
       // force aVertexPosition to be bound to 0 to avoid perf penalty
-      gl.bindAttribLocation( program, 0, "aVertexPosition" );
+      // gl.bindAttribLocation( program, 0, "aVertexPosition" );
       gl.linkProgram( program );
 
       if ( !gl.getProgramParameter( program, gl.LINK_STATUS ) ) {
