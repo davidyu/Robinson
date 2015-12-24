@@ -12,9 +12,11 @@ struct Light {
 
 uniform Light lights[10];
 
-uniform highp mat4 uMVMatrix;     // model view matrix
-uniform highp mat4 uPMatrix;      // projection matrix
-uniform highp mat3 uNormalMatrix; // inverse model view matrix
+uniform highp mat4 uMMatrix;           // model matrix -> trasnforms to world space
+uniform highp mat4 uMVMatrix;          // model view matrix
+uniform highp mat4 uPMatrix;           // projection matrix
+uniform highp mat3 uNormalMVMatrix;    // inverse model view matrix
+uniform highp mat3 uNormalWorldMatrix; // inverse model matrix
 
 // material properties
 struct Material {
@@ -30,7 +32,7 @@ uniform Material mat;
 void main( void ) {
     mediump vec4 color = mat.ambient + mat.emissive;
     mediump vec3 eye = normalize( -( vPosition.xyz / vPosition.w ) );
-    mediump vec3 normal = normalize( uNormalMatrix * vNormal );
+    mediump vec3 normal = normalize( vNormal );
 
     for ( int i = 0; i < 10; i++ ) {
         if ( !lights[i].enabled ) continue;

@@ -117,8 +117,10 @@ class Renderer {
   aVertexColor: number;
   aVertexNormal: number;
   uModelView: WebGLUniformLocation;
+  uModelToWorld: WebGLUniformLocation;
   uPerspective: WebGLUniformLocation;
-  uNormal: WebGLUniformLocation;
+  uNormalModelView: WebGLUniformLocation;
+  uNormalWorld: WebGLUniformLocation;
 
   uMaterial: ShaderMaterialProperties;
   uLights: ShaderLightProperties[];
@@ -176,8 +178,10 @@ class Renderer {
     }
 
     this.uModelView = gl.getUniformLocation( program, "uMVMatrix" );
+    this.uModelToWorld = gl.getUniformLocation( program, "uMMatrix" );
     this.uPerspective = gl.getUniformLocation( program, "uPMatrix" );
-    this.uNormal = gl.getUniformLocation( program, "uNormalMatrix" );
+    this.uNormalModelView = gl.getUniformLocation( program, "uNormalMVMatrix" );
+    this.uNormalWorld = gl.getUniformLocation( program, "uNormalWorldMatrix" );
 
     this.uMaterial = new ShaderMaterialProperties();
     this.uMaterial.ambient = gl.getUniformLocation( program, "mat.ambient" );
@@ -288,10 +292,14 @@ class Renderer {
 
             let primitiveModelView = p.transform.multiply( mvStack[ mvStack.length - 1 ] );
             gl.uniformMatrix4fv( this.uModelView, false, primitiveModelView.m );
+            gl.uniformMatrix4fv( this.uModelToWorld, false, p.transform.m );
 
             // the normal matrix is defined as the upper 3x3 block of transpose( inverse( model-view ) )
-            let primitiveNormalMatrix = primitiveModelView.invert().transpose().mat3;
-            gl.uniformMatrix3fv( this.uNormal, false, primitiveNormalMatrix.m );
+            let normalMVMatrix = primitiveModelView.invert().transpose().mat3;
+            gl.uniformMatrix3fv( this.uNormalModelView, false, normalMVMatrix.m );
+
+            let normalWorldMatrix = p.transform.invert().transpose().mat3;
+            gl.uniformMatrix3fv( this.uNormalWorld, false, normalWorldMatrix.m );
 
             gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
             gl.bufferData( gl.ARRAY_BUFFER, p.renderData.vertices, gl.STATIC_DRAW );
