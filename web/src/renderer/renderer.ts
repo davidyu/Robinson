@@ -2,6 +2,7 @@ enum SHADERTYPE {
   SIMPLE_VERTEX,
   LIT_FRAGMENT,
   UNLIT_FRAGMENT,
+  DEBUG_VERTEX,
   DEBUG_FRAGMENT,
 }
 
@@ -32,6 +33,7 @@ class ShaderRepository {
 
   loadShaders() {
     this.asyncLoadShader( "basic.vert" , SHADERTYPE.SIMPLE_VERTEX  , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "debug.vert" , SHADERTYPE.DEBUG_VERTEX   , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "unlit.frag" , SHADERTYPE.UNLIT_FRAGMENT , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "lit.frag"   , SHADERTYPE.LIT_FRAGMENT   , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "debug.frag" , SHADERTYPE.DEBUG_FRAGMENT , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
@@ -152,7 +154,7 @@ class Renderer {
       success = false;
     }
 
-    this.debugProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source, sr.files[ SHADERTYPE.DEBUG_FRAGMENT ].source );
+    this.debugProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.DEBUG_VERTEX ].source, sr.files[ SHADERTYPE.DEBUG_FRAGMENT ].source );
     if ( this.debugProgram == null ) {
       alert( "Debug shader compilation failed. Please check the log for details." );
       success = false;
