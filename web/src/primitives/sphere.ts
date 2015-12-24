@@ -20,11 +20,11 @@ class Sphere extends Primitive implements Renderable {
   public rebuildRenderData() {
     let vertices = [];
     let indices = [];
-    const parallels = 20;
-    const meridians = 40;
+    const parallels = 3;
+    const meridians = 20;
     if ( this.renderData.dirty ) {
-      for ( let j = 0; j < parallels; j++ ) {
-        let parallel = Math.PI * ( j + 1 ) / parallels;
+      for ( let j = 0; j <= parallels; j++ ) {
+        let parallel = Math.PI * j / parallels;
         for ( let i = 0; i <= meridians; i++) {
           let meridian = 2 * Math.PI * i / meridians;
           let x = Math.sin( meridian ) * Math.cos( parallel );
@@ -36,17 +36,24 @@ class Sphere extends Primitive implements Renderable {
         }
       }
 
-      for ( let j = 0; j < parallels - 1; j++ ) {
-        for ( let i = 0; i < meridians; i++) {
+      for ( let j = 0; j < parallels; j++ ) {
+        for ( let i = 0; i <= meridians; i++) {
+          let nextj = ( j + 1 ) % ( parallels + 1 );
+          let nexti = ( i + 1 ) % ( meridians + 1 );
           indices.push( j * meridians + i );
-          indices.push( j * meridians + ( i + 1 ) % meridians );
-          indices.push( ( j + 1 ) * meridians + ( i + 1 ) % meridians );
+          indices.push( j * meridians + nexti );
+          indices.push( nextj * meridians + nexti );
+
+          indices.push( j * meridians + i );
+          indices.push( nextj * meridians + nexti );
+          indices.push( nextj * meridians + i );
         }
       }
 
       this.renderData.vertices = new Float32Array( vertices );
       this.renderData.normals = new Float32Array( vertices ); // for a sphere located at 0,0,0, the normals are exactly the same as the vertices
-      this.renderData.indices = new Float32Array( indices );
+      this.renderData.indices = new Uint16Array( indices );
+
       this.renderData.dirty = false;
     }
   }

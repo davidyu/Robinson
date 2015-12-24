@@ -89,7 +89,7 @@ function StartOrbit() {
 
     var testScene = new Scene()
     Scene.setActiveScene( testScene );
-    testScene.addRenderable( new Cube( 1, new DebugMaterial() ) );
+    testScene.addRenderable( new Sphere( 1, new DebugMaterial() ) );
     testScene.addLight( new PointLight( new gml.Vec4( 9.0, 0, 0, 1.0 ), new gml.Vec4( 1.0, 0, 0, 1.0 ) ) );
   }
 }
