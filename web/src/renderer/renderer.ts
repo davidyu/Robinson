@@ -113,6 +113,9 @@ class Renderer {
   phongProgram: WebGLProgram;
   debugProgram: WebGLProgram;
 
+  // the currently enabled program
+  currentProgram: WebGLProgram;
+
   aVertexPosition: number;
   aVertexColor: number;
   aVertexNormal: number;
@@ -273,13 +276,28 @@ class Renderer {
             mvStack.push( gml.Mat4.identity() );
           }
 
+          // for each renderable, set up shader and shader parameters
+          // lights, and buffers
           scene.renderables.forEach( ( p, i ) => {
             if ( p.material instanceof BlinnPhongMaterial ) {
-              gl.useProgram( this.phongProgram );
-              this.cacheLitShaderProgramLocations( this.phongProgram );
+              if ( this.currentProgram != this.phongProgram ) {
+                gl.useProgram( this.phongProgram );
+                this.cacheLitShaderProgramLocations( this.phongProgram );
+                this.currentProgram = this.phongProgram;
+              }
+
+              let blinnphong = <BlinnPhongMaterial> p.material;
+              gl.uniform4fv( this.uMaterial.diffuse, blinnphong.diffuse.v );
+              gl.uniform4fv( this.uMaterial.ambient, blinnphong.ambient.v );
+              gl.uniform4fv( this.uMaterial.specular, blinnphong.specular.v );
+              gl.uniform4fv( this.uMaterial.emissive, blinnphong.emissive.v );
+              gl.uniform1f ( this.uMaterial.shininess, blinnphong.shininess );
             } else if ( p.material instanceof DebugMaterial ) {
-              gl.useProgram( this.debugProgram );
-              this.cacheLitShaderProgramLocations( this.debugProgram );
+              if ( this.currentProgram != this.debugProgram ) {
+                gl.useProgram( this.debugProgram );
+                this.cacheLitShaderProgramLocations( this.debugProgram );
+                this.currentProgram = this.debugProgram;
+              }
             }
 
             scene.lights.forEach( ( l, i ) => {
@@ -308,17 +326,6 @@ class Renderer {
 
             gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
             gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, p.renderData.indices, gl.STATIC_DRAW );
-            if ( !p.renderData.isTextureMapped ) {
-              if ( p.material instanceof BlinnPhongMaterial ) {
-                let blinnphong = <BlinnPhongMaterial> p.material;
-                gl.uniform4fv( this.uMaterial.diffuse, blinnphong.diffuse.v );
-                gl.uniform4fv( this.uMaterial.ambient, blinnphong.ambient.v );
-                gl.uniform4fv( this.uMaterial.specular, blinnphong.specular.v );
-                gl.uniform4fv( this.uMaterial.emissive, blinnphong.emissive.v );
-                gl.uniform1f ( this.uMaterial.shininess, blinnphong.shininess );
-              }
-            }
-
             gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexNormalBuffer );
             gl.bufferData( gl.ARRAY_BUFFER, p.renderData.normals, gl.STATIC_DRAW );
             gl.vertexAttribPointer( this.aVertexNormal, 3, gl.FLOAT, false, 0, 0 );
