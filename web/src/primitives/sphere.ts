@@ -23,10 +23,10 @@ class Sphere extends Primitive implements Renderable {
     const parallels = 10;
     const meridians = 20;
     if ( this.renderData.dirty ) {
-      for ( let j = 0; j <= parallels; j++ ) {
-        let parallel = Math.PI * j / parallels;
-        for ( let i = 0; i <= meridians; i++) {
-          let meridian = 2 * Math.PI * i / meridians;
+      for ( let j = 0; j < parallels; j++ ) {
+        let parallel = Math.PI * j / ( parallels - 1 );
+        for ( let i = 0; i < meridians; i++) {
+          let meridian = 2 * Math.PI * i / ( meridians - 1 );
           let x = Math.sin( meridian ) * Math.cos( parallel );
           let y = Math.sin( meridian ) * Math.sin( parallel );
           let z = Math.cos( meridian );
@@ -36,17 +36,17 @@ class Sphere extends Primitive implements Renderable {
         }
       }
 
-      for ( let j = 0; j < parallels; j++ ) {
-        for ( let i = 0; i <= meridians; i++) {
-          let nextj = ( j + 1 ) % ( parallels + 1 );
-          let nexti = ( i + 1 ) % ( meridians + 1 );
-          indices.push( j * ( meridians + 1 ) + i );
-          indices.push( j * ( meridians + 1 ) + nexti );
-          indices.push( nextj * ( meridians + 1 ) + nexti );
+      for ( let j = 0; j < parallels - 1; j++ ) {
+        for ( let i = 0; i < meridians; i++) {
+          let nextj = ( j + 1 ); // loop invariant: j + 1 < parallels
+          let nexti = ( i + 1 ) % meridians;
+          indices.push( j * meridians + i );
+          indices.push( j * meridians + nexti );
+          indices.push( nextj * meridians + nexti );
 
-          indices.push( j * ( meridians + 1 ) + i );
-          indices.push( nextj * ( meridians + 1 ) + nexti );
-          indices.push( nextj * ( meridians + 1 ) + i );
+          indices.push( j * meridians + i );
+          indices.push( nextj * meridians + nexti );
+          indices.push( nextj * meridians + i );
         }
       }
 
