@@ -31,7 +31,7 @@ uniform Material mat;
 
 void main( void ) {
     mediump vec4 color = mat.ambient + mat.emissive;
-    mediump vec3 eye = normalize( -( vPosition.xyz / vPosition.w ) );
+    mediump vec3 view = normalize( -( vPosition.xyz / vPosition.w ) );
     mediump vec3 normal = normalize( vNormal );
 
     for ( int i = 0; i < 10; i++ ) {
@@ -48,8 +48,8 @@ void main( void ) {
         color += mat.diffuse * light.color * max( dot( normal, lightdir ), 0.0 );
 
         // specular term
-        // the half vector is exactly between the eye vector and the light direction vector
-        vec3 halfv = normalize( eye + lightdir );
+        // the half vector is exactly between the view vector and the light direction vector
+        vec3 halfv = normalize( view + lightdir );
         color += mat.specular * light.color * pow( max( dot( normal, halfv ), 0.0 ), mat.shininess );
     }
 
