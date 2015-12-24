@@ -283,7 +283,8 @@ class Renderer {
             }
 
             scene.lights.forEach( ( l, i ) => {
-              gl.uniform4fv( this.uLights[i].position, l.position.v );
+              let lightpos = mvStack[ mvStack.length - 1 ].transform( l.position );
+              gl.uniform4fv( this.uLights[i].position, lightpos.v );
               gl.uniform4fv( this.uLights[i].color, l.color.v );
               gl.uniform1i( this.uLights[i].enabled, l.enabled ? 1 : 0 );
             } );
@@ -308,7 +309,14 @@ class Renderer {
             gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
             gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, p.renderData.indices, gl.STATIC_DRAW );
             if ( !p.renderData.isTextureMapped ) {
-              gl.uniform4fv( this.uMaterial.diffuse, new Float32Array( [ 1, 1, 1, 1 ] ) );
+              if ( p.material instanceof BlinnPhongMaterial ) {
+                let blinnphong = <BlinnPhongMaterial> p.material;
+                gl.uniform4fv( this.uMaterial.diffuse, blinnphong.diffuse.v );
+                gl.uniform4fv( this.uMaterial.ambient, blinnphong.ambient.v );
+                gl.uniform4fv( this.uMaterial.specular, blinnphong.specular.v );
+                gl.uniform4fv( this.uMaterial.emissive, blinnphong.emissive.v );
+                gl.uniform1f ( this.uMaterial.shininess, blinnphong.shininess );
+              }
             }
 
             gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexNormalBuffer );

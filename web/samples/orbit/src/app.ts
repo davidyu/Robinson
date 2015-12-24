@@ -41,6 +41,7 @@ class OrbitApp {
       this.dirty = true;
     } );
 
+
     var hammer = new Hammer( params.vp, { preventDefault: true } );
     hammer.get('pan').set( { direction: Hammer.DIRECTION_ALL } );
 
@@ -89,7 +90,7 @@ function StartOrbit() {
 
     var testScene = new Scene()
     Scene.setActiveScene( testScene );
-    testScene.addRenderable( new Sphere( 1, new DebugMaterial() ) );
-    testScene.addLight( new PointLight( new gml.Vec4( 9.0, 0, 0, 1.0 ), new gml.Vec4( 1.0, 0, 0, 1.0 ) ) );
+    testScene.addRenderable( new Sphere( 1, new BlinnPhongMaterial( new gml.Vec4( 0.1, 0.1, 0.1, 1 ), new gml.Vec4( 1.0, 1.0, 1.0, 1 ), new gml.Vec4( 0, 0, 0, 1 ), new gml.Vec4( 0, 0, 0, 1 ), 0 ) ) );
+    testScene.addLight( new PointLight( new gml.Vec4( 9.0, 0, 0, 1.0 ), new gml.Vec4( 1.0, 1.0, 1.0, 1.0 ) ) );
   }
 }
