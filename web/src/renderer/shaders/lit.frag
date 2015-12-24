@@ -1,5 +1,10 @@
 precision mediump float;
 
+// we assume all input colors have no built-in gamma correction, and apply gamma
+// correction at the very end in this fragment shader
+
+const float screenGamma = 2.2;
+
 // fs in/vs out
 varying mediump vec4 vPosition;  // vertex position in view space, no need to convert
 varying mediump vec3 vNormal;    // normal vector in model space, need to convert here
@@ -53,5 +58,5 @@ void main( void ) {
         color += mat.specular * light.color * pow( max( dot( normal, halfv ), 0.0 ), mat.shininess );
     }
 
-    gl_FragColor = color;
+    gl_FragColor = pow( color, vec4( 1.0 / screenGamma ) );
 }
