@@ -33,9 +33,9 @@ class OrbitApp {
     setInterval( () => { this.fixedUpdate() }, 1000/30 );
 
     const WHEEL_PIXEL_TO_RADIAN = 1/30;
-    window.addEventListener( 'wheel', e => {
-      // reconstruct camera matrix from dx and dy
+    params.vp.addEventListener( 'wheel', e => {
       e.preventDefault();
+      // reconstruct camera matrix from dx and dy
       this.yaw = this.yaw.add( gml.fromRadians( e.deltaX * WHEEL_PIXEL_TO_RADIAN ).negate() ).reduceToOneTurn();
       this.pitch = this.pitch.add( gml.fromRadians( e.deltaY * WHEEL_PIXEL_TO_RADIAN ) ).reduceToOneTurn();
       this.dirty = true;
