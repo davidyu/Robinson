@@ -3,7 +3,7 @@ class Cube extends Primitive implements Renderable {
   material: Material;
   renderData: RenderData;
 
-  constructor( size: number = 1, mat: Material = new BlinnPhongMaterial() ) {
+  constructor( size: number = 1, position: gml.Vec4 = gml.Vec4.origin, mat: Material = new BlinnPhongMaterial() ) {
     super();
     this.transform.scale = new gml.Vec3( size, size, size );
     this.material = mat;

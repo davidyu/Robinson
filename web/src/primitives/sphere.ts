@@ -10,9 +10,10 @@ class Sphere extends Primitive implements Renderable {
   parallels: number;
   meridians: number;
 
-  constructor( size: number = 1, mat: Material = new BlinnPhongMaterial(), parallels: number = 15, meridians: number = 30 ) {
+  constructor( size: number = 1, position: gml.Vec4 = gml.Vec4.origin, mat: Material = new BlinnPhongMaterial(), parallels: number = 15, meridians: number = 30 ) {
     super();
     this.transform.scale = new gml.Vec3( size, size, size );
+    this.transform.translation = position;
     this.material = mat;
     this.renderData = new RenderData();
     // trigger a rebuild when the renderer updates
