@@ -1,9 +1,10 @@
 enum SHADERTYPE {
   SIMPLE_VERTEX,
-  LIT_FRAGMENT,
+  BLINNPHONG_FRAGMENT,
   UNLIT_FRAGMENT,
   DEBUG_VERTEX,
   DEBUG_FRAGMENT,
+  PBS_FRAGMENT,
 }
 
 class ShaderFile {
@@ -32,11 +33,12 @@ class ShaderRepository {
   }
 
   loadShaders() {
-    this.asyncLoadShader( "basic.vert" , SHADERTYPE.SIMPLE_VERTEX  , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "debug.vert" , SHADERTYPE.DEBUG_VERTEX   , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "unlit.frag" , SHADERTYPE.UNLIT_FRAGMENT , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "lit.frag"   , SHADERTYPE.LIT_FRAGMENT   , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "debug.frag" , SHADERTYPE.DEBUG_FRAGMENT , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "basic.vert" , SHADERTYPE.SIMPLE_VERTEX       , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "debug.vert" , SHADERTYPE.DEBUG_VERTEX        , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "unlit.frag" , SHADERTYPE.UNLIT_FRAGMENT      , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "lit.frag"   , SHADERTYPE.BLINNPHONG_FRAGMENT , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "debug.frag" , SHADERTYPE.DEBUG_FRAGMENT      , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "pbs.frag"   , SHADERTYPE.PBS_FRAGMENT        , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
   }
 
   asyncLoadShader( name: string, stype: SHADERTYPE, loaded: ( stype: SHADERTYPE, contents: string ) => void ) {
@@ -148,7 +150,7 @@ class Renderer {
     }
 
     // compile phong program
-    this.phongProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source, sr.files[ SHADERTYPE.LIT_FRAGMENT ].source );
+    this.phongProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source, sr.files[ SHADERTYPE.BLINNPHONG_FRAGMENT ].source );
     if ( this.phongProgram == null ) {
       alert( "Phong shader compilation failed. Please check the log for details." );
       success = false;
