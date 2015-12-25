@@ -308,7 +308,7 @@ class Renderer {
 
             gl.uniformMatrix4fv( this.uPerspective, false, perspective.m );
 
-            let primitiveModelView = p.transform.multiply( mvStack[ mvStack.length - 1 ] );
+            let primitiveModelView = mvStack[ mvStack.length - 1 ].multiply( p.transform );
             gl.uniformMatrix4fv( this.uModelView, false, primitiveModelView.m );
             gl.uniformMatrix4fv( this.uModelToWorld, false, p.transform.m );
 
