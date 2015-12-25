@@ -90,9 +90,9 @@ function StartApp() {
 
     var testScene = new Scene()
     Scene.setActiveScene( testScene );
-    testScene.addRenderable( new Sphere( 1, new gml.Vec4( -5.0, 0, 0, 1 ), new BlinnPhongMaterial( new gml.Vec4( 0.1, 0.1, 0.1, 1 ), new gml.Vec4( 0.5, 0.5, 0.5, 1 ), new gml.Vec4( 0.5, 0.5, 0.5, 1 ), new gml.Vec4( 0, 0, 0, 1 ), 20.0 ) ) );
+    testScene.addRenderable( new Sphere( 1, new gml.Vec4( -4, 0, 0, 1 ), new BlinnPhongMaterial( new gml.Vec4( 0.1, 0.1, 0.1, 1 ), new gml.Vec4( 0.5, 0.5, 0.5, 1 ), new gml.Vec4( 0.5, 0.5, 0.5, 1 ), new gml.Vec4( 0, 0, 0, 1 ), 20.0 ) ) );
     testScene.addRenderable( new Sphere( 1, gml.Vec4.origin, new BlinnPhongMaterial( new gml.Vec4( 0.1, 0.1, 0.1, 1 ), new gml.Vec4( 0.5, 0.5, 0.5, 1 ), new gml.Vec4( 0.5, 0.5, 0.5, 1 ), new gml.Vec4( 0, 0, 0, 1 ), 20.0 ) ) );
-    testScene.addRenderable( new Sphere( 1, new gml.Vec4( 5.0, 0, 0, 1 ), new BlinnPhongMaterial( new gml.Vec4( 0.1, 0.1, 0.1, 1 ), new gml.Vec4( 0.5, 0.5, 0.5, 1 ), new gml.Vec4( 0.5, 0.5, 0.5, 1 ), new gml.Vec4( 0, 0, 0, 1 ), 20.0 ) ) );
-    testScene.addLight( new PointLight( new gml.Vec4( 3.0, 3.0, 0, 1.0 ), new gml.Vec4( 1.0, 0.0, 0.0, 1.0 ) ) );
+    testScene.addRenderable( new Sphere( 1, new gml.Vec4( 4, 0, 0, 1 ), new BlinnPhongMaterial( new gml.Vec4( 0.1, 0.1, 0.1, 1 ), new gml.Vec4( 0.5, 0.5, 0.5, 1 ), new gml.Vec4( 0.5, 0.5, 0.5, 1 ), new gml.Vec4( 0, 0, 0, 1 ), 20.0 ) ) );
+    testScene.addLight( new PointLight( new gml.Vec4( 0, 0, 100, 1 ), new gml.Vec4( 1.0, 1.0, 1.0, 1.0 ) ) );
   }
 }
