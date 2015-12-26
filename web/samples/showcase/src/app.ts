@@ -113,6 +113,6 @@ function StartApp() {
                                                                  , 0.2
                                                                  , 1.385 ) ) );
 
-    testScene.addLight( new PointLight( new gml.Vec4( 0, 50, 100, 1 ), new gml.Vec4( 1.0, 1.0, 1.0, 1.0 ) ) );
+    testScene.addLight( new PointLight( new gml.Vec4( 0, 5, 10, 1 ), new gml.Vec4( 1.0, 1.0, 1.0, 1.0 ), 10 ) );
   }
 }

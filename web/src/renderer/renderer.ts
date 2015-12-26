@@ -232,6 +232,7 @@ class Renderer {
       this.uLights[i].position = gl.getUniformLocation( program, "lights[" + i + "].position" );
       this.uLights[i].color = gl.getUniformLocation( program, "lights[" + i + "].color" );
       this.uLights[i].enabled = gl.getUniformLocation( program, "lights[" + i + "].enabled" );
+      this.uLights[i].radius = gl.getUniformLocation( program, "lights[" + i + "].radius" );
     }
   }
 
@@ -409,4 +410,4 @@ class Renderer {
     this.camera = camera;
     this.dirty = true;
   }
-}
+};;
