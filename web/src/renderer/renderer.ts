@@ -102,6 +102,7 @@ class ShaderMaterialProperties {
   emissive: WebGLUniformLocation;
   shininess: WebGLUniformLocation;
   roughness: WebGLUniformLocation;
+  fresnel: WebGLUniformLocation;
 }
 
 class ShaderLightProperties {
@@ -217,6 +218,7 @@ class Renderer {
     this.uMaterial.emissive = gl.getUniformLocation( program, "mat.emissive" );
     this.uMaterial.shininess = gl.getUniformLocation( program, "mat.shininess" );
     this.uMaterial.roughness = gl.getUniformLocation( program, "mat.roughness" );
+    this.uMaterial.fresnel = gl.getUniformLocation( program, "mat.fresnel" );
 
     this.uLights = [];
     for ( var i = 0; i < 10; i++ ) {
@@ -343,6 +345,18 @@ class Renderer {
 
               let lambert = <LambertMaterial> p.material;
               gl.uniform4fv( this.uMaterial.diffuse, lambert.diffuse.v );
+            } else if ( p.material instanceof CookTorranceMaterial ) {
+              if ( this.currentProgram != this.cookTorranceProgram ) {
+                gl.useProgram( this.cookTorranceProgram );
+                this.cacheLitShaderProgramLocations( this.cookTorranceProgram );
+                this.currentProgram = this.cookTorranceProgram;
+              }
+
+              let cooktorrance = <CookTorranceMaterial> p.material;
+              gl.uniform4fv( this.uMaterial.diffuse, cooktorrance.diffuse.v );
+              gl.uniform4fv( this.uMaterial.specular, cooktorrance.specular.v );
+              gl.uniform1f ( this.uMaterial.roughness, cooktorrance.roughness );
+              gl.uniform1f ( this.uMaterial.fresnel, cooktorrance.fresnel );
             }
 
             scene.lights.forEach( ( l, i ) => {
