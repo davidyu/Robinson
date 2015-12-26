@@ -3,8 +3,6 @@ precision mediump float;
 // we assume all input colors have no built-in gamma correction, and apply gamma
 // correction at the very end in this fragment shader
 
-const float screenGamma = 2.2;
-
 // fs in/vs out
 varying mediump vec4 vPosition;  // vertex position in view space, no need to convert
 varying mediump vec3 vNormal;    // normal vector in model space, need to convert here
@@ -46,15 +44,11 @@ void main( void ) {
         if ( light.position.w == 0.0 ) lightdir = normalize( light.position.xyz );
         else                           lightdir = normalize( light.position.xyz / light.position.w - vPosition.xyz );
 
-        float lightdist = length( light.position.xyz / light.position.w - vPosition.xyz );
-        lightdist = max( lightdist - light.radius, 0.0 );
-
-        float d = lightdist / light.radius + 1.0;
-        float attenuation = 1.0 / ( d * d );
+        float attenuation = attenuate( length( light.position.xyz / light.position.w - vPosition.xyz ), light.radius );
 
         // diffuse term
         color += attenuation * mat.diffuse * light.color * max( dot( normal, lightdir ), 0.0 );
     }
 
-    gl_FragColor = pow( color, vec4( 1.0 / screenGamma ) );
+    gl_FragColor = degamma( color );
 }

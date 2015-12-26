@@ -7,6 +7,7 @@ enum SHADERTYPE {
   DEBUG_FRAGMENT,
   OREN_NAYAR_FRAGMENT,
   COOK_TORRANCE_FRAGMENT,
+  UTILS,
 }
 
 class ShaderFile {
@@ -43,6 +44,7 @@ class ShaderRepository {
     this.asyncLoadShader( "debug.frag"         , SHADERTYPE.DEBUG_FRAGMENT         , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "oren-nayar.frag"    , SHADERTYPE.OREN_NAYAR_FRAGMENT    , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "cook-torrance.frag" , SHADERTYPE.COOK_TORRANCE_FRAGMENT , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "utils.frag"         , SHADERTYPE.UTILS                  , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
   }
 
   asyncLoadShader( name: string, stype: SHADERTYPE, loaded: ( stype: SHADERTYPE, contents: string ) => void ) {
@@ -165,31 +167,36 @@ class Renderer {
     }
 
     // compile phong program
-    this.phongProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source, sr.files[ SHADERTYPE.BLINN_PHONG_FRAGMENT ].source );
+    this.phongProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
+                                                 , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.BLINN_PHONG_FRAGMENT ].source );
     if ( this.phongProgram == null ) {
       alert( "Phong shader compilation failed. Please check the log for details." );
       success = false;
     }
 
-    this.lambertProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source, sr.files[ SHADERTYPE.LAMBERT_FRAGMENT ].source );
+    this.lambertProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
+                                                   , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.LAMBERT_FRAGMENT ].source );
     if ( this.lambertProgram == null ) {
       alert( "Lambert shader compilation failed. Please check the log for details." );
       success = false;
     }
 
-    this.debugProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.DEBUG_VERTEX ].source, sr.files[ SHADERTYPE.DEBUG_FRAGMENT ].source );
+    this.debugProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.DEBUG_VERTEX ].source
+                                                 , sr.files[ SHADERTYPE.DEBUG_FRAGMENT ].source );
     if ( this.debugProgram == null ) {
       alert( "Debug shader compilation failed. Please check the log for details." );
       success = false;
     }
 
-    this.orenNayarProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source, sr.files[ SHADERTYPE.OREN_NAYAR_FRAGMENT ].source );
+    this.orenNayarProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
+                                                     , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.OREN_NAYAR_FRAGMENT ].source );
     if ( this.orenNayarProgram == null ) {
       alert( "Oren-Nayar shader compilation failed. Please check the log for details." );
       success = false;
     }
 
-    this.cookTorranceProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source, sr.files[ SHADERTYPE.COOK_TORRANCE_FRAGMENT ].source );
+    this.cookTorranceProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
+                                                        , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.COOK_TORRANCE_FRAGMENT ].source );
     if ( this.cookTorranceProgram == null ) {
       alert( "Cook-Torrance shader compilation failed. Please check the log for details." );
       success = false;

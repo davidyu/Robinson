@@ -20,7 +20,9 @@ var sources = [
 var logs = sources.map( function( source ) {
   process.stdout.write( "Compiling program ... " + source.vs + " + " + source.fs + "\n" );
   var vertexSource = fs.readFileSync( source.vs, 'utf8' );
-  var fragmentSource = fs.readFileSync( source.fs, 'utf8' );
+
+  var utils = fs.readFileSync( "utils.frag", 'utf8' );
+  var fragmentSource = utils + fs.readFileSync( source.fs, 'utf8' );
 
   return compiler( {
     vertex: vertexSource,
