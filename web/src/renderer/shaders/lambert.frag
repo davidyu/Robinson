@@ -26,7 +26,6 @@ uniform highp mat3 uNormalWorldMatrix; // inverse model matrix
 // material properties
 struct Material {
     vec4 diffuse;
-    float roughness;
 };
 
 uniform Material mat;
@@ -46,26 +45,8 @@ void main( void ) {
         if ( light.position.w == 0.0 ) lightdir = normalize( light.position.xyz );
         else                           lightdir = normalize( light.position.xyz / light.position.w - vPosition.xyz );
 
-        float VdotN = dot( view, normal );
-        float LdotN = dot( lightdir, normal );
-
-        float gamma = dot( view - normal * VdotN
-                         , lightdir - normal * LdotN );
-
-        float rsq = mat.roughness * mat.roughness;
-
-        float A = 1.0 - 0.5 * ( rsq / ( rsq + 0.57 ) );
-        float B = 0.45 * ( rsq / ( rsq + 0.09 ) );
-
-        float term1 = acos( VdotN );
-        float term2 = acos( LdotN );
-
-        float alpha = max( term1, term2 );
-        float beta = min( term1, term2 );
-
-        float C = sin( alpha ) * tan( beta );
-
-        color += mat.diffuse * light.color * max( LdotN, 0.0 ) * ( A + B * max( 0.0, gamma ) * C );
+        // diffuse term
+        color += mat.diffuse * light.color * max( dot( normal, lightdir ), 0.0 );
     }
 
     gl_FragColor = pow( color, vec4( 1.0 / screenGamma ) );

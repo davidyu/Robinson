@@ -91,17 +91,21 @@ function StartApp() {
     var testScene = new Scene()
     Scene.setActiveScene( testScene );
 
-    // sphere 1, Oren-Nayar
-    testScene.addRenderable( new Sphere( 1, new gml.Vec4( -4, 0, 0, 1 ), new OrenNayarMaterial( new gml.Vec4( 0.5, 0.5, 0.5, 1 ), 0.3 ) ) );
+    // sphere 1, Lambert
+    testScene.addRenderable( new Sphere( 1, new gml.Vec4( -4, 0, 0, 1 ), new LambertMaterial( new gml.Vec4( 0.5, 0.5, 0.5, 1 ) ) ) );
+
+    // sphere 1, Oren-Nayar with some roughness
+    testScene.addRenderable( new Sphere( 1, new gml.Vec4( 0, 0, 0, 1 ), new OrenNayarMaterial( new gml.Vec4( 0.5, 0.5, 0.5, 1 ), 0.3 ) ) );
 
     // sphere 2, standard blinn-phong
     testScene.addRenderable( new Sphere( 1
-                                       , gml.Vec4.origin
+                                       , new gml.Vec4( 4, 0, 0, 1 )
                                        , new BlinnPhongMaterial( new gml.Vec4( 0, 0, 0, 1 )
                                                                , new gml.Vec4( 0.5, 0.5, 0.5, 1 )
                                                                , new gml.Vec4( 0.5, 0.5, 0.5, 1 )
                                                                , new gml.Vec4( 0, 0, 0, 1 )
                                                                , 16 ) ) );
-    testScene.addLight( new PointLight( new gml.Vec4( 0, 0, 100, 1 ), new gml.Vec4( 1.0, 1.0, 1.0, 1.0 ) ) );
+
+    testScene.addLight( new PointLight( new gml.Vec4( 0, 50, 100, 1 ), new gml.Vec4( 1.0, 1.0, 1.0, 1.0 ) ) );
   }
 }

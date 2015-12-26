@@ -1,5 +1,6 @@
 enum SHADERTYPE {
   SIMPLE_VERTEX,
+  LAMBERT_FRAGMENT,
   BLINN_PHONG_FRAGMENT,
   UNLIT_FRAGMENT,
   DEBUG_VERTEX,
@@ -36,6 +37,7 @@ class ShaderRepository {
     this.asyncLoadShader( "basic.vert"       , SHADERTYPE.SIMPLE_VERTEX        , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "debug.vert"       , SHADERTYPE.DEBUG_VERTEX         , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "unlit.frag"       , SHADERTYPE.UNLIT_FRAGMENT       , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "lambert.frag"     , SHADERTYPE.LAMBERT_FRAGMENT     , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "blinn-phong.frag" , SHADERTYPE.BLINN_PHONG_FRAGMENT , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "debug.frag"       , SHADERTYPE.DEBUG_FRAGMENT       , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "oren-nayar.frag"  , SHADERTYPE.OREN_NAYAR_FRAGMENT  , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
@@ -115,6 +117,7 @@ class Renderer {
   indexBuffer: WebGLBuffer;
 
   // shader programs
+  lambertProgram: WebGLProgram;
   phongProgram: WebGLProgram;
   debugProgram: WebGLProgram;
   orenNayarProgram: WebGLProgram;
@@ -155,6 +158,12 @@ class Renderer {
     this.phongProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source, sr.files[ SHADERTYPE.BLINN_PHONG_FRAGMENT ].source );
     if ( this.phongProgram == null ) {
       alert( "Phong shader compilation failed. Please check the log for details." );
+      success = false;
+    }
+
+    this.lambertProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source, sr.files[ SHADERTYPE.LAMBERT_FRAGMENT ].source );
+    if ( this.lambertProgram == null ) {
+      alert( "Lambert shader compilation failed. Please check the log for details." );
       success = false;
     }
 
@@ -316,6 +325,15 @@ class Renderer {
               let orennayar = <OrenNayarMaterial> p.material;
               gl.uniform4fv( this.uMaterial.diffuse, orennayar.diffuse.v );
               gl.uniform1f ( this.uMaterial.roughness, orennayar.roughness );
+            } else if ( p.material instanceof LambertMaterial ) {
+              if ( this.currentProgram != this.lambertProgram ) {
+                gl.useProgram( this.lambertProgram );
+                this.cacheLitShaderProgramLocations( this.lambertProgram );
+                this.currentProgram = this.lambertProgram;
+              }
+
+              let lambert = <LambertMaterial> p.material;
+              gl.uniform4fv( this.uMaterial.diffuse, lambert.diffuse.v );
             }
 
             scene.lights.forEach( ( l, i ) => {
