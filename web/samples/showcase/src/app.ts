@@ -95,16 +95,23 @@ function StartApp() {
     testScene.addRenderable( new Sphere( 1, new gml.Vec4( -4, 0, 0, 1 ), new LambertMaterial( new gml.Vec4( 0.5, 0.5, 0.5, 1 ) ) ) );
 
     // sphere 1, Oren-Nayar with some roughness
-    testScene.addRenderable( new Sphere( 1, new gml.Vec4( 0, 0, 0, 1 ), new OrenNayarMaterial( new gml.Vec4( 0.5, 0.5, 0.5, 1 ), 0.3 ) ) );
+    testScene.addRenderable( new Sphere( 1, new gml.Vec4( -1.33333, 0, 0, 1 ), new OrenNayarMaterial( new gml.Vec4( 0.5, 0.5, 0.5, 1 ), 0.3 ) ) );
 
-    // sphere 2, standard blinn-phong
+    // sphere 2, good old Blinn-Phong
     testScene.addRenderable( new Sphere( 1
-                                       , new gml.Vec4( 4, 0, 0, 1 )
+                                       , new gml.Vec4( 1.33333, 0, 0, 1 )
                                        , new BlinnPhongMaterial( new gml.Vec4( 0, 0, 0, 1 )
                                                                , new gml.Vec4( 0.5, 0.5, 0.5, 1 )
                                                                , new gml.Vec4( 0.5, 0.5, 0.5, 1 )
                                                                , new gml.Vec4( 0, 0, 0, 1 )
                                                                , 16 ) ) );
+    // sphere 2, Cook-Torrance
+    testScene.addRenderable( new Sphere( 1
+                                       , new gml.Vec4( 4, 0, 0, 1 )
+                                       , new CookTorranceMaterial( new gml.Vec4( 0.5, 0.5, 0.5, 1 )
+                                                                 , new gml.Vec4( 0.5, 0.5, 0.5, 1 )
+                                                                 , 0.5
+                                                                 , 1.385 ) ) );
 
     testScene.addLight( new PointLight( new gml.Vec4( 0, 50, 100, 1 ), new gml.Vec4( 1.0, 1.0, 1.0, 1.0 ) ) );
   }

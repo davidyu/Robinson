@@ -183,7 +183,7 @@ class Renderer {
       success = false;
     }
 
-    this.cookTorranceProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source, sr.files[ SHADERTYPE.OREN_NAYAR_FRAGMENT ].source );
+    this.cookTorranceProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source, sr.files[ SHADERTYPE.COOK_TORRANCE_FRAGMENT ].source );
     if ( this.cookTorranceProgram == null ) {
       alert( "Cook-Torrance shader compilation failed. Please check the log for details." );
       success = false;

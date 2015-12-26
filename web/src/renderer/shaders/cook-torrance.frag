@@ -48,26 +48,23 @@ void main( void ) {
         if ( light.position.w == 0.0 ) lightdir = normalize( light.position.xyz );
         else                           lightdir = normalize( light.position.xyz / light.position.w - vPosition.xyz );
 
+        vec3 halfv = normalize( view + lightdir );
+
+        float HdotN = dot( halfv, normal );
         float VdotN = dot( view, normal );
         float LdotN = dot( lightdir, normal );
+        float VdotH = dot( view, halfv );
 
-        float gamma = dot( view - normal * VdotN
-                         , lightdir - normal * LdotN );
+        float geo = min( 1.0, min( ( 2.0 * HdotN * VdotN ) / VdotH, ( 2.0 * HdotN * LdotN ) / VdotH ) );
 
+        float HdotN2 = HdotN * HdotN;
         float rsq = mat.roughness * mat.roughness;
+        float rough = ( 1.0 / ( 4.0 * rsq * pow( HdotN, 4.0 ) ) ) * exp( ( HdotN2 - 1.0 )  / ( rsq * HdotN2 ) );
 
-        float A = 1.0 - 0.5 * ( rsq / ( rsq + 0.57 ) );
-        float B = 0.45 * ( rsq / ( rsq + 0.09 ) );
+        float fresnel = pow( 1.0 - VdotH, 5.0 ) * ( 1.0 - mat.fresnel ) + mat.fresnel;
+        float specular = ( fresnel * geo * rough ) / ( VdotN * LdotN );
 
-        float term1 = acos( VdotN );
-        float term2 = acos( LdotN );
-
-        float alpha = max( term1, term2 );
-        float beta = min( term1, term2 );
-
-        float C = sin( alpha ) * tan( beta );
-
-        color += mat.diffuse * light.color * max( LdotN, 0.0 ) * ( A + B * max( 0.0, gamma ) * C );
+        color += ( ( mat.specular * specular ) + mat.diffuse ) * light.color * max( LdotN, 0.0 );
     }
 
     gl_FragColor = pow( color, vec4( 1.0 / screenGamma ) );
