@@ -1,10 +1,10 @@
 enum SHADERTYPE {
   SIMPLE_VERTEX,
-  BLINNPHONG_FRAGMENT,
+  BLINN_PHONG_FRAGMENT,
   UNLIT_FRAGMENT,
   DEBUG_VERTEX,
   DEBUG_FRAGMENT,
-  PBS_FRAGMENT,
+  OREN_NAYAR_FRAGMENT,
 }
 
 class ShaderFile {
@@ -33,12 +33,12 @@ class ShaderRepository {
   }
 
   loadShaders() {
-    this.asyncLoadShader( "basic.vert" , SHADERTYPE.SIMPLE_VERTEX       , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "debug.vert" , SHADERTYPE.DEBUG_VERTEX        , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "unlit.frag" , SHADERTYPE.UNLIT_FRAGMENT      , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "lit.frag"   , SHADERTYPE.BLINNPHONG_FRAGMENT , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "debug.frag" , SHADERTYPE.DEBUG_FRAGMENT      , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "pbs.frag"   , SHADERTYPE.PBS_FRAGMENT        , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "basic.vert"       , SHADERTYPE.SIMPLE_VERTEX        , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "debug.vert"       , SHADERTYPE.DEBUG_VERTEX         , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "unlit.frag"       , SHADERTYPE.UNLIT_FRAGMENT       , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "blinn-phong.frag" , SHADERTYPE.BLINN_PHONG_FRAGMENT , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "debug.frag"       , SHADERTYPE.DEBUG_FRAGMENT       , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "oren-nayar.frag"  , SHADERTYPE.OREN_NAYAR_FRAGMENT  , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
   }
 
   asyncLoadShader( name: string, stype: SHADERTYPE, loaded: ( stype: SHADERTYPE, contents: string ) => void ) {
@@ -152,7 +152,7 @@ class Renderer {
     }
 
     // compile phong program
-    this.phongProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source, sr.files[ SHADERTYPE.BLINNPHONG_FRAGMENT ].source );
+    this.phongProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source, sr.files[ SHADERTYPE.BLINN_PHONG_FRAGMENT ].source );
     if ( this.phongProgram == null ) {
       alert( "Phong shader compilation failed. Please check the log for details." );
       success = false;
@@ -164,7 +164,7 @@ class Renderer {
       success = false;
     }
 
-    this.orenNayarProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source, sr.files[ SHADERTYPE.PBS_FRAGMENT ].source );
+    this.orenNayarProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source, sr.files[ SHADERTYPE.OREN_NAYAR_FRAGMENT ].source );
     if ( this.orenNayarProgram == null ) {
       alert( "Oren-Nayar shader compilation failed. Please check the log for details." );
       success = false;
