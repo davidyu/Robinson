@@ -109,6 +109,7 @@ class ShaderLightProperties {
   position: WebGLUniformLocation;
   color: WebGLUniformLocation;
   enabled: WebGLUniformLocation;
+  radius: WebGLUniformLocation;
 }
 
 class Renderer {
@@ -369,6 +370,7 @@ class Renderer {
               gl.uniform4fv( this.uLights[i].position, lightpos.v );
               gl.uniform4fv( this.uLights[i].color, l.color.v );
               gl.uniform1i( this.uLights[i].enabled, l.enabled ? 1 : 0 );
+              gl.uniform1f( this.uLights[i].radius, l.radius );
             } );
 
             gl.uniformMatrix4fv( this.uPerspective, false, perspective.m );

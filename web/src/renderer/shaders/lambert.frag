@@ -13,6 +13,7 @@ struct Light {
     vec4 position;
     vec4 color;
     bool enabled;
+    float radius;
 };
 
 uniform Light lights[10];
@@ -45,8 +46,14 @@ void main( void ) {
         if ( light.position.w == 0.0 ) lightdir = normalize( light.position.xyz );
         else                           lightdir = normalize( light.position.xyz / light.position.w - vPosition.xyz );
 
+        float lightdist = length( light.position.xyz / light.position.w - vPosition.xyz );
+        lightdist = max( lightdist - light.radius, 0.0 );
+
+        float d = lightdist / light.radius + 1.0;
+        float attenuation = 1.0 / ( d * d );
+
         // diffuse term
-        color += mat.diffuse * light.color * max( dot( normal, lightdir ), 0.0 );
+        color += attenuation * mat.diffuse * light.color * max( dot( normal, lightdir ), 0.0 );
     }
 
     gl_FragColor = pow( color, vec4( 1.0 / screenGamma ) );
