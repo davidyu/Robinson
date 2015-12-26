@@ -97,6 +97,7 @@ class ShaderMaterialProperties {
   specular: WebGLUniformLocation;
   emissive: WebGLUniformLocation;
   shininess: WebGLUniformLocation;
+  roughness: WebGLUniformLocation;
 }
 
 class ShaderLightProperties {
@@ -116,6 +117,7 @@ class Renderer {
   // shader programs
   phongProgram: WebGLProgram;
   debugProgram: WebGLProgram;
+  orenNayarProgram: WebGLProgram;
 
   // the currently enabled program
   currentProgram: WebGLProgram;
@@ -162,6 +164,12 @@ class Renderer {
       success = false;
     }
 
+    this.orenNayarProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source, sr.files[ SHADERTYPE.PBS_FRAGMENT ].source );
+    if ( this.orenNayarProgram == null ) {
+      alert( "Oren-Nayar shader compilation failed. Please check the log for details." );
+      success = false;
+    }
+
     this.dirty = true;
   }
 
@@ -190,6 +198,7 @@ class Renderer {
     this.uMaterial.specular = gl.getUniformLocation( program, "mat.specular" );
     this.uMaterial.emissive = gl.getUniformLocation( program, "mat.emissive" );
     this.uMaterial.shininess = gl.getUniformLocation( program, "mat.shininess" );
+    this.uMaterial.roughness = gl.getUniformLocation( program, "mat.roughness" );
 
     this.uLights = [];
     for ( var i = 0; i < 10; i++ ) {
@@ -297,6 +306,16 @@ class Renderer {
                 this.cacheLitShaderProgramLocations( this.debugProgram );
                 this.currentProgram = this.debugProgram;
               }
+            } else if ( p.material instanceof OrenNayarMaterial ) {
+              if ( this.currentProgram != this.orenNayarProgram ) {
+                gl.useProgram( this.orenNayarProgram );
+                this.cacheLitShaderProgramLocations( this.orenNayarProgram );
+                this.currentProgram = this.orenNayarProgram;
+              }
+
+              let orennayar = <OrenNayarMaterial> p.material;
+              gl.uniform4fv( this.uMaterial.diffuse, orennayar.diffuse.v );
+              gl.uniform1f ( this.uMaterial.roughness, orennayar.roughness );
             }
 
             scene.lights.forEach( ( l, i ) => {
