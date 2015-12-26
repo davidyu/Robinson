@@ -142,11 +142,16 @@ class Renderer {
 
   dirty: boolean;
 
-  constructor( viewportElement: HTMLCanvasElement, sr: ShaderRepository ) {
+  constructor( viewportElement: HTMLCanvasElement, sr: ShaderRepository, backgroundColor: gml.Vec4 = new gml.Vec4( 0, 0, 0, 1 ) ) {
     var gl = <WebGLRenderingContext>( viewportElement.getContext( "webgl" ) || viewportElement.getContext( "experimental-webgl" ) );
 
     gl.viewport( 0, 0, viewportElement.width, viewportElement.height );
-    gl.clearColor( 0.0, 0.0, 0.0, 1.0 );                         // Set clear color to black, fully opaque
+
+    gl.clearColor( backgroundColor.r
+                 , backgroundColor.g
+                 , backgroundColor.b
+                 , backgroundColor.a );
+
     gl.clearDepth( 1.0 );                                        // Clear everything
     gl.enable( gl.DEPTH_TEST );                                  // Enable depth testing
     gl.depthFunc( gl.LEQUAL );                                   // Near things obscure far things

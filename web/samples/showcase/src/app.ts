@@ -19,7 +19,7 @@ class ShowcaseApp {
   dirty: boolean;
 
   constructor( params: AppParams, shaderRepo: ShaderRepository ) {
-    this.renderer = new Renderer( params.vp, shaderRepo );
+    this.renderer = new Renderer( params.vp, shaderRepo, new gml.Vec4( 0.8, 0.8, 0.8, 1 ) );
     this.orbitCenter = params.orbitCenter;
     this.orbitDistance = params.orbitDistance;
     this.yaw = gml.fromDegrees( 0 );
@@ -110,7 +110,7 @@ function StartApp() {
                                        , new gml.Vec4( 4, 0, 0, 1 )
                                        , new CookTorranceMaterial( new gml.Vec4( 0.5, 0.5, 0.5, 1 )
                                                                  , new gml.Vec4( 0.5, 0.5, 0.5, 1 )
-                                                                 , 0.5
+                                                                 , 0.2
                                                                  , 1.385 ) ) );
 
     testScene.addLight( new PointLight( new gml.Vec4( 0, 50, 100, 1 ), new gml.Vec4( 1.0, 1.0, 1.0, 1.0 ) ) );
