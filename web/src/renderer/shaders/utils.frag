@@ -3,7 +3,12 @@ precision mediump float;
 float attenuate( float distance, float radius ) {
     distance = max( distance - radius, 0.0 );
     float d = distance / radius + 1.0;
-    return 1.0 / ( d * d );
+
+    // attenuation cutoff to avoid unlimited light influence
+    // see https://imdoingitwrong.wordpress.com/2011/01/31/light-attenuation/
+    float unbounded = 1.0 / ( d * d );
+    const float cutoff = 0.001;
+    return max( ( unbounded - cutoff ) / ( 1.0 - cutoff ), 0.0 );
 }
 
 vec4 degamma( vec4 linear ) {
