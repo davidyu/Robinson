@@ -134,7 +134,7 @@ class Renderer {
   currentProgram: WebGLProgram;
 
   // shadow frame buffer
-  shadowTexture: WebGLTexture;
+  shadowDepthTexture: WebGLTexture;
   shadowFramebuffer: WebGLFramebuffer;
 
   aVertexPosition: number;
@@ -151,7 +151,7 @@ class Renderer {
   dirty: boolean;
 
   constructor( viewportElement: HTMLCanvasElement, sr: ShaderRepository, backgroundColor: gml.Vec4 = new gml.Vec4( 0, 0, 0, 1 ) ) {
-    var gl = <WebGLRenderingContext>( viewportElement.getContext( "webgl" ) || viewportElement.getContext( "experimental-webgl" ) );
+    var gl = <WebGLRenderingContext>( viewportElement.getContext( "experimental-webgl" ) );
 
     gl.viewport( 0, 0, viewportElement.width, viewportElement.height );
 
@@ -209,15 +209,28 @@ class Renderer {
 
     // initialize shadowmap textures
     {
+      console.log( gl.getExtension( "WEBGL_depth_texture" ) );
+
+      let size = 64;
+
       this.shadowFramebuffer = gl.createFramebuffer();
       gl.bindFramebuffer( gl.FRAMEBUFFER, this.shadowFramebuffer );
 
-      this.shadowTexture = gl.createTexture();
-      gl.bindTexture( gl.TEXTURE_2D, this.shadowTexture );
-      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
-      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST );
+      let shadowColorTexture = gl.createTexture();
+      gl.bindTexture( gl.TEXTURE_2D, shadowColorTexture );
+      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
+      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
+      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
+      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
+      gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, null );
 
-      gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, 64, 64, 0, gl.RGBA, gl.UNSIGNED_BYTE, null );
+      this.shadowDepthTexture = gl.createTexture();
+      gl.bindTexture( gl.TEXTURE_2D, this.shadowDepthTexture );
+      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
+      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
+      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
+      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
+      gl.texImage2D( gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, size, size, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null );
     }
 
     this.dirty = true;
