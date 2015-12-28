@@ -110,8 +110,8 @@ function StartApp() {
                                        , new gml.Vec4( 4, 0, 0, 1 )
                                        , new CookTorranceMaterial( new gml.Vec4( 0.5, 0.5, 0.5, 1 )
                                                                  , new gml.Vec4( 0.5, 0.5, 0.5, 1 )
-                                                                 , 0.2
-                                                                 , 1.385 ) ) );
+                                                                 , 0.7
+                                                                 , 1.586 ) ) );
 
     testScene.addLight( new PointLight( new gml.Vec4( 0, 5, 10, 1 ), new gml.Vec4( 1.0, 1.0, 1.0, 1.0 ), 10 ) );
   }

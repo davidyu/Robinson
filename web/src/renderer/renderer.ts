@@ -128,9 +128,14 @@ class Renderer {
   debugProgram: WebGLProgram;
   orenNayarProgram: WebGLProgram;
   cookTorranceProgram: WebGLProgram;
+  shadowmapProgram: WebGLProgram;
 
   // the currently enabled program
   currentProgram: WebGLProgram;
+
+  // shadow frame buffer
+  shadowTexture: WebGLTexture;
+  shadowFramebuffer: WebGLFramebuffer;
 
   aVertexPosition: number;
   aVertexNormal: number;
@@ -200,6 +205,19 @@ class Renderer {
     if ( this.cookTorranceProgram == null ) {
       alert( "Cook-Torrance shader compilation failed. Please check the log for details." );
       success = false;
+    }
+
+    // initialize shadowmap textures
+    {
+      this.shadowFramebuffer = gl.createFramebuffer();
+      gl.bindFramebuffer( gl.FRAMEBUFFER, this.shadowFramebuffer );
+
+      this.shadowTexture = gl.createTexture();
+      gl.bindTexture( gl.TEXTURE_2D, this.shadowTexture );
+      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST );
+
+      gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, 64, 64, 0, gl.RGBA, gl.UNSIGNED_BYTE, null );
     }
 
     this.dirty = true;
@@ -320,6 +338,13 @@ class Renderer {
 
           // for each renderable, set up shader and shader parameters
           // lights, and buffers
+          //
+          // render shadow map
+
+          // render to screen
+          gl.bindFramebuffer( gl.FRAMEBUFFER, null );
+          gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+
           scene.renderables.forEach( ( p, i ) => {
             if ( p.material instanceof BlinnPhongMaterial ) {
               if ( this.currentProgram != this.phongProgram ) {
