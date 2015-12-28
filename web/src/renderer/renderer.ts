@@ -334,6 +334,98 @@ class Renderer {
     }
   }
 
+  renderScene( gl: WebGLRenderingContext, scene: Scene, mvStack: gml.Mat4[] ) {
+
+    let perspective = gml.makePerspective( gml.fromDegrees( 45 ), 640.0/480.0, 0.1, 100.0 );
+
+    scene.renderables.forEach( ( p, i ) => {
+      if ( p.material instanceof BlinnPhongMaterial ) {
+        if ( this.currentProgram != this.phongProgram ) {
+          gl.useProgram( this.phongProgram );
+          this.cacheLitShaderProgramLocations( this.phongProgram );
+          this.currentProgram = this.phongProgram;
+        }
+
+        let blinnphong = <BlinnPhongMaterial> p.material;
+        gl.uniform4fv( this.uMaterial.diffuse, blinnphong.diffuse.v );
+        gl.uniform4fv( this.uMaterial.ambient, blinnphong.ambient.v );
+        gl.uniform4fv( this.uMaterial.specular, blinnphong.specular.v );
+        gl.uniform4fv( this.uMaterial.emissive, blinnphong.emissive.v );
+        gl.uniform1f ( this.uMaterial.shininess, blinnphong.shininess );
+      } else if ( p.material instanceof DebugMaterial ) {
+        if ( this.currentProgram != this.debugProgram ) {
+          gl.useProgram( this.debugProgram );
+          this.cacheLitShaderProgramLocations( this.debugProgram );
+          this.currentProgram = this.debugProgram;
+        }
+      } else if ( p.material instanceof OrenNayarMaterial ) {
+        if ( this.currentProgram != this.orenNayarProgram ) {
+          gl.useProgram( this.orenNayarProgram );
+          this.cacheLitShaderProgramLocations( this.orenNayarProgram );
+          this.currentProgram = this.orenNayarProgram;
+        }
+
+        let orennayar = <OrenNayarMaterial> p.material;
+        gl.uniform4fv( this.uMaterial.diffuse, orennayar.diffuse.v );
+        gl.uniform1f ( this.uMaterial.roughness, orennayar.roughness );
+      } else if ( p.material instanceof LambertMaterial ) {
+        if ( this.currentProgram != this.lambertProgram ) {
+          gl.useProgram( this.lambertProgram );
+          this.cacheLitShaderProgramLocations( this.lambertProgram );
+          this.currentProgram = this.lambertProgram;
+        }
+
+        let lambert = <LambertMaterial> p.material;
+        gl.uniform4fv( this.uMaterial.diffuse, lambert.diffuse.v );
+      } else if ( p.material instanceof CookTorranceMaterial ) {
+        if ( this.currentProgram != this.cookTorranceProgram ) {
+          gl.useProgram( this.cookTorranceProgram );
+          this.cacheLitShaderProgramLocations( this.cookTorranceProgram );
+          this.currentProgram = this.cookTorranceProgram;
+        }
+
+        let cooktorrance = <CookTorranceMaterial> p.material;
+        gl.uniform4fv( this.uMaterial.diffuse, cooktorrance.diffuse.v );
+        gl.uniform4fv( this.uMaterial.specular, cooktorrance.specular.v );
+        gl.uniform1f ( this.uMaterial.roughness, cooktorrance.roughness );
+        gl.uniform1f ( this.uMaterial.fresnel, cooktorrance.fresnel );
+      }
+
+      scene.lights.forEach( ( l, i ) => {
+        let lightpos = mvStack[ mvStack.length - 1 ].transform( l.position );
+        gl.uniform4fv( this.uLights[i].position, lightpos.v );
+        gl.uniform4fv( this.uLights[i].color, l.color.v );
+        gl.uniform1i( this.uLights[i].enabled, l.enabled ? 1 : 0 );
+        gl.uniform1f( this.uLights[i].radius, l.radius );
+      } );
+
+      gl.uniformMatrix4fv( this.uPerspective, false, perspective.m );
+
+      let primitiveModelView = mvStack[ mvStack.length - 1 ].multiply( p.transform );
+      gl.uniformMatrix4fv( this.uModelView, false, primitiveModelView.m );
+      gl.uniformMatrix4fv( this.uModelToWorld, false, p.transform.m );
+
+      // the normal matrix is defined as the upper 3x3 block of transpose( inverse( model-view ) )
+      let normalMVMatrix = primitiveModelView.invert().transpose().mat3;
+      gl.uniformMatrix3fv( this.uNormalModelView, false, normalMVMatrix.m );
+
+      let normalWorldMatrix = p.transform.invert().transpose().mat3;
+      gl.uniformMatrix3fv( this.uNormalWorld, false, normalWorldMatrix.m );
+
+      gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
+      gl.bufferData( gl.ARRAY_BUFFER, p.renderData.vertices, gl.STATIC_DRAW );
+      gl.vertexAttribPointer( this.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
+
+      gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
+      gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, p.renderData.indices, gl.STATIC_DRAW );
+      gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexNormalBuffer );
+      gl.bufferData( gl.ARRAY_BUFFER, p.renderData.normals, gl.STATIC_DRAW );
+      gl.vertexAttribPointer( this.aVertexNormal, 3, gl.FLOAT, false, 0, 0 );
+
+      gl.drawElements( gl.TRIANGLES, p.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
+    } );
+  }
+
   render() {
     var gl = this.context;
     if ( gl ) {
@@ -344,10 +436,7 @@ class Renderer {
         var scene = Scene.getActiveScene();
         if ( scene ) {
 
-          // set up constant uniforms/matrix stacks/etc
-          let perspective = gml.makePerspective( gml.fromDegrees( 45 ), 640.0/480.0, 0.1, 100.0 );
-
-          var mvStack = [];
+          var mvStack: gml.Mat4[] = [];
           if ( this.camera != null ) {
             mvStack.push( this.camera.matrix );
           } else {
@@ -356,110 +445,22 @@ class Renderer {
 
           // for each renderable, set up shader and shader parameters
           // lights, and buffers. For now, only render a single shadow map.
+
           //
-          // SET UP SHADOW TEXTURE
+          // RENDER TO SHADOW TEXTURE
           gl.bindFramebuffer( gl.FRAMEBUFFER, this.shadowFramebuffer );
           gl.viewport( 0, 0, this.shadowmapSize, this.shadowmapSize );
           gl.colorMask( false, false, false, false ); // shadow map; no need to touch colors
           gl.clear( gl.DEPTH_BUFFER_BIT );
 
-          //
-          // RENDER TO SHADOW TEXTURE
+          // this.renderScene( gl, scene, mvStack );
 
           // 
           // RENDER TO SCREEN
           gl.bindFramebuffer( gl.FRAMEBUFFER, null );
-
-          //
-          // CLEAR
           gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
-          scene.renderables.forEach( ( p, i ) => {
-            if ( p.material instanceof BlinnPhongMaterial ) {
-              if ( this.currentProgram != this.phongProgram ) {
-                gl.useProgram( this.phongProgram );
-                this.cacheLitShaderProgramLocations( this.phongProgram );
-                this.currentProgram = this.phongProgram;
-              }
-
-              let blinnphong = <BlinnPhongMaterial> p.material;
-              gl.uniform4fv( this.uMaterial.diffuse, blinnphong.diffuse.v );
-              gl.uniform4fv( this.uMaterial.ambient, blinnphong.ambient.v );
-              gl.uniform4fv( this.uMaterial.specular, blinnphong.specular.v );
-              gl.uniform4fv( this.uMaterial.emissive, blinnphong.emissive.v );
-              gl.uniform1f ( this.uMaterial.shininess, blinnphong.shininess );
-            } else if ( p.material instanceof DebugMaterial ) {
-              if ( this.currentProgram != this.debugProgram ) {
-                gl.useProgram( this.debugProgram );
-                this.cacheLitShaderProgramLocations( this.debugProgram );
-                this.currentProgram = this.debugProgram;
-              }
-            } else if ( p.material instanceof OrenNayarMaterial ) {
-              if ( this.currentProgram != this.orenNayarProgram ) {
-                gl.useProgram( this.orenNayarProgram );
-                this.cacheLitShaderProgramLocations( this.orenNayarProgram );
-                this.currentProgram = this.orenNayarProgram;
-              }
-
-              let orennayar = <OrenNayarMaterial> p.material;
-              gl.uniform4fv( this.uMaterial.diffuse, orennayar.diffuse.v );
-              gl.uniform1f ( this.uMaterial.roughness, orennayar.roughness );
-            } else if ( p.material instanceof LambertMaterial ) {
-              if ( this.currentProgram != this.lambertProgram ) {
-                gl.useProgram( this.lambertProgram );
-                this.cacheLitShaderProgramLocations( this.lambertProgram );
-                this.currentProgram = this.lambertProgram;
-              }
-
-              let lambert = <LambertMaterial> p.material;
-              gl.uniform4fv( this.uMaterial.diffuse, lambert.diffuse.v );
-            } else if ( p.material instanceof CookTorranceMaterial ) {
-              if ( this.currentProgram != this.cookTorranceProgram ) {
-                gl.useProgram( this.cookTorranceProgram );
-                this.cacheLitShaderProgramLocations( this.cookTorranceProgram );
-                this.currentProgram = this.cookTorranceProgram;
-              }
-
-              let cooktorrance = <CookTorranceMaterial> p.material;
-              gl.uniform4fv( this.uMaterial.diffuse, cooktorrance.diffuse.v );
-              gl.uniform4fv( this.uMaterial.specular, cooktorrance.specular.v );
-              gl.uniform1f ( this.uMaterial.roughness, cooktorrance.roughness );
-              gl.uniform1f ( this.uMaterial.fresnel, cooktorrance.fresnel );
-            }
-
-            scene.lights.forEach( ( l, i ) => {
-              let lightpos = mvStack[ mvStack.length - 1 ].transform( l.position );
-              gl.uniform4fv( this.uLights[i].position, lightpos.v );
-              gl.uniform4fv( this.uLights[i].color, l.color.v );
-              gl.uniform1i( this.uLights[i].enabled, l.enabled ? 1 : 0 );
-              gl.uniform1f( this.uLights[i].radius, l.radius );
-            } );
-
-            gl.uniformMatrix4fv( this.uPerspective, false, perspective.m );
-
-            let primitiveModelView = mvStack[ mvStack.length - 1 ].multiply( p.transform );
-            gl.uniformMatrix4fv( this.uModelView, false, primitiveModelView.m );
-            gl.uniformMatrix4fv( this.uModelToWorld, false, p.transform.m );
-
-            // the normal matrix is defined as the upper 3x3 block of transpose( inverse( model-view ) )
-            let normalMVMatrix = primitiveModelView.invert().transpose().mat3;
-            gl.uniformMatrix3fv( this.uNormalModelView, false, normalMVMatrix.m );
-
-            let normalWorldMatrix = p.transform.invert().transpose().mat3;
-            gl.uniformMatrix3fv( this.uNormalWorld, false, normalWorldMatrix.m );
-
-            gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
-            gl.bufferData( gl.ARRAY_BUFFER, p.renderData.vertices, gl.STATIC_DRAW );
-            gl.vertexAttribPointer( this.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
-
-            gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
-            gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, p.renderData.indices, gl.STATIC_DRAW );
-            gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexNormalBuffer );
-            gl.bufferData( gl.ARRAY_BUFFER, p.renderData.normals, gl.STATIC_DRAW );
-            gl.vertexAttribPointer( this.aVertexNormal, 3, gl.FLOAT, false, 0, 0 );
-
-            gl.drawElements( gl.TRIANGLES, p.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
-          } );
+          this.renderScene( gl, scene, mvStack );
         }
 
         this.dirty = false;
