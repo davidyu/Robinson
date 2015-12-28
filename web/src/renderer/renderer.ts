@@ -137,6 +137,7 @@ class Renderer {
   depthTextureExtension;
   shadowDepthTexture: WebGLTexture;
   shadowFramebuffer: WebGLFramebuffer;
+  shadowmapSize: number;
 
   aVertexPosition: number;
   aVertexNormal: number;
@@ -233,11 +234,12 @@ class Renderer {
       gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
       gl.texImage2D( gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, size, size, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null );
 
-
       this.shadowFramebuffer = gl.createFramebuffer();
       gl.bindFramebuffer( gl.FRAMEBUFFER, this.shadowFramebuffer );
       gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, shadowColorTexture, 0 );
       gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.shadowDepthTexture, 0 );
+
+      this.shadowmapSize = size;
     }
 
     this.dirty = true;
@@ -338,10 +340,6 @@ class Renderer {
       if ( this.dirty ) {
 
         //
-        // CLEAR
-        gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
-
-        //
         // DRAW
         var scene = Scene.getActiveScene();
         if ( scene ) {
@@ -357,12 +355,23 @@ class Renderer {
           }
 
           // for each renderable, set up shader and shader parameters
-          // lights, and buffers
+          // lights, and buffers. For now, only render a single shadow map.
           //
-          // render shadow map
+          // SET UP SHADOW TEXTURE
+          gl.bindFramebuffer( gl.FRAMEBUFFER, this.shadowFramebuffer );
+          gl.viewport( 0, 0, this.shadowmapSize, this.shadowmapSize );
+          gl.colorMask( false, false, false, false ); // shadow map; no need to touch colors
+          gl.clear( gl.DEPTH_BUFFER_BIT );
 
-          // render to screen
+          //
+          // RENDER TO SHADOW TEXTURE
+
+          // 
+          // RENDER TO SCREEN
           gl.bindFramebuffer( gl.FRAMEBUFFER, null );
+
+          //
+          // CLEAR
           gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
           scene.renderables.forEach( ( p, i ) => {
