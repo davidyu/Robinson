@@ -115,6 +115,9 @@ class ShaderLightProperties {
 }
 
 class Renderer {
+  viewportW: number;
+  viewportH: number;
+
   camera: Camera;
   context: WebGLRenderingContext;
   vertexBuffer: WebGLBuffer;
@@ -156,6 +159,9 @@ class Renderer {
     var gl = <WebGLRenderingContext>( viewportElement.getContext( "experimental-webgl" ) );
 
     gl.viewport( 0, 0, viewportElement.width, viewportElement.height );
+    
+    this.viewportW = viewportElement.width;
+    this.viewportH = viewportElement.height;
 
     gl.clearColor( backgroundColor.r
                  , backgroundColor.g
@@ -453,11 +459,13 @@ class Renderer {
           gl.colorMask( false, false, false, false ); // shadow map; no need to touch colors
           gl.clear( gl.DEPTH_BUFFER_BIT );
 
-          // this.renderScene( gl, scene, mvStack );
+          this.renderScene( gl, scene, mvStack );
 
           // 
           // RENDER TO SCREEN
           gl.bindFramebuffer( gl.FRAMEBUFFER, null );
+          gl.viewport( 0, 0, this.viewportW, this.viewportH );
+          gl.colorMask( true, true, true, true );
           gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
           this.renderScene( gl, scene, mvStack );
