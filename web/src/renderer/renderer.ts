@@ -134,6 +134,7 @@ class Renderer {
   currentProgram: WebGLProgram;
 
   // shadow frame buffer
+  depthTextureExtension;
   shadowDepthTexture: WebGLTexture;
   shadowFramebuffer: WebGLFramebuffer;
 
@@ -209,7 +210,7 @@ class Renderer {
 
     // initialize shadowmap textures
     {
-      console.log( gl.getExtension( "WEBGL_depth_texture" ) );
+      this.depthTextureExtension = gl.getExtension( "WEBGL_depth_texture" );
 
       let size = 64;
 
