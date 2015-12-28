@@ -8,7 +8,12 @@ enum SHADERTYPE {
   OREN_NAYAR_FRAGMENT,
   COOK_TORRANCE_FRAGMENT,
   UTILS,
-}
+};
+
+enum PASS {
+  SHADOW,
+  STANDARD_FORWARD,
+};
 
 class ShaderFile {
   source: string;
@@ -340,7 +345,7 @@ class Renderer {
     }
   }
 
-  renderScene( gl: WebGLRenderingContext, scene: Scene, mvStack: gml.Mat4[] ) {
+  renderScene( gl: WebGLRenderingContext, scene: Scene, mvStack: gml.Mat4[], pass: PASS ) {
 
     let perspective = gml.makePerspective( gml.fromDegrees( 45 ), 640.0/480.0, 0.1, 100.0 );
 
@@ -458,8 +463,7 @@ class Renderer {
           gl.viewport( 0, 0, this.shadowmapSize, this.shadowmapSize );
           gl.colorMask( false, false, false, false ); // shadow map; no need to touch colors
           gl.clear( gl.DEPTH_BUFFER_BIT );
-
-          this.renderScene( gl, scene, mvStack );
+          this.renderScene( gl, scene, mvStack, PASS.SHADOW );
 
           // 
           // RENDER TO SCREEN
@@ -468,7 +472,7 @@ class Renderer {
           gl.colorMask( true, true, true, true );
           gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
-          this.renderScene( gl, scene, mvStack );
+          this.renderScene( gl, scene, mvStack, PASS.STANDARD_FORWARD );
         }
 
         this.dirty = false;
