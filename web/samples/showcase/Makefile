@@ -12,6 +12,7 @@ debug: folders shaders update page art
 	sh files.sh debug
 	tsc @files.txt --target ES5 --sourceMap --out $(DIST)/app.js
 	rm files.txt
+	if [ -f $(DIST)/robinson.js ]; then rm $(DIST)/robinson.js && touch $(DIST)/robinson.js; fi;
 
 clean:
 	rm -rf $(DIST)
