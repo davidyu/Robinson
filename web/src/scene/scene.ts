@@ -1,7 +1,18 @@
+class CubeMap {
+  PosX: HTMLImageElement;
+  NegX: HTMLImageElement;
+  PosY: HTMLImageElement;
+  NegY: HTMLImageElement;
+  PosZ: HTMLImageElement;
+  NegZ: HTMLImageElement;
+}
+
 class Scene {
   public renderables: Renderable[];
   public lights: Light[];
   private static activeScene;
+
+  environment: CubeMap;
 
   constructor() {
     this.renderables = [];
