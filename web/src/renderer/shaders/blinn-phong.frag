@@ -18,6 +18,9 @@ uniform highp mat4 uMVMatrix;          // model view matrix
 uniform highp mat4 uPMatrix;           // projection matrix
 uniform highp mat3 uNormalMVMatrix;    // inverse model view matrix
 uniform highp mat3 uNormalWorldMatrix; // inverse model matrix
+uniform highp mat3 uInverseViewMatrix;
+
+uniform samplerCube environment;
 
 // material properties
 struct Material {
@@ -34,6 +37,7 @@ void main( void ) {
     mediump vec4 color = mat.ambient + mat.emissive;
     mediump vec3 view = normalize( -( vPosition.xyz / vPosition.w ) );
     mediump vec3 normal = normalize( vNormal );
+    mediump vec3 reflected = uInverseViewMatrix * ( -reflect( view, normal ) );
 
     for ( int i = 0; i < 10; i++ ) {
         if ( !lights[i].enabled ) continue;
@@ -53,7 +57,11 @@ void main( void ) {
         // specular term
         // the half vector is exactly between the view vector and the light direction vector
         vec3 halfv = normalize( view + lightdir );
-        color += attenuation * mat.specular * light.color * pow( max( dot( normal, halfv ), 0.0 ), mat.shininess );
+
+        float specular = pow( max( dot( normal, halfv ), 0.0 ), mat.shininess );
+        color += attenuation * mat.specular * light.color * specular;
+
+        vec4 ibl = engamma( textureCube( environment, reflected ) );
     }
 
     gl_FragColor = degamma( color );

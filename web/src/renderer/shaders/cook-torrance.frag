@@ -67,9 +67,9 @@ void main( void ) {
         float specular = ( fresnel * geo * rough ) / ( VdotN * LdotN );
 
         float attenuation = attenuate( length( light.position.xyz / light.position.w - vPosition.xyz ), light.radius );
-
-        vec4 ibl = textureCube( environment, reflected );
         color += ( ( mat.specular * specular ) + mat.diffuse ) * attenuation * light.color * max( LdotN, 0.0 );
+
+        vec4 ibl = engamma( textureCube( environment, reflected ) );
     }
 
     gl_FragColor = degamma( color );

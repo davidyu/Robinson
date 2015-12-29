@@ -16,3 +16,8 @@ vec4 degamma( vec4 linear ) {
     return pow( linear, vec4( 1.0 / screenGamma ) );
 }
 
+vec4 engamma( vec4 c ) {
+    const float screenGamma = 2.2;
+    return pow( c, vec4( screenGamma ) );
+}
+
