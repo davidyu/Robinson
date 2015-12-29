@@ -42,10 +42,6 @@ class CubeMap {
   public get loaded(): boolean {
     return this.facesLoaded == 6;
   }
-
-  public get( ctype: CUBEMAPTYPE ) {
-    return this.faces[ ctype ];
-  }
 }
 
 class Scene {

@@ -154,6 +154,8 @@ class Renderer {
   uPerspective: WebGLUniformLocation;
   uNormalModelView: WebGLUniformLocation;
   uNormalWorld: WebGLUniformLocation;
+  uInverseView: WebGLUniformLocation;
+  uCameraPos: WebGLUniformLocation;
 
   uMaterial: ShaderMaterialProperties;
   uLights: ShaderLightProperties[];
@@ -274,6 +276,8 @@ class Renderer {
     this.uPerspective = gl.getUniformLocation( program, "uPMatrix" );
     this.uNormalModelView = gl.getUniformLocation( program, "uNormalMVMatrix" );
     this.uNormalWorld = gl.getUniformLocation( program, "uNormalWorldMatrix" );
+    this.uInverseView = gl.getUniformLocation( program, "uInverseViewMatrix" );
+    this.uCameraPos = gl.getUniformLocation( program, "cPosition_World" );
 
     this.uMaterial = new ShaderMaterialProperties();
     this.uMaterial.ambient = gl.getUniformLocation( program, "mat.ambient" );
@@ -412,6 +416,10 @@ class Renderer {
 
       gl.uniformMatrix4fv( this.uPerspective, false, perspective.m );
 
+      if ( this.camera != null ) {
+        gl.uniform4fv( this.uCameraPos, this.camera.matrix.translation.v );
+      }
+
       let primitiveModelView = mvStack[ mvStack.length - 1 ].multiply( p.transform );
       gl.uniformMatrix4fv( this.uModelView, false, primitiveModelView.m );
       gl.uniformMatrix4fv( this.uModelToWorld, false, p.transform.m );
@@ -422,6 +430,9 @@ class Renderer {
 
       let normalWorldMatrix = p.transform.invert().transpose().mat3;
       gl.uniformMatrix3fv( this.uNormalWorld, false, normalWorldMatrix.m );
+
+      let inverseViewMatrix = mvStack[ mvStack.length - 1 ].invert().mat3;
+      gl.uniformMatrix3fv( this.uInverseView, false, inverseViewMatrix.m );
 
       gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
       gl.bufferData( gl.ARRAY_BUFFER, p.renderData.vertices, gl.STATIC_DRAW );

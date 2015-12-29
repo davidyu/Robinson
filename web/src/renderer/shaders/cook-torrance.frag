@@ -1,8 +1,8 @@
 precision mediump float;
 
 // fs in/vs out
-varying mediump vec4 vPosition;  // vertex position in view space, no need to convert
-varying mediump vec3 vNormal;    // normal vector in model space, need to convert here
+varying mediump vec4 vPosition;        // vertex position in view space, no need to convert
+varying mediump vec3 vNormal;          // normal vector in model space, need to convert here
 
 struct Light {
     vec4 position;
@@ -13,11 +13,16 @@ struct Light {
 
 uniform Light lights[10];
 
+uniform mediump vec4 cPosition_World;  // camera in world space
+
 uniform highp mat4 uMMatrix;           // model matrix -> trasnforms to world space
 uniform highp mat4 uMVMatrix;          // model view matrix
 uniform highp mat4 uPMatrix;           // projection matrix
+uniform highp mat3 uNormalVMatrix;     // inverse view matrix
 uniform highp mat3 uNormalMVMatrix;    // inverse model view matrix
-uniform highp mat3 uNormalWorldMatrix; // inverse model matrix
+uniform highp mat3 uInverseViewMatrix; // inverse view matrix
+
+uniform samplerCube environment;
 
 // material properties
 struct Material {
@@ -33,6 +38,7 @@ void main( void ) {
     mediump vec4 color = vec4( 0, 0, 0, 1 );
     mediump vec3 view = normalize( -( vPosition.xyz / vPosition.w ) );
     mediump vec3 normal = normalize( vNormal );
+    mediump vec3 reflected = uInverseViewMatrix * ( -reflect( view, normal ) );
 
     for ( int i = 0; i < 10; i++ ) {
         if ( !lights[i].enabled ) continue;
@@ -62,6 +68,7 @@ void main( void ) {
 
         float attenuation = attenuate( length( light.position.xyz / light.position.w - vPosition.xyz ), light.radius );
 
+        vec4 ibl = textureCube( environment, reflected );
         color += ( ( mat.specular * specular ) + mat.diffuse ) * attenuation * light.color * max( LdotN, 0.0 );
     }
 
