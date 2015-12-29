@@ -89,7 +89,12 @@ function StartApp() {
 
     shaderRepo = new ShaderRepository( ( repo ) => { app = new ShowcaseApp( params, repo ); } );
 
-    environmentMap = new CubeMap( "./posx.jpg", "./negx.jpg", "./posy.jpg", "./negy.jpg", "./posz.jpg", "./negz.jpg" );
+    environmentMap = new CubeMap( "./posx.jpg"
+                                , "./negx.jpg"
+                                , "./posy.jpg"
+                                , "./negy.jpg"
+                                , "./posz.jpg"
+                                , "./negz.jpg" );
 
     var testScene = new Scene( environmentMap );
     Scene.setActiveScene( testScene );
