@@ -437,6 +437,12 @@ class Renderer {
     } );
   }
 
+  bindCubeMapFace( gl: WebGLRenderingContext, face: number, image: HTMLImageElement ) {
+    gl.texImage2D( face, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image );
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  }
+
   render() {
     var gl = this.context;
     if ( gl ) {
@@ -446,6 +452,23 @@ class Renderer {
         // DRAW
         var scene = Scene.getActiveScene();
         if ( scene ) {
+
+          //
+          // SET UP ENVIRONMENT MAP
+          let cubeMapTexture = null;
+          if ( scene.environment != null && scene.environment.loaded ) {
+            let cubeMapTexture = gl.createTexture();
+            gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapTexture );
+
+            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_X, scene.environment.faces[ CUBEMAPTYPE.POS_X ] );
+            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_X, scene.environment.faces[ CUBEMAPTYPE.NEG_X ] );
+            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, scene.environment.faces[ CUBEMAPTYPE.POS_Y ] );
+            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, scene.environment.faces[ CUBEMAPTYPE.NEG_Y ] );
+            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Z, scene.environment.faces[ CUBEMAPTYPE.POS_Z ] );
+            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, scene.environment.faces[ CUBEMAPTYPE.NEG_Z ] );
+
+            gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+          }
 
           var mvStack: gml.Mat4[] = [];
           if ( this.camera != null ) {

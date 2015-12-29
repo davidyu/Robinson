@@ -38,8 +38,13 @@ class CubeMap {
     this.facesLoaded++;
   }
 
-  finishedLoading(): boolean {
+  // returns true when all six faces of the cube map has been loaded
+  public get loaded(): boolean {
     return this.facesLoaded == 6;
+  }
+
+  public get( ctype: CUBEMAPTYPE ) {
+    return this.faces[ ctype ];
   }
 }
 
@@ -50,9 +55,10 @@ class Scene {
 
   environment: CubeMap;
 
-  constructor() {
+  constructor( environment: CubeMap ) {
     this.renderables = [];
     this.lights = [];
+    this.environment = environment;
   }
 
   public addRenderable( renderable: Renderable ) {

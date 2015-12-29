@@ -89,7 +89,7 @@ function StartOrbit() {
     shaderRepo = new ShaderRepository( ( repo ) => { app = new OrbitApp( params, repo ); } );
     environmentMap = new CubeMap( "./posx.jpg", "./negx.jpg", "./posy.jpg", "./negy.jpg", "./posz.jpg", "./negz.jpg" );
 
-    var testScene = new Scene()
+    var testScene = new Scene( environmentMap );
     Scene.setActiveScene( testScene );
     testScene.addRenderable( new Sphere( 1, gml.Vec4.origin, new BlinnPhongMaterial( new gml.Vec4( 0.1, 0.1, 0.1, 1 ), new gml.Vec4( 0.5, 0.5, 0.5, 1 ), new gml.Vec4( 0.5, 0.5, 0.5, 1 ), new gml.Vec4( 0, 0, 0, 1 ), 20.0 ) ) );
 
