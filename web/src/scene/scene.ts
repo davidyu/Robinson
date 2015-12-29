@@ -1,10 +1,44 @@
+enum CUBEMAPTYPE {
+  POS_X,
+  NEG_X,
+  POS_Y,
+  NEG_Y,
+  POS_Z,
+  NEG_Z,
+};
+
 class CubeMap {
-  PosX: HTMLImageElement;
-  NegX: HTMLImageElement;
-  PosY: HTMLImageElement;
-  NegY: HTMLImageElement;
-  PosZ: HTMLImageElement;
-  NegZ: HTMLImageElement;
+  faces: HTMLImageElement[];
+  facesLoaded: number;
+
+  constructor( px: string, nx: string, py: string, ny: string, pz: string, nz: string ) {
+
+    for ( var t in CUBEMAPTYPE ) {
+      if ( !isNaN( t ) ) {
+        this.faces[ t ] = new Image();
+      }
+    }
+
+    this.asyncLoadFace( px, CUBEMAPTYPE.POS_X );
+    this.asyncLoadFace( nx, CUBEMAPTYPE.NEG_X );
+    this.asyncLoadFace( py, CUBEMAPTYPE.POS_Y );
+    this.asyncLoadFace( ny, CUBEMAPTYPE.NEG_Y );
+    this.asyncLoadFace( pz, CUBEMAPTYPE.POS_Z );
+    this.asyncLoadFace( nz, CUBEMAPTYPE.NEG_Z );
+  }
+
+  asyncLoadFace( url: string, ctype: CUBEMAPTYPE ) {
+    this.faces[ ctype ].src = url;
+    this.faces[ ctype ].onload = () => { this.faceLoaded( ctype ); };
+  }
+
+  faceLoaded( ctype: CUBEMAPTYPE ) {
+    this.facesLoaded++;
+  }
+
+  finishedLoading(): boolean {
+    return this.facesLoaded == 6;
+  }
 }
 
 class Scene {
