@@ -511,7 +511,7 @@ class Renderer {
           //
           // SET UP ENVIRONMENT MAP
           let cubeMapTexture = null;
-          if ( scene.environment != null && scene.environment.loaded ) {
+          if ( scene.environment != null && scene.environment.loaded && scene.environment.cubeMapTexture == null ) {
             let cubeMapTexture = gl.createTexture();
             gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapTexture );
 
@@ -523,6 +523,8 @@ class Renderer {
             this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, scene.environment.faces[ CUBEMAPTYPE.NEG_Z ] );
 
             gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+
+            scene.environment.cubeMapTexture = cubeMapTexture;
           }
 
           var mvStack: gml.Mat4[] = [];
@@ -550,10 +552,10 @@ class Renderer {
           gl.colorMask( true, true, true, true );
           gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
-          // draw background
+          // draw environment map
           this.renderSceneEnvironment( gl, scene, mvStack );
-          
 
+          // draw scene
           gl.clear( gl.DEPTH_BUFFER_BIT );
           this.renderScene( gl, scene, mvStack, PASS.STANDARD_FORWARD );
         }

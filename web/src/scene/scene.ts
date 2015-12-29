@@ -10,10 +10,12 @@ enum CUBEMAPTYPE {
 class CubeMap {
   faces: HTMLImageElement[];
   facesLoaded: number;
+  cubeMapTexture: WebGLTexture;
 
   constructor( px: string, nx: string, py: string, ny: string, pz: string, nz: string ) {
     this.faces = [];
     this.facesLoaded = 0;
+    this.cubeMapTexture = null;
 
     for ( var t in CUBEMAPTYPE ) {
       if ( !isNaN( t ) ) {
