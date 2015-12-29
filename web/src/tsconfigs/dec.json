@@ -1,7 +1,0 @@
-{
-  "compilerOptions": {
-    "declaration": true,
-    "out": "../dist/Robinson.d.ts",
-    "target": "ES5"
-  }
-}

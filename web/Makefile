@@ -5,6 +5,9 @@ SRC=src
 TEST=test
 DIST=dist
 
+LIBFLAGS=--target ES5 --sourceMap --removeComments
+DECFLAGS=--target ES5 --declaration
+
 app: folders shaders
 	pushd $(SRC); find . -name "*.ts" -type f -not -path "*/dist/*" >src.txt; tsc @src.txt --target ES5 --sourceMap --out ../dist/app.js; rm src.txt; popd
 
@@ -28,5 +31,5 @@ update:
 	pushd $(SRC)/lib && sh update.sh && popd
 
 lib: shaders
-	pushd $(SRC); cp -r tsconfigs/lib.json tsconfig.json; tsc; popd
-	pushd $(SRC); cp -r tsconfigs/dec.json tsconfig.json; tsc; popd
+	pushd $(SRC); find . -name "*.ts" -type f -not -path "*/dist/*" >src.txt; tsc @src.txt $(LIBFLAGS) --out ../dist/Robinson.js; rm src.txt; popd
+	pushd $(SRC); find . -name "*.ts" -type f -not -path "*/dist/*" >src.txt; tsc @src.txt $(DECFLAGS) --out ../dist/Robinson.js; rm src.txt; popd
