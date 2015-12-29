@@ -8,6 +8,8 @@ enum SHADERTYPE {
   OREN_NAYAR_FRAGMENT,
   COOK_TORRANCE_FRAGMENT,
   UTILS,
+  SKYBOX_VERTEX,
+  SKYBOX_FRAG,
 };
 
 enum PASS {
@@ -50,6 +52,8 @@ class ShaderRepository {
     this.asyncLoadShader( "oren-nayar.frag"    , SHADERTYPE.OREN_NAYAR_FRAGMENT    , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "cook-torrance.frag" , SHADERTYPE.COOK_TORRANCE_FRAGMENT , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "utils.frag"         , SHADERTYPE.UTILS                  , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "skybox.vert"        , SHADERTYPE.SKYBOX_VERTEX          , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "skybox.frag"        , SHADERTYPE.SKYBOX_FRAG            , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
   }
 
   asyncLoadShader( name: string, stype: SHADERTYPE, loaded: ( stype: SHADERTYPE, contents: string ) => void ) {
@@ -137,6 +141,7 @@ class Renderer {
   orenNayarProgram: WebGLProgram;
   cookTorranceProgram: WebGLProgram;
   shadowmapProgram: WebGLProgram;
+  skyboxProgram: WebGLProgram;
 
   // the currently enabled program
   currentProgram: WebGLProgram;
@@ -219,6 +224,13 @@ class Renderer {
                                                         , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.COOK_TORRANCE_FRAGMENT ].source );
     if ( this.cookTorranceProgram == null ) {
       alert( "Cook-Torrance shader compilation failed. Please check the log for details." );
+      success = false;
+    }
+
+    this.skyboxProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SKYBOX_VERTEX ].source
+                                                  , sr.files[ SHADERTYPE.SKYBOX_FRAG ].source );
+    if ( this.skyboxProgram == null ) {
+      alert( "Skybox shader compilation failed. Please check the log for details." );
       success = false;
     }
 

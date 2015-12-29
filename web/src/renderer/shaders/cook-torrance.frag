@@ -18,9 +18,9 @@ uniform mediump vec4 cPosition_World;  // camera in world space
 uniform highp mat4 uMMatrix;           // model matrix -> trasnforms to world space
 uniform highp mat4 uMVMatrix;          // model view matrix
 uniform highp mat4 uPMatrix;           // projection matrix
-uniform highp mat3 uNormalVMatrix;     // inverse view matrix
-uniform highp mat3 uNormalMVMatrix;    // inverse model view matrix
-uniform highp mat3 uInverseViewMatrix; // inverse view matrix
+uniform highp mat3 uNormalVMatrix;     // inverse transpose of view matrix
+uniform highp mat3 uNormalMVMatrix;    // inverse transpose of model view matrix
+uniform highp mat3 uInverseViewMatrix; // inverse of view matrix
 
 uniform samplerCube environment;
 

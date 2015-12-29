@@ -7,7 +7,7 @@ uniform mediump vec4 cPosition_World;  // camera in world space
 
 uniform highp mat4 uMVMatrix;          // model view matrix
 uniform highp mat4 uPMatrix;           // projection matrix
-uniform highp mat3 uNormalMVMatrix;    // inverse model view matrix
+uniform highp mat3 uNormalMVMatrix;    // inverse transposed model view matrix
 
 varying mediump vec4 vPosition;
 varying mediump vec3 vNormal;
