@@ -1,5 +1,5 @@
 var shaderRepo: ShaderRepository = null; // global for debugging
-
+var environmentMap: CubeMap = null; 
 interface AppParams {
   vp : HTMLCanvasElement;
   orbitCenter: gml.Vec4;
@@ -87,6 +87,7 @@ function StartOrbit() {
     };
 
     shaderRepo = new ShaderRepository( ( repo ) => { app = new OrbitApp( params, repo ); } );
+    environmentMap = new CubeMap( "./posx.jpg", "./negx.jpg", "./posy.jpg", "./negy.jpg", "./posz.jpg", "./negz.jpg" );
 
     var testScene = new Scene()
     Scene.setActiveScene( testScene );

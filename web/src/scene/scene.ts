@@ -12,6 +12,8 @@ class CubeMap {
   facesLoaded: number;
 
   constructor( px: string, nx: string, py: string, ny: string, pz: string, nz: string ) {
+    this.faces = [];
+    this.facesLoaded = 0;
 
     for ( var t in CUBEMAPTYPE ) {
       if ( !isNaN( t ) ) {
