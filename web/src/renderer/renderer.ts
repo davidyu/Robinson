@@ -159,6 +159,7 @@ class Renderer {
   uPerspective: WebGLUniformLocation;
   uNormalModelView: WebGLUniformLocation;
   uNormalWorld: WebGLUniformLocation;
+  uInverseProjection: WebGLUniformLocation;
   uInverseView: WebGLUniformLocation;
   uCameraPos: WebGLUniformLocation;
 
@@ -281,13 +282,16 @@ class Renderer {
     gl.enableVertexAttribArray( this.aVertexPosition );
 
     this.aVertexNormal = gl.getAttribLocation( program, "aVertexNormal" );
-    gl.enableVertexAttribArray( this.aVertexNormal );
+    if ( this.aVertexNormal >= 0 ) {
+      gl.enableVertexAttribArray( this.aVertexNormal );
+    }
 
     this.uModelView = gl.getUniformLocation( program, "uMVMatrix" );
     this.uModelToWorld = gl.getUniformLocation( program, "uMMatrix" );
     this.uPerspective = gl.getUniformLocation( program, "uPMatrix" );
     this.uNormalModelView = gl.getUniformLocation( program, "uNormalMVMatrix" );
     this.uNormalWorld = gl.getUniformLocation( program, "uNormalWorldMatrix" );
+    this.uInverseProjection = gl.getUniformLocation( program, "uInverseProjectionMatrix" );
     this.uInverseView = gl.getUniformLocation( program, "uInverseViewMatrix" );
     this.uCameraPos = gl.getUniformLocation( program, "cPosition_World" );
 
@@ -359,6 +363,33 @@ class Renderer {
         }
       } );
     }
+  }
+
+  renderSceneEnvironment( gl: WebGLRenderingContext, scene: Scene, mvStack: gml.Mat4[] ) {
+    // TODO unhardcode me
+    let perspective = gml.makePerspective( gml.fromDegrees( 45 ), 640.0/480.0, 0.1, 100.0 );
+    gl.useProgram( this.skyboxProgram );
+
+    this.cacheLitShaderProgramLocations( this.skyboxProgram );
+    this.currentProgram = this.skyboxProgram;
+
+    let fullscreen = new Quad();
+    fullscreen.rebuildRenderData();
+
+    let inverseProjectionMatrix = perspective.invert();
+    gl.uniformMatrix4fv( this.uInverseProjection, false, inverseProjectionMatrix.m );
+
+    let inverseViewMatrix = mvStack[ mvStack.length - 1 ].invert().mat3;
+    gl.uniformMatrix3fv( this.uInverseView, false, inverseViewMatrix.m );
+    
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.vertices, gl.STATIC_DRAW );
+    gl.vertexAttribPointer( this.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
+
+    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
+    gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
+
+    gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
   }
 
   renderScene( gl: WebGLRenderingContext, scene: Scene, mvStack: gml.Mat4[], pass: PASS ) {
@@ -454,6 +485,7 @@ class Renderer {
       gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, p.renderData.indices, gl.STATIC_DRAW );
       gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexNormalBuffer );
       gl.bufferData( gl.ARRAY_BUFFER, p.renderData.normals, gl.STATIC_DRAW );
+
       gl.vertexAttribPointer( this.aVertexNormal, 3, gl.FLOAT, false, 0, 0 );
 
       gl.drawElements( gl.TRIANGLES, p.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
@@ -518,6 +550,11 @@ class Renderer {
           gl.colorMask( true, true, true, true );
           gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
+          // draw background
+          this.renderSceneEnvironment( gl, scene, mvStack );
+          
+
+          gl.clear( gl.DEPTH_BUFFER_BIT );
           this.renderScene( gl, scene, mvStack, PASS.STANDARD_FORWARD );
         }
 
