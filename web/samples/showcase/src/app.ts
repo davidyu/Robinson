@@ -95,14 +95,16 @@ function StartApp() {
                                 , "./posy.jpg"
                                 , "./negy.jpg"
                                 , "./posz.jpg"
-                                , "./negz.jpg" );
+                                , "./negz.jpg"
+                                , () => { app.dirty = true; } );
 
     irradianceMap = new CubeMap( "./irradiance_posx.jpg"
                                , "./irradiance_negx.jpg"
                                , "./irradiance_posy.jpg"
                                , "./irradiance_negy.jpg"
                                , "./irradiance_posz.jpg"
-                               , "./irradiance_negz.jpg" );
+                               , "./irradiance_negz.jpg"
+                               , () => { app.dirty = true; } );
 
     var testScene = new Scene( environmentMap, irradianceMap );
     Scene.setActiveScene( testScene );

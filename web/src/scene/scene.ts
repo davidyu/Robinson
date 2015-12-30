@@ -12,7 +12,7 @@ class CubeMap {
   facesLoaded: number;
   cubeMapTexture: WebGLTexture;
 
-  constructor( px: string, nx: string, py: string, ny: string, pz: string, nz: string ) {
+  constructor( px: string, nx: string, py: string, ny: string, pz: string, nz: string, finishedLoading: () => void = null ) {
     this.faces = [];
     this.facesLoaded = 0;
     this.cubeMapTexture = null;
@@ -23,21 +23,24 @@ class CubeMap {
       }
     }
 
-    this.asyncLoadFace( px, CUBEMAPTYPE.POS_X );
-    this.asyncLoadFace( nx, CUBEMAPTYPE.NEG_X );
-    this.asyncLoadFace( py, CUBEMAPTYPE.POS_Y );
-    this.asyncLoadFace( ny, CUBEMAPTYPE.NEG_Y );
-    this.asyncLoadFace( pz, CUBEMAPTYPE.POS_Z );
-    this.asyncLoadFace( nz, CUBEMAPTYPE.NEG_Z );
+    this.asyncLoadFace( px, CUBEMAPTYPE.POS_X, finishedLoading );
+    this.asyncLoadFace( nx, CUBEMAPTYPE.NEG_X, finishedLoading );
+    this.asyncLoadFace( py, CUBEMAPTYPE.POS_Y, finishedLoading );
+    this.asyncLoadFace( ny, CUBEMAPTYPE.NEG_Y, finishedLoading );
+    this.asyncLoadFace( pz, CUBEMAPTYPE.POS_Z, finishedLoading );
+    this.asyncLoadFace( nz, CUBEMAPTYPE.NEG_Z, finishedLoading );
   }
 
-  asyncLoadFace( url: string, ctype: CUBEMAPTYPE ) {
+  asyncLoadFace( url: string, ctype: CUBEMAPTYPE, finishedLoading: () => void ) {
     this.faces[ ctype ].src = url;
-    this.faces[ ctype ].onload = () => { this.faceLoaded( ctype ); };
+    this.faces[ ctype ].onload = () => { this.faceLoaded( ctype, finishedLoading ); };
   }
 
-  faceLoaded( ctype: CUBEMAPTYPE ) {
+  faceLoaded( ctype: CUBEMAPTYPE, finishedLoading: () => void ) {
     this.facesLoaded++;
+    if ( this.loaded ) {
+      finishedLoading();
+    }
   }
 
   // returns true when all six faces of the cube map has been loaded
