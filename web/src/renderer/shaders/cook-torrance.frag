@@ -25,7 +25,7 @@ uniform highp mat3 uInverseViewMatrix; // inverse of view matrix
 uniform samplerCube environment;
 uniform samplerCube irradiance;
 
-uniform float irradianceMipMaps;
+uniform float environmentMipMaps;
 
 // material properties
 struct Material {
@@ -75,7 +75,7 @@ void main( void ) {
 
     vec4 ibl_diffuse = engamma( textureCube( irradiance, reflected ) ) * mat.diffuse;
 
-    float lod = ( 1.0 - mat.roughness ) * irradianceMipMaps;
+    float lod = mat.roughness * environmentMipMaps;
     vec4 ibl_specular = engamma( textureCubeLodEXT( environment, reflected, lod ) ) * mat.specular;
 
     color += ibl_diffuse * mat.roughness + ibl_specular * ( 1.0 - mat.roughness );

@@ -166,7 +166,7 @@ class Renderer {
   uCameraPos: WebGLUniformLocation;
   uEnvMap: WebGLUniformLocation;
   uIrradianceMap: WebGLUniformLocation;
-  uIrradianceMipMaps: WebGLUniformLocation;
+  uEnvironmentMipMaps: WebGLUniformLocation;
 
   uMaterial: ShaderMaterialProperties;
   uLights: ShaderLightProperties[];
@@ -303,7 +303,7 @@ class Renderer {
     this.uCameraPos = gl.getUniformLocation( program, "cPosition_World" );
     this.uEnvMap = gl.getUniformLocation( program, "environment" );
     this.uIrradianceMap = gl.getUniformLocation( program, "irradiance" );
-    this.uIrradianceMipMaps = gl.getUniformLocation( program, "irradianceMipMaps" );
+    this.uEnvironmentMipMaps = gl.getUniformLocation( program, "irradianceMipMaps" );
 
     this.uMaterial = new ShaderMaterialProperties();
     this.uMaterial.ambient = gl.getUniformLocation( program, "mat.ambient" );
@@ -503,6 +503,8 @@ class Renderer {
       gl.vertexAttribPointer( this.aVertexNormal, 3, gl.FLOAT, false, 0, 0 );
 
       gl.uniform1i( this.uEnvMap, 0 );
+      gl.uniform1f( this.uEnvironmentMipMaps, 7 );
+
       gl.uniform1i( this.uIrradianceMap, 1 );
 
       gl.activeTexture( gl.TEXTURE0 );
@@ -517,8 +519,10 @@ class Renderer {
 
   bindCubeMapFace( gl: WebGLRenderingContext, face: number, image: HTMLImageElement ) {
     gl.texImage2D( face, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image );
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR );
+    gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
   }
 
   render() {
