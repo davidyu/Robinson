@@ -31,6 +31,7 @@ struct Material {
 
 uniform Material mat;
 
+uniform samplerCube environment;
 uniform samplerCube irradiance;
 
 void main( void ) {
@@ -62,8 +63,10 @@ void main( void ) {
         color += attenuation * mat.specular * light.color * specular;
     }
 
-    vec4 ibl_diffuse = engamma( textureCube( irradiance, reflected ) );
-    color += ibl_diffuse;
+    vec4 ibl_diffuse = engamma( textureCube( irradiance, reflected ) ) * mat.diffuse;
+    vec4 ibl_specular = engamma( textureCube( environment, reflected ) ) * mat.specular;
+
+    color += ibl_diffuse + ibl_specular;
 
     gl_FragColor = degamma( color );
 }

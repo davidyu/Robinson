@@ -70,7 +70,7 @@ void main( void ) {
         color += attenuation * mat.diffuse * light.color * max( LdotN, 0.0 ) * ( A + B * max( 0.0, gamma ) * C );
     }
 
-    vec4 ibl_diffuse = engamma( textureCube( irradiance, reflected ) );
+    vec4 ibl_diffuse = engamma( textureCube( irradiance, reflected ) ) * mat.diffuse;
     color += ibl_diffuse;
 
     gl_FragColor = degamma( color );

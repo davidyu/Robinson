@@ -41,4 +41,4 @@ folders:
 	mkdir -p $(DIST)/vendor
 
 art:
-	cp -rf art/* dist/
+	cp -rf art/*.jpg dist/
