@@ -127,6 +127,8 @@ class Renderer {
   viewportW: number;
   viewportH: number;
 
+  shaderLODExtension;
+
   camera: Camera;
   context: WebGLRenderingContext;
   vertexBuffer: WebGLBuffer;
@@ -269,6 +271,8 @@ class Renderer {
 
       this.shadowmapSize = size;
     }
+
+    this.shaderLODExtension = gl.getExtension( "EXT_shader_texture_lod" );
 
     this.dirty = true;
   }
