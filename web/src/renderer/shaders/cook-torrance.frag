@@ -42,6 +42,7 @@ void main( void ) {
     mediump vec3 view = normalize( -( vPosition.xyz / vPosition.w ) );
     mediump vec3 normal = normalize( vNormal );
     mediump vec3 reflected = uInverseViewMatrix * ( -reflect( view, normal ) );
+    float rsq = mat.roughness * mat.roughness;
 
     for ( int i = 0; i < 10; i++ ) {
         if ( !lights[i].enabled ) continue;
@@ -63,7 +64,6 @@ void main( void ) {
         float geo = min( 1.0, min( ( 2.0 * HdotN * VdotN ) / VdotH, ( 2.0 * HdotN * LdotN ) / VdotH ) );
 
         float HdotN2 = HdotN * HdotN;
-        float rsq = mat.roughness * mat.roughness;
         float rough = ( 1.0 / ( 4.0 * rsq * pow( HdotN, 4.0 ) ) ) * exp( ( HdotN2 - 1.0 )  / ( rsq * HdotN2 ) );
 
         float fresnel = pow( 1.0 - VdotH, 5.0 ) * ( 1.0 - mat.fresnel ) + mat.fresnel;

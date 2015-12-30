@@ -303,7 +303,7 @@ class Renderer {
     this.uCameraPos = gl.getUniformLocation( program, "cPosition_World" );
     this.uEnvMap = gl.getUniformLocation( program, "environment" );
     this.uIrradianceMap = gl.getUniformLocation( program, "irradiance" );
-    this.uEnvironmentMipMaps = gl.getUniformLocation( program, "irradianceMipMaps" );
+    this.uEnvironmentMipMaps = gl.getUniformLocation( program, "environmentMipMaps" );
 
     this.uMaterial = new ShaderMaterialProperties();
     this.uMaterial.ambient = gl.getUniformLocation( program, "mat.ambient" );

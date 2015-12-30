@@ -120,7 +120,7 @@ function StartApp() {
                                        , new gml.Vec4( -1.33333, 0, 0, 1 )
                                        , new CookTorranceMaterial( new gml.Vec4( 0.9, 0.9, 0.6, 1 )
                                                                  , new gml.Vec4( 0.9, 0.9, 0.6, 1 )
-                                                                 , 0.8
+                                                                 , 0.75
                                                                  , 1.53 ) ) );
     // sphere 4, Cook-Torrance (smooth)
     testScene.addRenderable( new Sphere( 1
