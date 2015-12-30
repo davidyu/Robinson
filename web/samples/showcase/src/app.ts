@@ -1,5 +1,6 @@
 var shaderRepo: ShaderRepository = null; // global for debugging
 var environmentMap: CubeMap = null;
+var irradianceMap: CubeMap = null;
 
 interface AppParams {
   vp : HTMLCanvasElement;
@@ -96,7 +97,14 @@ function StartApp() {
                                 , "./posz.jpg"
                                 , "./negz.jpg" );
 
-    var testScene = new Scene( environmentMap );
+    irradianceMap = new CubeMap( "./irradiance_posx.jpg"
+                               , "./irradiance_negx.jpg"
+                               , "./irradiance_posy.jpg"
+                               , "./irradiance_negy.jpg"
+                               , "./irradiance_posz.jpg"
+                               , "./irradiance_negz.jpg" );
+
+    var testScene = new Scene( environmentMap, irradianceMap );
     Scene.setActiveScene( testScene );
 
     // sphere 1, Lambert

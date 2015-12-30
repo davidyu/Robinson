@@ -52,11 +52,13 @@ class Scene {
   private static activeScene;
 
   environment: CubeMap;
+  irradiance: CubeMap;
 
-  constructor( environment: CubeMap ) {
+  constructor( environment: CubeMap, irradiance: CubeMap ) {
     this.renderables = [];
     this.lights = [];
     this.environment = environment;
+    this.irradiance = irradiance;
   }
 
   public addRenderable( renderable: Renderable ) {
