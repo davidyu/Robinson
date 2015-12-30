@@ -1,3 +1,5 @@
+#extension GL_EXT_shader_texture_lod : enable
+
 precision mediump float;
 
 float attenuate( float distance, float radius ) {

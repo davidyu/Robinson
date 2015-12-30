@@ -166,6 +166,7 @@ class Renderer {
   uCameraPos: WebGLUniformLocation;
   uEnvMap: WebGLUniformLocation;
   uIrradianceMap: WebGLUniformLocation;
+  uIrradianceMipMaps: WebGLUniformLocation;
 
   uMaterial: ShaderMaterialProperties;
   uLights: ShaderLightProperties[];
@@ -195,6 +196,8 @@ class Renderer {
       alert( "Unable to initialize WebGL. Your browser may not support it" );
       success = false;
     }
+
+    this.shaderLODExtension = gl.getExtension( "EXT_shader_texture_lod" );
 
     // compile phong program
     this.phongProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
@@ -272,8 +275,6 @@ class Renderer {
       this.shadowmapSize = size;
     }
 
-    this.shaderLODExtension = gl.getExtension( "EXT_shader_texture_lod" );
-
     this.dirty = true;
   }
 
@@ -302,6 +303,7 @@ class Renderer {
     this.uCameraPos = gl.getUniformLocation( program, "cPosition_World" );
     this.uEnvMap = gl.getUniformLocation( program, "environment" );
     this.uIrradianceMap = gl.getUniformLocation( program, "irradiance" );
+    this.uIrradianceMipMaps = gl.getUniformLocation( program, "irradianceMipMaps" );
 
     this.uMaterial = new ShaderMaterialProperties();
     this.uMaterial.ambient = gl.getUniformLocation( program, "mat.ambient" );
