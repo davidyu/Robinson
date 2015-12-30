@@ -162,6 +162,8 @@ class Renderer {
   uInverseProjection: WebGLUniformLocation;
   uInverseView: WebGLUniformLocation;
   uCameraPos: WebGLUniformLocation;
+  uEnvMap: WebGLUniformLocation;
+  uIrradianceMap: WebGLUniformLocation;
 
   uMaterial: ShaderMaterialProperties;
   uLights: ShaderLightProperties[];
@@ -294,6 +296,8 @@ class Renderer {
     this.uInverseProjection = gl.getUniformLocation( program, "uInverseProjectionMatrix" );
     this.uInverseView = gl.getUniformLocation( program, "uInverseViewMatrix" );
     this.uCameraPos = gl.getUniformLocation( program, "cPosition_World" );
+    this.uEnvMap = gl.getUniformLocation( program, "environment" );
+    this.uIrradianceMap = gl.getUniformLocation( program, "irradiance" );
 
     this.uMaterial = new ShaderMaterialProperties();
     this.uMaterial.ambient = gl.getUniformLocation( program, "mat.ambient" );
@@ -388,6 +392,10 @@ class Renderer {
 
     gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
     gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
+
+    gl.uniform1i( this.uEnvMap, 0 );
+    gl.activeTexture( gl.TEXTURE0 );
+    gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environment.cubeMapTexture );
 
     gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
   }
@@ -488,6 +496,15 @@ class Renderer {
 
       gl.vertexAttribPointer( this.aVertexNormal, 3, gl.FLOAT, false, 0, 0 );
 
+      gl.uniform1i( this.uEnvMap, 0 );
+      gl.uniform1i( this.uIrradianceMap, 1 );
+
+      gl.activeTexture( gl.TEXTURE0 );
+      gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environment.cubeMapTexture );
+
+      gl.activeTexture( gl.TEXTURE1 );
+      gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.irradiance.cubeMapTexture );
+
       gl.drawElements( gl.TRIANGLES, p.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
     } );
   }
@@ -525,6 +542,25 @@ class Renderer {
             gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
 
             scene.environment.cubeMapTexture = cubeMapTexture;
+          }
+
+          //
+          // SET UP IRRADIANCE MAP
+          let irradianceTexture = null;
+          if ( scene.irradiance != null && scene.irradiance.loaded && scene.irradiance.cubeMapTexture == null ) {
+            let cubeMapTexture = gl.createTexture();
+            gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapTexture );
+
+            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_X, scene.irradiance.faces[ CUBEMAPTYPE.POS_X ] );
+            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_X, scene.irradiance.faces[ CUBEMAPTYPE.NEG_X ] );
+            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, scene.irradiance.faces[ CUBEMAPTYPE.POS_Y ] );
+            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, scene.irradiance.faces[ CUBEMAPTYPE.NEG_Y ] );
+            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Z, scene.irradiance.faces[ CUBEMAPTYPE.POS_Z ] );
+            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, scene.irradiance.faces[ CUBEMAPTYPE.NEG_Z ] );
+
+            gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+
+            scene.irradiance.cubeMapTexture = cubeMapTexture;
           }
 
           var mvStack: gml.Mat4[] = [];

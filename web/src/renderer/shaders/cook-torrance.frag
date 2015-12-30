@@ -22,7 +22,7 @@ uniform highp mat3 uNormalVMatrix;     // inverse transpose of view matrix
 uniform highp mat3 uNormalMVMatrix;    // inverse transpose of model view matrix
 uniform highp mat3 uInverseViewMatrix; // inverse of view matrix
 
-uniform samplerCube environment;
+uniform samplerCube irradiance;
 
 // material properties
 struct Material {
@@ -68,9 +68,10 @@ void main( void ) {
 
         float attenuation = attenuate( length( light.position.xyz / light.position.w - vPosition.xyz ), light.radius );
         color += ( ( mat.specular * specular ) + mat.diffuse ) * attenuation * light.color * max( LdotN, 0.0 );
-
-        vec4 ibl = engamma( textureCube( environment, reflected ) );
     }
+
+    vec4 ibl_diffuse = engamma( textureCube( irradiance, reflected ) );
+    color += ibl_diffuse;
 
     gl_FragColor = degamma( color );
 }

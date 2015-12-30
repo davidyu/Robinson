@@ -20,8 +20,6 @@ uniform highp mat3 uNormalMVMatrix;    // inverse model view matrix
 uniform highp mat3 uNormalWorldMatrix; // inverse model matrix
 uniform highp mat3 uInverseViewMatrix;
 
-uniform samplerCube environment;
-
 // material properties
 struct Material {
     vec4 ambient;
@@ -32,6 +30,8 @@ struct Material {
 };
 
 uniform Material mat;
+
+uniform samplerCube irradiance;
 
 void main( void ) {
     mediump vec4 color = mat.ambient + mat.emissive;
@@ -60,9 +60,10 @@ void main( void ) {
 
         float specular = pow( max( dot( normal, halfv ), 0.0 ), mat.shininess );
         color += attenuation * mat.specular * light.color * specular;
-
-        vec4 ibl = engamma( textureCube( environment, reflected ) );
     }
+
+    vec4 ibl_diffuse = engamma( textureCube( irradiance, reflected ) );
+    color += ibl_diffuse;
 
     gl_FragColor = degamma( color );
 }
