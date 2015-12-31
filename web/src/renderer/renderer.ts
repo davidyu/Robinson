@@ -18,6 +18,11 @@ enum PASS {
   STANDARD_FORWARD,
 };
 
+enum IRRADIANCE_PASS {
+  SH_COMPUTE,
+  IRRADIANCE_COMPUTE,
+};
+
 class ShaderFile {
   source: string;
   loaded: boolean;
@@ -300,7 +305,7 @@ class Renderer {
       gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
       gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
       gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
-      gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, 16, 2, 0, gl.RGBA, gl.UNSIGNED_BYTE, null );
+      gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, 8, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null );
     }
 
     this.dirty = true;
@@ -553,7 +558,32 @@ class Renderer {
     gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
   }
 
-  computeIrradiance() {
+  renderIrradianceFromScene( gl: WebGLRenderingContext, scene: Scene, pass: IRRADIANCE_PASS ) {
+    gl.useProgram( this.cubeMapSHProgram );
+
+    this.cacheLitShaderProgramLocations( this.cubeMapSHProgram );
+    this.currentProgram = this.cubeMapSHProgram;
+
+    let fullscreen = new Quad();
+    fullscreen.rebuildRenderData();
+
+    gl.uniformMatrix4fv( this.uModelView, false, gml.Mat4.identity().m );
+    
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.vertices, gl.STATIC_DRAW );
+    gl.vertexAttribPointer( this.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
+
+    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
+    gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
+
+    gl.uniform1i( this.uEnvMap, 0 );
+    gl.activeTexture( gl.TEXTURE0 );
+    gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environment.cubeMapTexture );
+
+    gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
+  }
+
+  renderIrradiance() {
     var gl = this.context;
     if ( gl ) {
       var scene = Scene.getActiveScene();
@@ -575,6 +605,14 @@ class Renderer {
 
           scene.environment.cubeMapTexture = cubeMapTexture;
         }
+
+        //
+        // COMPUTE SH COEFFICIENTS
+        gl.bindFramebuffer( gl.FRAMEBUFFER, this.envMapSHFrameBuffer );
+        gl.viewport( 0, 0, 8, 1 );
+        gl.colorMask( true, true, true, true ); // we're using ALL the channels
+        gl.clear( gl.DEPTH_BUFFER_BIT );
+        this.renderIrradianceFromScene( gl, scene, IRRADIANCE_PASS.SH_COMPUTE );
       }
     }
   }
