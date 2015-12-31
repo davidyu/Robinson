@@ -15,7 +15,8 @@ var sources = [
   new ProgramSource( 'basic.vert' , 'oren-nayar.frag' ),
   new ProgramSource( 'basic.vert' , 'cook-torrance.frag' ),
   new ProgramSource( 'debug.vert' , 'debug.frag' ),
-  new ProgramSource( 'skybox.vert', 'skybox.frag' )
+  new ProgramSource( 'skybox.vert', 'skybox.frag' ),
+  new ProgramSource( 'basic.vert' , 'cube-sh.frag' )
 ];
 
 var logs = sources.map( function( source ) {

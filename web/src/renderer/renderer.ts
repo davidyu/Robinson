@@ -10,6 +10,7 @@ enum SHADERTYPE {
   UTILS,
   SKYBOX_VERTEX,
   SKYBOX_FRAG,
+  CUBE_SH_FRAG,
 };
 
 enum PASS {
@@ -54,6 +55,7 @@ class ShaderRepository {
     this.asyncLoadShader( "utils.frag"         , SHADERTYPE.UTILS                  , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "skybox.vert"        , SHADERTYPE.SKYBOX_VERTEX          , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "skybox.frag"        , SHADERTYPE.SKYBOX_FRAG            , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "cube-sh.frag"       , SHADERTYPE.CUBE_SH_FRAG           , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
   }
 
   asyncLoadShader( name: string, stype: SHADERTYPE, loaded: ( stype: SHADERTYPE, contents: string ) => void ) {
@@ -144,6 +146,7 @@ class Renderer {
   cookTorranceProgram: WebGLProgram;
   shadowmapProgram: WebGLProgram;
   skyboxProgram: WebGLProgram;
+  cubeMapSHProgram: WebGLProgram;
 
   // the currently enabled program
   currentProgram: WebGLProgram;
@@ -239,6 +242,14 @@ class Renderer {
                                                   , sr.files[ SHADERTYPE.SKYBOX_FRAG ].source );
     if ( this.skyboxProgram == null ) {
       alert( "Skybox shader compilation failed. Please check the log for details." );
+      success = false;
+    }
+
+    this.cubeMapSHProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
+                                                     , sr.files[ SHADERTYPE.CUBE_SH_FRAG ].source );
+
+    if ( this.cubeMapSHProgram == null ) {
+      alert( "Cube map shader compilation failed. Please check the log for details." );
       success = false;
     }
 
