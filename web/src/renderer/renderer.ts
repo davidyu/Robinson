@@ -268,9 +268,6 @@ class Renderer {
 
       let size = 64;
 
-      this.shadowFramebuffer = gl.createFramebuffer();
-      gl.bindFramebuffer( gl.FRAMEBUFFER, this.shadowFramebuffer );
-
       let shadowColorTexture = gl.createTexture();
       gl.bindTexture( gl.TEXTURE_2D, shadowColorTexture );
       gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
@@ -296,9 +293,6 @@ class Renderer {
     }
 
     {
-      this.envMapSHFrameBuffer = gl.createFramebuffer();
-
-      gl.bindFramebuffer( gl.FRAMEBUFFER, this.envMapSHFrameBuffer );
       this.envMapSHTexture = gl.createTexture();
       gl.bindTexture( gl.TEXTURE_2D, this.envMapSHTexture );
       gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
@@ -306,6 +300,10 @@ class Renderer {
       gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
       gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
       gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, 8, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null );
+
+      this.envMapSHFrameBuffer = gl.createFramebuffer();
+      gl.bindFramebuffer( gl.FRAMEBUFFER, this.envMapSHFrameBuffer );
+      gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.envMapSHTexture, 0 );
     }
 
     this.dirty = true;
@@ -610,8 +608,7 @@ class Renderer {
         // COMPUTE SH COEFFICIENTS
         gl.bindFramebuffer( gl.FRAMEBUFFER, this.envMapSHFrameBuffer );
         gl.viewport( 0, 0, 8, 1 );
-        gl.colorMask( true, true, true, true ); // we're using ALL the channels
-        gl.clear( gl.DEPTH_BUFFER_BIT );
+        gl.clear( gl.COLOR_BUFFER_BIT );
         this.renderIrradianceFromScene( gl, scene, IRRADIANCE_PASS.SH_COMPUTE );
       }
     }
