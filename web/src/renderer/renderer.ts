@@ -10,6 +10,7 @@ enum SHADERTYPE {
   UTILS,
   SKYBOX_VERTEX,
   SKYBOX_FRAG,
+  CUBE_SH_VERT,
   CUBE_SH_FRAG,
 };
 
@@ -60,6 +61,7 @@ class ShaderRepository {
     this.asyncLoadShader( "utils.frag"         , SHADERTYPE.UTILS                  , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "skybox.vert"        , SHADERTYPE.SKYBOX_VERTEX          , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "skybox.frag"        , SHADERTYPE.SKYBOX_FRAG            , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "cube-sh.vert"       , SHADERTYPE.CUBE_SH_VERT           , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "cube-sh.frag"       , SHADERTYPE.CUBE_SH_FRAG           , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
   }
 
@@ -254,7 +256,7 @@ class Renderer {
       success = false;
     }
 
-    this.cubeMapSHProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
+    this.cubeMapSHProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.CUBE_SH_VERT ].source
                                                      , sr.files[ SHADERTYPE.CUBE_SH_FRAG ].source );
 
     if ( this.cubeMapSHProgram == null ) {
@@ -301,9 +303,18 @@ class Renderer {
       gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
       gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, 8, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null );
 
+      let envMapSHDepthTexture = gl.createTexture();
+      gl.bindTexture( gl.TEXTURE_2D, envMapSHDepthTexture );
+      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
+      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
+      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
+      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
+      gl.texImage2D( gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, 8, 1, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null );
+
       this.envMapSHFrameBuffer = gl.createFramebuffer();
       gl.bindFramebuffer( gl.FRAMEBUFFER, this.envMapSHFrameBuffer );
       gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.envMapSHTexture, 0 );
+      gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, envMapSHDepthTexture, 0 );
     }
 
     this.dirty = true;
@@ -566,6 +577,8 @@ class Renderer {
     fullscreen.rebuildRenderData();
 
     gl.uniformMatrix4fv( this.uModelView, false, gml.Mat4.identity().m );
+    gl.uniformMatrix3fv( this.uNormalModelView, false, gml.Mat3.identity().m );
+    gl.uniformMatrix4fv( this.uPerspective, false, gml.Mat4.identity().m );
     
     gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.vertices, gl.STATIC_DRAW );
