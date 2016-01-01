@@ -33,7 +33,7 @@ class ShowcaseApp {
     // construct location along viewing sphere
 
     let fu = () => { this.fixedUpdate() };
-    setInterval( fu, 1000/30 );
+    setInterval( fu, 1000/ 60 );
 
     const WHEEL_PIXEL_TO_RADIAN = 1/30;
     params.vp.addEventListener( 'wheel', e => {
