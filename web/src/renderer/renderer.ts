@@ -14,6 +14,17 @@ enum SHADERTYPE {
   CUBE_SH_FRAG,
 };
 
+enum SHADER_PROGRAM {
+  DEBUG,
+  LAMBERT,
+  OREN_NAYAR,
+  BLINN_PHONG,
+  COOK_TORRANCE,
+  SKYBOX,
+  SHADOWMAP,
+  CUBE_SH
+};
+
 enum PASS {
   SHADOW,
   STANDARD_FORWARD,
@@ -105,7 +116,6 @@ class ShaderRepository {
   }
 }
 
-
 class ShaderSource {
   vs: string;
   fs: string;
@@ -132,6 +142,35 @@ class ShaderLightProperties {
   radius: WebGLUniformLocation;
 }
 
+class ShaderUniforms {
+  aVertexPosition: number;
+  aVertexNormal: number;
+  uModelView: WebGLUniformLocation;
+  uModelToWorld: WebGLUniformLocation;
+  uPerspective: WebGLUniformLocation;
+  uNormalModelView: WebGLUniformLocation;
+  uNormalWorld: WebGLUniformLocation;
+  uInverseProjection: WebGLUniformLocation;
+  uInverseView: WebGLUniformLocation;
+  uCameraPos: WebGLUniformLocation;
+  uEnvMap: WebGLUniformLocation;
+  uIrradianceMap: WebGLUniformLocation;
+  uEnvironmentMipMaps: WebGLUniformLocation;
+  uMaterial: ShaderMaterialProperties;
+  uLights: ShaderLightProperties[];
+
+  constructor() {}
+}
+
+class ShaderProgramData {
+  program: WebGLProgram;
+  uniforms: ShaderUniforms;
+  constructor() {
+    this.program = null;
+    this.uniforms = new ShaderUniforms();
+  }
+}
+
 class Renderer {
   viewportW: number;
   viewportH: number;
@@ -146,17 +185,8 @@ class Renderer {
   indexBuffer: WebGLBuffer;
 
   // shader programs
-  lambertProgram: WebGLProgram;
-  phongProgram: WebGLProgram;
-  debugProgram: WebGLProgram;
-  orenNayarProgram: WebGLProgram;
-  cookTorranceProgram: WebGLProgram;
-  shadowmapProgram: WebGLProgram;
-  skyboxProgram: WebGLProgram;
-  cubeMapSHProgram: WebGLProgram;
-
   // the currently enabled program
-  currentProgram: WebGLProgram;
+  currentProgram: SHADER_PROGRAM;
 
   // shadow frame buffer
   depthTextureExtension;
@@ -168,22 +198,7 @@ class Renderer {
   envMapSHTexture: WebGLTexture;
   envMapSHFrameBuffer: WebGLFramebuffer;
 
-  aVertexPosition: number;
-  aVertexNormal: number;
-  uModelView: WebGLUniformLocation;
-  uModelToWorld: WebGLUniformLocation;
-  uPerspective: WebGLUniformLocation;
-  uNormalModelView: WebGLUniformLocation;
-  uNormalWorld: WebGLUniformLocation;
-  uInverseProjection: WebGLUniformLocation;
-  uInverseView: WebGLUniformLocation;
-  uCameraPos: WebGLUniformLocation;
-  uEnvMap: WebGLUniformLocation;
-  uIrradianceMap: WebGLUniformLocation;
-  uEnvironmentMipMaps: WebGLUniformLocation;
-
-  uMaterial: ShaderMaterialProperties;
-  uLights: ShaderLightProperties[];
+  programData: ShaderProgramData[];
 
   dirty: boolean;
 
@@ -213,56 +228,86 @@ class Renderer {
 
     this.shaderLODExtension = gl.getExtension( "EXT_shader_texture_lod" );
 
+    this.programData = [];
+
     // compile phong program
-    this.phongProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
+    let phongProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
                                                  , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.BLINN_PHONG_FRAGMENT ].source );
-    if ( this.phongProgram == null ) {
+    if ( phongProgram == null ) {
       alert( "Phong shader compilation failed. Please check the log for details." );
       success = false;
     }
 
-    this.lambertProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
+    this.programData[ SHADER_PROGRAM.BLINN_PHONG ] = new ShaderProgramData();
+    this.programData[ SHADER_PROGRAM.BLINN_PHONG ].program = phongProgram;
+    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.BLINN_PHONG );
+
+    let lambertProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
                                                    , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.LAMBERT_FRAGMENT ].source );
-    if ( this.lambertProgram == null ) {
+    if ( lambertProgram == null ) {
       alert( "Lambert shader compilation failed. Please check the log for details." );
       success = false;
     }
 
-    this.debugProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.DEBUG_VERTEX ].source
+    this.programData[ SHADER_PROGRAM.LAMBERT ] = new ShaderProgramData();
+    this.programData[ SHADER_PROGRAM.LAMBERT ].program = lambertProgram;
+    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.LAMBERT );
+
+    let debugProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.DEBUG_VERTEX ].source
                                                  , sr.files[ SHADERTYPE.DEBUG_FRAGMENT ].source );
-    if ( this.debugProgram == null ) {
+    if ( debugProgram == null ) {
       alert( "Debug shader compilation failed. Please check the log for details." );
       success = false;
     }
 
-    this.orenNayarProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
+    this.programData[ SHADER_PROGRAM.DEBUG ] = new ShaderProgramData();
+    this.programData[ SHADER_PROGRAM.DEBUG ].program = debugProgram;
+    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.DEBUG );
+
+    let orenNayarProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
                                                      , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.OREN_NAYAR_FRAGMENT ].source );
-    if ( this.orenNayarProgram == null ) {
+    if ( orenNayarProgram == null ) {
       alert( "Oren-Nayar shader compilation failed. Please check the log for details." );
       success = false;
     }
 
-    this.cookTorranceProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
+    this.programData[ SHADER_PROGRAM.OREN_NAYAR ] = new ShaderProgramData();
+    this.programData[ SHADER_PROGRAM.OREN_NAYAR ].program = orenNayarProgram;
+    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.OREN_NAYAR );
+
+    let cookTorranceProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
                                                         , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.COOK_TORRANCE_FRAGMENT ].source );
-    if ( this.cookTorranceProgram == null ) {
+    if ( cookTorranceProgram == null ) {
       alert( "Cook-Torrance shader compilation failed. Please check the log for details." );
       success = false;
     }
 
-    this.skyboxProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SKYBOX_VERTEX ].source
+    this.programData[ SHADER_PROGRAM.COOK_TORRANCE ] = new ShaderProgramData();
+    this.programData[ SHADER_PROGRAM.COOK_TORRANCE ].program = cookTorranceProgram;
+    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.COOK_TORRANCE );
+
+    let skyboxProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SKYBOX_VERTEX ].source
                                                   , sr.files[ SHADERTYPE.SKYBOX_FRAG ].source );
-    if ( this.skyboxProgram == null ) {
+    if ( skyboxProgram == null ) {
       alert( "Skybox shader compilation failed. Please check the log for details." );
       success = false;
     }
 
-    this.cubeMapSHProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.CUBE_SH_VERT ].source
+    this.programData[ SHADER_PROGRAM.SKYBOX ] = new ShaderProgramData();
+    this.programData[ SHADER_PROGRAM.SKYBOX ].program = skyboxProgram;
+    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.SKYBOX );
+
+    let cubeMapSHProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.CUBE_SH_VERT ].source
                                                      , sr.files[ SHADERTYPE.CUBE_SH_FRAG ].source );
 
-    if ( this.cubeMapSHProgram == null ) {
+    if ( cubeMapSHProgram == null ) {
       alert( "Cube map shader compilation failed. Please check the log for details." );
       success = false;
     }
+
+    this.programData[ SHADER_PROGRAM.CUBE_SH ] = new ShaderProgramData();
+    this.programData[ SHADER_PROGRAM.CUBE_SH ].program = cubeMapSHProgram;
+    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.CUBE_SH );
 
     // initialize shadowmap textures
     {
@@ -299,70 +344,68 @@ class Renderer {
       gl.bindTexture( gl.TEXTURE_2D, this.envMapSHTexture );
       gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
       gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
-      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
-      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
       gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, 8, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null );
 
-      let envMapSHDepthTexture = gl.createTexture();
-      gl.bindTexture( gl.TEXTURE_2D, envMapSHDepthTexture );
-      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
-      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
-      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
-      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
-      gl.texImage2D( gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, 8, 1, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null );
+      let sb = gl.createRenderbuffer();
+      gl.bindRenderbuffer( gl.RENDERBUFFER, sb );
+      gl.renderbufferStorage( gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, 8, 1 );
 
       this.envMapSHFrameBuffer = gl.createFramebuffer();
       gl.bindFramebuffer( gl.FRAMEBUFFER, this.envMapSHFrameBuffer );
       gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.envMapSHTexture, 0 );
-      gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, envMapSHDepthTexture, 0 );
+      gl.framebufferRenderbuffer( gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, sb );
     }
 
-    this.dirty = true;
-  }
-
-  cacheLitShaderProgramLocations( program: WebGLProgram ) {
-    var gl = this.context;
     this.vertexBuffer = gl.createBuffer();
     this.vertexNormalBuffer = gl.createBuffer();
     this.vertexColorBuffer = gl.createBuffer();
     this.indexBuffer = gl.createBuffer();
 
-    this.aVertexPosition = gl.getAttribLocation( program, "aVertexPosition" );
-    gl.enableVertexAttribArray( this.aVertexPosition );
+    this.dirty = true;
+  }
 
-    this.aVertexNormal = gl.getAttribLocation( program, "aVertexNormal" );
-    if ( this.aVertexNormal >= 0 ) {
-      gl.enableVertexAttribArray( this.aVertexNormal );
+  cacheLitShaderProgramLocations( sp: SHADER_PROGRAM ) {
+    var gl = this.context;
+
+    let program = this.programData[ sp ].program;
+    let uniforms = this.programData[ sp ].uniforms;
+
+    uniforms.aVertexPosition = gl.getAttribLocation( program, "aVertexPosition" );
+    gl.enableVertexAttribArray( uniforms.aVertexPosition );
+
+    uniforms.aVertexNormal = gl.getAttribLocation( program, "aVertexNormal" );
+    if ( uniforms.aVertexNormal >= 0 ) {
+      gl.enableVertexAttribArray( uniforms.aVertexNormal );
     }
 
-    this.uModelView = gl.getUniformLocation( program, "uMVMatrix" );
-    this.uModelToWorld = gl.getUniformLocation( program, "uMMatrix" );
-    this.uPerspective = gl.getUniformLocation( program, "uPMatrix" );
-    this.uNormalModelView = gl.getUniformLocation( program, "uNormalMVMatrix" );
-    this.uNormalWorld = gl.getUniformLocation( program, "uNormalWorldMatrix" );
-    this.uInverseProjection = gl.getUniformLocation( program, "uInverseProjectionMatrix" );
-    this.uInverseView = gl.getUniformLocation( program, "uInverseViewMatrix" );
-    this.uCameraPos = gl.getUniformLocation( program, "cPosition_World" );
-    this.uEnvMap = gl.getUniformLocation( program, "environment" );
-    this.uIrradianceMap = gl.getUniformLocation( program, "irradiance" );
-    this.uEnvironmentMipMaps = gl.getUniformLocation( program, "environmentMipMaps" );
+    uniforms.uModelView = gl.getUniformLocation( program, "uMVMatrix" );
+    uniforms.uModelToWorld = gl.getUniformLocation( program, "uMMatrix" );
+    uniforms.uPerspective = gl.getUniformLocation( program, "uPMatrix" );
+    uniforms.uNormalModelView = gl.getUniformLocation( program, "uNormalMVMatrix" );
+    uniforms.uNormalWorld = gl.getUniformLocation( program, "uNormalWorldMatrix" );
+    uniforms.uInverseProjection = gl.getUniformLocation( program, "uInverseProjectionMatrix" );
+    uniforms.uInverseView = gl.getUniformLocation( program, "uInverseViewMatrix" );
+    uniforms.uCameraPos = gl.getUniformLocation( program, "cPosition_World" );
+    uniforms.uEnvMap = gl.getUniformLocation( program, "environment" );
+    uniforms.uIrradianceMap = gl.getUniformLocation( program, "irradiance" );
+    uniforms.uEnvironmentMipMaps = gl.getUniformLocation( program, "environmentMipMaps" );
 
-    this.uMaterial = new ShaderMaterialProperties();
-    this.uMaterial.ambient = gl.getUniformLocation( program, "mat.ambient" );
-    this.uMaterial.diffuse = gl.getUniformLocation( program, "mat.diffuse" );
-    this.uMaterial.specular = gl.getUniformLocation( program, "mat.specular" );
-    this.uMaterial.emissive = gl.getUniformLocation( program, "mat.emissive" );
-    this.uMaterial.shininess = gl.getUniformLocation( program, "mat.shininess" );
-    this.uMaterial.roughness = gl.getUniformLocation( program, "mat.roughness" );
-    this.uMaterial.fresnel = gl.getUniformLocation( program, "mat.fresnel" );
+    uniforms.uMaterial = new ShaderMaterialProperties();
+    uniforms.uMaterial.ambient = gl.getUniformLocation( program, "mat.ambient" );
+    uniforms.uMaterial.diffuse = gl.getUniformLocation( program, "mat.diffuse" );
+    uniforms.uMaterial.specular = gl.getUniformLocation( program, "mat.specular" );
+    uniforms.uMaterial.emissive = gl.getUniformLocation( program, "mat.emissive" );
+    uniforms.uMaterial.shininess = gl.getUniformLocation( program, "mat.shininess" );
+    uniforms.uMaterial.roughness = gl.getUniformLocation( program, "mat.roughness" );
+    uniforms.uMaterial.fresnel = gl.getUniformLocation( program, "mat.fresnel" );
 
-    this.uLights = [];
+    uniforms.uLights = [];
     for ( var i = 0; i < 10; i++ ) {
-      this.uLights[i] = new ShaderLightProperties();
-      this.uLights[i].position = gl.getUniformLocation( program, "lights[" + i + "].position" );
-      this.uLights[i].color = gl.getUniformLocation( program, "lights[" + i + "].color" );
-      this.uLights[i].enabled = gl.getUniformLocation( program, "lights[" + i + "].enabled" );
-      this.uLights[i].radius = gl.getUniformLocation( program, "lights[" + i + "].radius" );
+      uniforms.uLights[i] = new ShaderLightProperties();
+      uniforms.uLights[i].position = gl.getUniformLocation( program, "lights[" + i + "].position" );
+      uniforms.uLights[i].color = gl.getUniformLocation( program, "lights[" + i + "].color" );
+      uniforms.uLights[i].enabled = gl.getUniformLocation( program, "lights[" + i + "].enabled" );
+      uniforms.uLights[i].radius = gl.getUniformLocation( program, "lights[" + i + "].radius" );
     }
   }
 
@@ -420,28 +463,29 @@ class Renderer {
   renderSceneEnvironment( gl: WebGLRenderingContext, scene: Scene, mvStack: gml.Mat4[] ) {
     // TODO unhardcode me
     let perspective = gml.makePerspective( gml.fromDegrees( 45 ), 640.0/480.0, 0.1, 100.0 );
-    gl.useProgram( this.skyboxProgram );
 
-    this.cacheLitShaderProgramLocations( this.skyboxProgram );
-    this.currentProgram = this.skyboxProgram;
+    gl.useProgram( this.programData[ SHADER_PROGRAM.SKYBOX ].program );
+    this.currentProgram = SHADER_PROGRAM.SKYBOX;
+
+    let locations = this.programData[ SHADER_PROGRAM.SKYBOX ].uniforms;
 
     let fullscreen = new Quad();
     fullscreen.rebuildRenderData();
 
     let inverseProjectionMatrix = perspective.invert();
-    gl.uniformMatrix4fv( this.uInverseProjection, false, inverseProjectionMatrix.m );
+    gl.uniformMatrix4fv( locations.uInverseProjection, false, inverseProjectionMatrix.m );
 
     let inverseViewMatrix = mvStack[ mvStack.length - 1 ].invert().mat3;
-    gl.uniformMatrix3fv( this.uInverseView, false, inverseViewMatrix.m );
+    gl.uniformMatrix3fv( locations.uInverseView, false, inverseViewMatrix.m );
     
     gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.vertices, gl.STATIC_DRAW );
-    gl.vertexAttribPointer( this.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
+    gl.vertexAttribPointer( locations.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
     gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
     gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
 
-    gl.uniform1i( this.uEnvMap, 0 );
+    gl.uniform1i( locations.uEnvMap, 0 );
     gl.activeTexture( gl.TEXTURE0 );
     gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environment.cubeMapTexture );
 
@@ -454,100 +498,92 @@ class Renderer {
 
     scene.renderables.forEach( ( p, i ) => {
       if ( p.material instanceof BlinnPhongMaterial ) {
-        if ( this.currentProgram != this.phongProgram ) {
-          gl.useProgram( this.phongProgram );
-          this.cacheLitShaderProgramLocations( this.phongProgram );
-          this.currentProgram = this.phongProgram;
-        }
+        gl.useProgram( this.programData[ SHADER_PROGRAM.BLINN_PHONG ].program );
+        this.currentProgram = SHADER_PROGRAM.BLINN_PHONG;
 
         let blinnphong = <BlinnPhongMaterial> p.material;
-        gl.uniform4fv( this.uMaterial.diffuse, blinnphong.diffuse.v );
-        gl.uniform4fv( this.uMaterial.ambient, blinnphong.ambient.v );
-        gl.uniform4fv( this.uMaterial.specular, blinnphong.specular.v );
-        gl.uniform4fv( this.uMaterial.emissive, blinnphong.emissive.v );
-        gl.uniform1f ( this.uMaterial.shininess, blinnphong.shininess );
+        let locations = this.programData[ SHADER_PROGRAM.BLINN_PHONG ].uniforms;
+
+        gl.uniform4fv( locations.uMaterial.diffuse, blinnphong.diffuse.v );
+        gl.uniform4fv( locations.uMaterial.ambient, blinnphong.ambient.v );
+        gl.uniform4fv( locations.uMaterial.specular, blinnphong.specular.v );
+        gl.uniform4fv( locations.uMaterial.emissive, blinnphong.emissive.v );
+        gl.uniform1f ( locations.uMaterial.shininess, blinnphong.shininess );
       } else if ( p.material instanceof DebugMaterial ) {
-        if ( this.currentProgram != this.debugProgram ) {
-          gl.useProgram( this.debugProgram );
-          this.cacheLitShaderProgramLocations( this.debugProgram );
-          this.currentProgram = this.debugProgram;
-        }
+        gl.useProgram( this.programData[ SHADER_PROGRAM.DEBUG ].program );
+        this.currentProgram = SHADER_PROGRAM.DEBUG;
       } else if ( p.material instanceof OrenNayarMaterial ) {
-        if ( this.currentProgram != this.orenNayarProgram ) {
-          gl.useProgram( this.orenNayarProgram );
-          this.cacheLitShaderProgramLocations( this.orenNayarProgram );
-          this.currentProgram = this.orenNayarProgram;
-        }
+        gl.useProgram( this.programData[ SHADER_PROGRAM.OREN_NAYAR ].program );
+        this.currentProgram = SHADER_PROGRAM.OREN_NAYAR;
 
         let orennayar = <OrenNayarMaterial> p.material;
-        gl.uniform4fv( this.uMaterial.diffuse, orennayar.diffuse.v );
-        gl.uniform1f ( this.uMaterial.roughness, orennayar.roughness );
+        let locations = this.programData[ SHADER_PROGRAM.OREN_NAYAR ].uniforms;
+
+        gl.uniform4fv( locations.uMaterial.diffuse, orennayar.diffuse.v );
+        gl.uniform1f ( locations.uMaterial.roughness, orennayar.roughness );
       } else if ( p.material instanceof LambertMaterial ) {
-        if ( this.currentProgram != this.lambertProgram ) {
-          gl.useProgram( this.lambertProgram );
-          this.cacheLitShaderProgramLocations( this.lambertProgram );
-          this.currentProgram = this.lambertProgram;
-        }
+        gl.useProgram( this.programData[ SHADER_PROGRAM.LAMBERT ].program );
+        this.currentProgram = SHADER_PROGRAM.LAMBERT;
 
         let lambert = <LambertMaterial> p.material;
-        gl.uniform4fv( this.uMaterial.diffuse, lambert.diffuse.v );
+        let locations = this.programData[ SHADER_PROGRAM.LAMBERT ].uniforms;
+        gl.uniform4fv( locations.uMaterial.diffuse, lambert.diffuse.v );
       } else if ( p.material instanceof CookTorranceMaterial ) {
-        if ( this.currentProgram != this.cookTorranceProgram ) {
-          gl.useProgram( this.cookTorranceProgram );
-          this.cacheLitShaderProgramLocations( this.cookTorranceProgram );
-          this.currentProgram = this.cookTorranceProgram;
-        }
+        gl.useProgram( this.programData[ SHADER_PROGRAM.COOK_TORRANCE ].program );
+        this.currentProgram = SHADER_PROGRAM.COOK_TORRANCE;
 
         let cooktorrance = <CookTorranceMaterial> p.material;
-        gl.uniform4fv( this.uMaterial.diffuse, cooktorrance.diffuse.v );
-        gl.uniform4fv( this.uMaterial.specular, cooktorrance.specular.v );
-        gl.uniform1f ( this.uMaterial.roughness, cooktorrance.roughness );
-        gl.uniform1f ( this.uMaterial.fresnel, cooktorrance.fresnel );
+        let locations = this.programData[ SHADER_PROGRAM.COOK_TORRANCE ].uniforms;
+        gl.uniform4fv( locations.uMaterial.diffuse, cooktorrance.diffuse.v );
+        gl.uniform4fv( locations.uMaterial.specular, cooktorrance.specular.v );
+        gl.uniform1f ( locations.uMaterial.roughness, cooktorrance.roughness );
+        gl.uniform1f ( locations.uMaterial.fresnel, cooktorrance.fresnel );
       }
 
+      let locations = this.programData[ this.currentProgram ].uniforms;
       scene.lights.forEach( ( l, i ) => {
         let lightpos = mvStack[ mvStack.length - 1 ].transform( l.position );
-        gl.uniform4fv( this.uLights[i].position, lightpos.v );
-        gl.uniform4fv( this.uLights[i].color, l.color.v );
-        gl.uniform1i( this.uLights[i].enabled, l.enabled ? 1 : 0 );
-        gl.uniform1f( this.uLights[i].radius, l.radius );
+        gl.uniform4fv( locations.uLights[i].position, lightpos.v );
+        gl.uniform4fv( locations.uLights[i].color, l.color.v );
+        gl.uniform1i( locations.uLights[i].enabled, l.enabled ? 1 : 0 );
+        gl.uniform1f( locations.uLights[i].radius, l.radius );
       } );
 
-      gl.uniformMatrix4fv( this.uPerspective, false, perspective.m );
+      gl.uniformMatrix4fv( locations.uPerspective, false, perspective.m );
 
       if ( this.camera != null ) {
-        gl.uniform4fv( this.uCameraPos, this.camera.matrix.translation.v );
+        gl.uniform4fv( locations.uCameraPos, this.camera.matrix.translation.v );
       }
 
       let primitiveModelView = mvStack[ mvStack.length - 1 ].multiply( p.transform );
-      gl.uniformMatrix4fv( this.uModelView, false, primitiveModelView.m );
-      gl.uniformMatrix4fv( this.uModelToWorld, false, p.transform.m );
+      gl.uniformMatrix4fv( locations.uModelView, false, primitiveModelView.m );
+      gl.uniformMatrix4fv( locations.uModelToWorld, false, p.transform.m );
 
       // the normal matrix is defined as the upper 3x3 block of transpose( inverse( model-view ) )
       let normalMVMatrix = primitiveModelView.invert().transpose().mat3;
-      gl.uniformMatrix3fv( this.uNormalModelView, false, normalMVMatrix.m );
+      gl.uniformMatrix3fv( locations.uNormalModelView, false, normalMVMatrix.m );
 
       let normalWorldMatrix = p.transform.invert().transpose().mat3;
-      gl.uniformMatrix3fv( this.uNormalWorld, false, normalWorldMatrix.m );
+      gl.uniformMatrix3fv( locations.uNormalWorld, false, normalWorldMatrix.m );
 
       let inverseViewMatrix = mvStack[ mvStack.length - 1 ].invert().mat3;
-      gl.uniformMatrix3fv( this.uInverseView, false, inverseViewMatrix.m );
+      gl.uniformMatrix3fv( locations.uInverseView, false, inverseViewMatrix.m );
 
       gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
       gl.bufferData( gl.ARRAY_BUFFER, p.renderData.vertices, gl.STATIC_DRAW );
-      gl.vertexAttribPointer( this.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
+      gl.vertexAttribPointer( locations.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
       gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
       gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, p.renderData.indices, gl.STATIC_DRAW );
       gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexNormalBuffer );
       gl.bufferData( gl.ARRAY_BUFFER, p.renderData.normals, gl.STATIC_DRAW );
 
-      gl.vertexAttribPointer( this.aVertexNormal, 3, gl.FLOAT, false, 0, 0 );
+      gl.vertexAttribPointer( locations.aVertexNormal, 3, gl.FLOAT, false, 0, 0 );
 
-      gl.uniform1i( this.uEnvMap, 0 );
-      gl.uniform1f( this.uEnvironmentMipMaps, 7 );
+      gl.uniform1i( locations.uEnvMap, 0 );
+      gl.uniform1f( locations.uEnvironmentMipMaps, 7 );
 
-      gl.uniform1i( this.uIrradianceMap, 1 );
+      gl.uniform1i( locations.uIrradianceMap, 1 );
 
       gl.activeTexture( gl.TEXTURE0 );
       gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environment.cubeMapTexture );
@@ -568,26 +604,26 @@ class Renderer {
   }
 
   renderIrradianceFromScene( gl: WebGLRenderingContext, scene: Scene, pass: IRRADIANCE_PASS ) {
-    gl.useProgram( this.cubeMapSHProgram );
-
-    this.cacheLitShaderProgramLocations( this.cubeMapSHProgram );
-    this.currentProgram = this.cubeMapSHProgram;
+    gl.useProgram( this.programData[ SHADER_PROGRAM.CUBE_SH ].program );
+    this.currentProgram = SHADER_PROGRAM.CUBE_SH;
 
     let fullscreen = new Quad();
     fullscreen.rebuildRenderData();
 
-    gl.uniformMatrix4fv( this.uModelView, false, gml.Mat4.identity().m );
-    gl.uniformMatrix3fv( this.uNormalModelView, false, gml.Mat3.identity().m );
-    gl.uniformMatrix4fv( this.uPerspective, false, gml.Mat4.identity().m );
+    let locations = this.programData[ this.currentProgram ].uniforms;
+
+    gl.uniformMatrix4fv( locations.uModelView, false, gml.Mat4.identity().m );
+    gl.uniformMatrix3fv( locations.uNormalModelView, false, gml.Mat3.identity().m );
+    gl.uniformMatrix4fv( locations.uPerspective, false, gml.Mat4.identity().m );
     
     gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.vertices, gl.STATIC_DRAW );
-    gl.vertexAttribPointer( this.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
+    gl.vertexAttribPointer( locations.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
     gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
     gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
 
-    gl.uniform1i( this.uEnvMap, 0 );
+    gl.uniform1i( locations.uEnvMap, 0 );
     gl.activeTexture( gl.TEXTURE0 );
     gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environment.cubeMapTexture );
 
@@ -619,7 +655,7 @@ class Renderer {
 
         //
         // COMPUTE SH COEFFICIENTS
-        gl.bindFramebuffer( gl.FRAMEBUFFER, this.envMapSHFrameBuffer );
+        gl.bindFramebuffer( gl.FRAMEBUFFER, null );
         gl.viewport( 0, 0, 8, 1 );
         gl.clear( gl.COLOR_BUFFER_BIT );
         this.renderIrradianceFromScene( gl, scene, IRRADIANCE_PASS.SH_COMPUTE );

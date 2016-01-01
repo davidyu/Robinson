@@ -32,7 +32,8 @@ class ShowcaseApp {
     // camera parameters - save camera distance from target
     // construct location along viewing sphere
 
-    setInterval( () => { this.fixedUpdate() }, 1000/30 );
+    let fu = () => { this.fixedUpdate() };
+    setInterval( fu, 1000/30 );
 
     const WHEEL_PIXEL_TO_RADIAN = 1/30;
     params.vp.addEventListener( 'wheel', e => {
