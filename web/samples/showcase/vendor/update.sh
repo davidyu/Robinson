@@ -14,3 +14,4 @@ download https://raw.githubusercontent.com/ccampbell/mousetrap/master/mousetrap.
 download https://raw.githubusercontent.com/borisyankov/DefinitelyTyped/master/mousetrap/mousetrap.d.ts mousetrap.d.ts
 download http://hammerjs.github.io/dist/hammer.min.js hammer.min.js
 download https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/hammerjs/hammerjs.d.ts hammerjs.d.ts
+download https://raw.githubusercontent.com/hammerjs/hammer.js/master/hammer.min.map hammer.min.map
