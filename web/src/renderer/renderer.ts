@@ -7,6 +7,7 @@ enum SHADERTYPE {
   DEBUG_FRAGMENT,
   OREN_NAYAR_FRAGMENT,
   COOK_TORRANCE_FRAGMENT,
+  COOK_TORRANCE_FRAGMENT_NO_EXT,
   UTILS,
   SKYBOX_VERTEX,
   SKYBOX_FRAG,
@@ -61,19 +62,20 @@ class ShaderRepository {
   }
 
   loadShaders() {
-    this.asyncLoadShader( "basic.vert"         , SHADERTYPE.SIMPLE_VERTEX          , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "debug.vert"         , SHADERTYPE.DEBUG_VERTEX           , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "unlit.frag"         , SHADERTYPE.UNLIT_FRAGMENT         , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "lambert.frag"       , SHADERTYPE.LAMBERT_FRAGMENT       , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "blinn-phong.frag"   , SHADERTYPE.BLINN_PHONG_FRAGMENT   , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "debug.frag"         , SHADERTYPE.DEBUG_FRAGMENT         , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "oren-nayar.frag"    , SHADERTYPE.OREN_NAYAR_FRAGMENT    , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "cook-torrance.frag" , SHADERTYPE.COOK_TORRANCE_FRAGMENT , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "utils.frag"         , SHADERTYPE.UTILS                  , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "skybox.vert"        , SHADERTYPE.SKYBOX_VERTEX          , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "skybox.frag"        , SHADERTYPE.SKYBOX_FRAG            , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "cube-sh.vert"       , SHADERTYPE.CUBE_SH_VERT           , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "cube-sh.frag"       , SHADERTYPE.CUBE_SH_FRAG           , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "basic.vert"                , SHADERTYPE.SIMPLE_VERTEX                 , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "debug.vert"                , SHADERTYPE.DEBUG_VERTEX                  , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "unlit.frag"                , SHADERTYPE.UNLIT_FRAGMENT                , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "lambert.frag"              , SHADERTYPE.LAMBERT_FRAGMENT              , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "blinn-phong.frag"          , SHADERTYPE.BLINN_PHONG_FRAGMENT          , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "debug.frag"                , SHADERTYPE.DEBUG_FRAGMENT                , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "oren-nayar.frag"           , SHADERTYPE.OREN_NAYAR_FRAGMENT           , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "cook-torrance.frag"        , SHADERTYPE.COOK_TORRANCE_FRAGMENT        , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "cook-torrance-legacy.frag" , SHADERTYPE.COOK_TORRANCE_FRAGMENT_NO_EXT , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "utils.frag"                , SHADERTYPE.UTILS                         , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "skybox.vert"               , SHADERTYPE.SKYBOX_VERTEX                 , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "skybox.frag"               , SHADERTYPE.SKYBOX_FRAG                   , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "cube-sh.vert"              , SHADERTYPE.CUBE_SH_VERT                  , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "cube-sh.frag"              , SHADERTYPE.CUBE_SH_FRAG                  , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
   }
 
   asyncLoadShader( name: string, stype: SHADERTYPE, loaded: ( stype: SHADERTYPE, contents: string ) => void ) {
@@ -275,8 +277,14 @@ class Renderer {
     this.programData[ SHADER_PROGRAM.OREN_NAYAR ].program = orenNayarProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.OREN_NAYAR );
 
-    let cookTorranceProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
-                                                        , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.COOK_TORRANCE_FRAGMENT ].source );
+    let cookTorranceProgram = null;
+    if ( this.shaderLODExtension != null ) {
+      cookTorranceProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
+                                                     , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.COOK_TORRANCE_FRAGMENT ].source );
+    } else {
+      cookTorranceProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
+                                                     , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.COOK_TORRANCE_FRAGMENT_NO_EXT ].source );
+    }
     if ( cookTorranceProgram == null ) {
       alert( "Cook-Torrance shader compilation failed. Please check the log for details." );
       success = false;
