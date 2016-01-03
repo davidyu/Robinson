@@ -138,6 +138,7 @@ class ShaderMaterialProperties {
   shininess: WebGLUniformLocation;
   roughness: WebGLUniformLocation;
   fresnel: WebGLUniformLocation;
+  colorMap: WebGLUniformLocation;
 }
 
 class ShaderLightProperties {
@@ -421,6 +422,7 @@ class Renderer {
     uniforms.uMaterial.shininess = gl.getUniformLocation( program, "mat.shininess" );
     uniforms.uMaterial.roughness = gl.getUniformLocation( program, "mat.roughness" );
     uniforms.uMaterial.fresnel = gl.getUniformLocation( program, "mat.fresnel" );
+    uniforms.uMaterial.colorMap = gl.getUniformLocation( program, "mat.colormap" );
 
     uniforms.uLights = [];
     for ( var i = 0; i < 10; i++ ) {
