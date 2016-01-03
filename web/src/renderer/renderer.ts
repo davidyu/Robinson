@@ -638,6 +638,10 @@ class Renderer {
     gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
   }
 
+  renderFullScreenTexture( gl: WebGLRenderingContext ) {
+
+  }
+
   renderIrradiance() {
     var gl = this.context;
     if ( gl ) {
@@ -663,10 +667,17 @@ class Renderer {
 
         //
         // COMPUTE SH COEFFICIENTS
-        gl.bindFramebuffer( gl.FRAMEBUFFER, null );
+        gl.bindFramebuffer( gl.FRAMEBUFFER, this.envMapSHFrameBuffer );
         gl.viewport( 0, 0, 8, 1 );
         gl.clear( gl.COLOR_BUFFER_BIT );
         this.renderIrradianceFromScene( gl, scene, IRRADIANCE_PASS.SH_COMPUTE );
+
+        //
+        // (DEBUG) SHOW SH IN SCENE
+        gl.bindFramebuffer( gl.FRAMEBUFFER, null );
+        gl.viewport( 0, 0, this.viewportW, this.viewportH );
+        gl.clear( gl.COLOR_BUFFER_BIT );
+        this.renderFullScreenTexture( gl );
       }
     }
   }
