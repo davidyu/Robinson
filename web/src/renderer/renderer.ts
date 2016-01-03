@@ -151,6 +151,7 @@ class ShaderLightProperties {
 class ShaderUniforms {
   aVertexPosition: number;
   aVertexNormal: number;
+  aVertexTexCoord: number;
   uModelView: WebGLUniformLocation;
   uModelToWorld: WebGLUniformLocation;
   uPerspective: WebGLUniformLocation;
@@ -188,6 +189,7 @@ class Renderer {
   vertexBuffer: WebGLBuffer;
   vertexColorBuffer: WebGLBuffer;
   vertexNormalBuffer: WebGLBuffer;
+  vertexTexCoordBuffer: WebGLBuffer;
   indexBuffer: WebGLBuffer;
 
   // shader programs
@@ -383,6 +385,7 @@ class Renderer {
     this.vertexBuffer = gl.createBuffer();
     this.vertexNormalBuffer = gl.createBuffer();
     this.vertexColorBuffer = gl.createBuffer();
+    this.vertexTexCoordBuffer = gl.createBuffer();
     this.indexBuffer = gl.createBuffer();
 
     this.dirty = true;
@@ -400,6 +403,11 @@ class Renderer {
     uniforms.aVertexNormal = gl.getAttribLocation( program, "aVertexNormal" );
     if ( uniforms.aVertexNormal >= 0 ) {
       gl.enableVertexAttribArray( uniforms.aVertexNormal );
+    }
+
+    uniforms.aVertexTexCoord = gl.getAttribLocation( program, "aVertexTexCoord" );
+    if ( uniforms.aVertexTexCoord >= 0 ) {
+      gl.enableVertexAttribArray( uniforms.aVertexTexCoord );
     }
 
     uniforms.uModelView = gl.getUniformLocation( program, "uMVMatrix" );
@@ -628,9 +636,32 @@ class Renderer {
     gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
   }
 
+  useProgram( gl: WebGLRenderingContext, program: SHADER_PROGRAM ) {
+    gl.useProgram( this.programData[ program ].program );
+
+    let locations = this.programData[ program ].uniforms;
+
+    gl.disableVertexAttribArray( 0 );
+    gl.disableVertexAttribArray( 1 );
+    gl.disableVertexAttribArray( 2 );
+
+    if ( locations.aVertexPosition >= 0 ) {
+      gl.enableVertexAttribArray( locations.aVertexPosition );
+    }
+
+    if ( locations.aVertexNormal >= 0 ) {
+      gl.enableVertexAttribArray( locations.aVertexNormal );
+    }
+
+    if ( locations.aVertexTexCoord >= 0 ) {
+      gl.enableVertexAttribArray( locations.aVertexTexCoord );
+    }
+
+    this.currentProgram = program;
+  }
+
   renderIrradianceFromScene( gl: WebGLRenderingContext, scene: Scene, pass: IRRADIANCE_PASS ) {
-    gl.useProgram( this.programData[ SHADER_PROGRAM.CUBE_SH ].program );
-    this.currentProgram = SHADER_PROGRAM.CUBE_SH;
+    this.useProgram( gl, SHADER_PROGRAM.CUBE_SH );
 
     let fullscreen = new Quad();
     fullscreen.rebuildRenderData();
@@ -656,7 +687,29 @@ class Renderer {
   }
 
   renderFullScreenTexture( gl: WebGLRenderingContext, texture: WebGLTexture ) {
-    
+    this.useProgram( gl, SHADER_PROGRAM.UNLIT );
+
+    let fullscreen = new Quad();
+    fullscreen.rebuildRenderData();
+
+    let locations = this.programData[ this.currentProgram ].uniforms;
+
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.vertices, gl.STATIC_DRAW );
+    gl.vertexAttribPointer( locations.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
+
+    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
+    gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
+
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexTexCoordBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.textureCoords, gl.STATIC_DRAW );
+    gl.vertexAttribPointer( locations.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
+
+    gl.uniform1i( locations.uMaterial.colorMap, 0 );
+    gl.activeTexture( gl.TEXTURE0 );
+    gl.bindTexture( gl.TEXTURE_2D, texture );
+
+    gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
   }
 
   renderIrradiance() {
