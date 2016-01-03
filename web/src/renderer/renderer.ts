@@ -11,7 +11,6 @@ enum SHADERTYPE {
   UTILS,
   SKYBOX_VERTEX,
   SKYBOX_FRAG,
-  CUBE_SH_VERT,
   CUBE_SH_FRAG,
   PASSTHROUGH_VERT,
 };
@@ -76,7 +75,6 @@ class ShaderRepository {
     this.asyncLoadShader( "utils.frag"                , SHADERTYPE.UTILS                         , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "skybox.vert"               , SHADERTYPE.SKYBOX_VERTEX                 , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "skybox.frag"               , SHADERTYPE.SKYBOX_FRAG                   , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "cube-sh.vert"              , SHADERTYPE.CUBE_SH_VERT                  , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "cube-sh.frag"              , SHADERTYPE.CUBE_SH_FRAG                  , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "passthrough.vert"          , SHADERTYPE.PASSTHROUGH_VERT              , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
   }
@@ -311,7 +309,7 @@ class Renderer {
     this.programData[ SHADER_PROGRAM.SKYBOX ].program = skyboxProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.SKYBOX );
 
-    let cubeMapSHProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.CUBE_SH_VERT ].source
+    let cubeMapSHProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.PASSTHROUGH_VERT ].source
                                                     , sr.files[ SHADERTYPE.CUBE_SH_FRAG ].source );
 
     if ( cubeMapSHProgram == null ) {
@@ -676,6 +674,10 @@ class Renderer {
     gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.vertices, gl.STATIC_DRAW );
     gl.vertexAttribPointer( locations.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexTexCoordBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.textureCoords, gl.STATIC_DRAW );
+    gl.vertexAttribPointer( locations.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
+
     gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
     gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
 
@@ -698,12 +700,12 @@ class Renderer {
     gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.vertices, gl.STATIC_DRAW );
     gl.vertexAttribPointer( locations.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
-    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
-    gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
-
     gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexTexCoordBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.textureCoords, gl.STATIC_DRAW );
     gl.vertexAttribPointer( locations.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
+
+    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
+    gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
 
     gl.uniform1i( locations.uMaterial.colorMap, 0 );
     gl.activeTexture( gl.TEXTURE0 );
