@@ -5,6 +5,7 @@
 class RenderData {
   dirty: boolean;
   vertices: Float32Array;
+  textureCoords: Float32Array;
   normals: Float32Array;
   colors: Float32Array;
   indices: Uint16Array;
@@ -12,10 +13,10 @@ class RenderData {
 
   constructor() {
     this.dirty = true;
-    this.vertices = new Float32Array( [] );
-    this.normals = new Float32Array( [] );
-    this.colors = new Float32Array( [] );
-    this.indices = new Uint16Array( [] );
+    this.vertices = new Float32Array( 0 );
+    this.normals = new Float32Array( 0 );
+    this.colors = new Float32Array( 0 );
+    this.indices = new Uint16Array( 0 );
     this.isTextureMapped = false;
   }
 }
