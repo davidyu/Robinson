@@ -50,8 +50,8 @@ class ShowcaseApp {
 
     const PAN_PIXEL_TO_RADIAN = 1/10;
     hammer.on( "panmove", e => {
-      this.yaw = this.yaw.add( gml.fromRadians( e.velocityX * PAN_PIXEL_TO_RADIAN ).negate() ).reduceToOneTurn();
-      this.pitch = this.pitch.add( gml.fromRadians( e.velocityY * PAN_PIXEL_TO_RADIAN ) ).reduceToOneTurn();
+      this.yaw = this.yaw.add( gml.fromRadians( -e.velocityX * PAN_PIXEL_TO_RADIAN ).negate() ).reduceToOneTurn();
+      this.pitch = this.pitch.add( gml.fromRadians( -e.velocityY * PAN_PIXEL_TO_RADIAN ) ).reduceToOneTurn();
       this.dirty = true;
     } );
   }

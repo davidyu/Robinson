@@ -47,8 +47,8 @@ class OrbitApp {
 
     const PAN_PIXEL_TO_RADIAN = 1/10;
     hammer.on( "panmove", e => {
-      this.yaw = this.yaw.add( gml.fromRadians( e.velocityX * PAN_PIXEL_TO_RADIAN ).negate() ).reduceToOneTurn();
-      this.pitch = this.pitch.add( gml.fromRadians( e.velocityY * PAN_PIXEL_TO_RADIAN ) ).reduceToOneTurn();
+      this.yaw = this.yaw.add( gml.fromRadians( -e.velocityX * PAN_PIXEL_TO_RADIAN ).negate() ).reduceToOneTurn();
+      this.pitch = this.pitch.add( gml.fromRadians( -e.velocityY * PAN_PIXEL_TO_RADIAN ) ).reduceToOneTurn();
       this.dirty = true;
     } );
   }
@@ -89,7 +89,7 @@ function StartOrbit() {
     shaderRepo = new ShaderRepository( ( repo ) => { app = new OrbitApp( params, repo ); } );
     environmentMap = new CubeMap( "./posx.jpg", "./negx.jpg", "./posy.jpg", "./negy.jpg", "./posz.jpg", "./negz.jpg" );
 
-    var testScene = new Scene( environmentMap );
+    var testScene = new Scene( environmentMap, null );
     Scene.setActiveScene( testScene );
     testScene.addRenderable( new Sphere( 1, gml.Vec4.origin, new BlinnPhongMaterial( new gml.Vec4( 0.1, 0.1, 0.1, 1 ), new gml.Vec4( 0.5, 0.5, 0.5, 1 ), new gml.Vec4( 0.5, 0.5, 0.5, 1 ), new gml.Vec4( 0, 0, 0, 1 ), 20.0 ) ) );
 
