@@ -55,7 +55,7 @@ class ShaderRepository {
     this.loadDoneCallback = loadDoneCallback;
     this.files = [];
     for ( var t in SHADERTYPE ) {
-      if ( !isNaN( t ) ) {
+      if ( !isNaN( <any> t ) ) {
         this.files[ t ] = new ShaderFile();
       }
     }
@@ -111,7 +111,7 @@ class ShaderRepository {
   allShadersLoaded(): boolean {
     var allLoaded = true;
     for ( var v in SHADERTYPE ) {
-      if ( !isNaN( v ) ) {
+      if ( !isNaN( <any> v ) ) {
         allLoaded = allLoaded && this.files[ v ].loaded;
       }
     }

@@ -18,7 +18,7 @@ class CubeMap {
     this.cubeMapTexture = null;
 
     for ( var t in CUBEMAPTYPE ) {
-      if ( !isNaN( t ) ) {
+      if ( !isNaN( <any> t ) ) {
         this.faces[ t ] = new Image();
       }
     }
