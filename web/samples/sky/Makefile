@@ -25,7 +25,7 @@ page:
 
 update:
 	pushd vendor && sh update.sh && popd
-	cp vendor/*.js $(DIST)/vendor/
+	cp vendor/*.js $(DIST)/vendor/ || :
 
 folders:
 	mkdir -p $(DIST)
