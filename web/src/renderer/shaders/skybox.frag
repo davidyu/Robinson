@@ -12,11 +12,12 @@ vec3 flipX( vec3 v ) {
 void main() {
     if ( proceduralSky ) {
         // procedural sky
-        vDirection = normalize( vDirection );
-        vDirection.y = max( vDirection.y, 0 );
-        gl_FragColor = vec3( pow( 1 - vDirection.y, 2 )            // blue...meh
-                           , 1 - vDirection.y                      // green...meh
-                           , 0.6 + ( 1.0 - vDirection.y ) * 0.4 ); // blue depends on how far up we are
+        vec3 eye = normalize( vDirection );
+        eye.y = max( eye.y, 0.0 );
+        gl_FragColor = vec4( pow( 1.0 - eye.y, 2.0 )        // red...meh
+                           , 1.0 - eye.y                    // green...meh
+                           , 0.6 + ( 1.0 - eye.y ) * 0.4    // blue depends on how far up we are
+                           , 1.0 );
     } else {
         gl_FragColor = textureCube( environment, vDirection );
     }
