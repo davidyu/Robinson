@@ -8,6 +8,7 @@ varying mediump vec3 vDirection;
 void main() {
     // assuming a full-screen quad, the model matrix is the identity,
     // so the inverse view matrix is fine for our purposes.
+    // what does this even mean??????????????
     vDirection = uInverseViewMatrix * ( uInverseProjectionMatrix * vec4( aVertexPosition, 1.0 ) ).xyz;
 
     // assume the quad verts provided cover full-screen; no processing necessary.
