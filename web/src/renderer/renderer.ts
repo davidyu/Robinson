@@ -516,9 +516,11 @@ class Renderer {
     gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
     gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
 
-    gl.uniform1i( locations.uEnvMap, 0 );
-    gl.activeTexture( gl.TEXTURE0 );
-    gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environment.cubeMapTexture );
+    if ( scene.environment != null ) {
+      gl.uniform1i( locations.uEnvMap, 0 );
+      gl.activeTexture( gl.TEXTURE0 );
+      gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environment.cubeMapTexture );
+    }
 
     gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
   }
@@ -616,11 +618,15 @@ class Renderer {
 
       gl.uniform1i( locations.uIrradianceMap, 1 );
 
-      gl.activeTexture( gl.TEXTURE0 );
-      gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environment.cubeMapTexture );
+      if ( scene.environment != null ) {
+        gl.activeTexture( gl.TEXTURE0 );
+        gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environment.cubeMapTexture );
+      }
 
-      gl.activeTexture( gl.TEXTURE1 );
-      gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.irradiance.cubeMapTexture );
+      if ( scene.irradiance != null ) {
+        gl.activeTexture( gl.TEXTURE1 );
+        gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.irradiance.cubeMapTexture );
+      }
 
       gl.drawElements( gl.TRIANGLES, p.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
     } );
@@ -681,9 +687,11 @@ class Renderer {
     gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
     gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
 
-    gl.uniform1i( locations.uEnvMap, 0 );
-    gl.activeTexture( gl.TEXTURE0 );
-    gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environment.cubeMapTexture );
+    if ( scene.environment != null ) {
+      gl.uniform1i( locations.uEnvMap, 0 );
+      gl.activeTexture( gl.TEXTURE0 );
+      gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environment.cubeMapTexture );
+    }
 
     gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
   }
