@@ -12,10 +12,15 @@ class SkyApp {
   dirty: boolean;
 
   // camera building parameters
-  orbitCenter: gml.Vec4;;
+  orbitCenter: gml.Vec4;
   orbitDistance: number;
   yaw: gml.Angle;
   pitch: gml.Angle;
+
+  // ui
+  dragging: boolean;
+  dragStart: gml.Vec2;
+  lastMousePos: gml.Vec2;
 
   constructor( params: SkyAppParams, shaderRepo: ShaderRepository ) {
     this.renderer = new Renderer( params.vp, shaderRepo );
@@ -25,8 +30,50 @@ class SkyApp {
     this.pitch = gml.fromDegrees( 0 );
     this.renderer.setCamera( this.camera );
     this.dirty = true;
+    this.dragStart = new gml.Vec2( 0, 0 );
+    this.lastMousePos = new gml.Vec2( 0, 0 );
 
     setInterval( () => { this.fixedUpdate() }, 1000/30 );
+
+    params.vp.addEventListener( 'mousedown', ev => {
+      switch ( ev.button ) {
+        case 0: // left
+          this.dragStart.x = ev.clientX;
+          this.dragStart.y = ev.clientY;
+          this.lastMousePos.x = ev.clientX;
+          this.lastMousePos.y = ev.clientY;
+          this.dragging = true;
+          break;
+        case 1: // middle
+          break;
+        case 2: // right
+          break;
+      }
+      ev.preventDefault();
+      return false;
+    }, false );
+
+    params.vp.addEventListener( 'mouseup', ev => {
+      this.dragging = false;
+      ev.preventDefault();
+      return false;
+    }, false );
+
+    const PAN_PIXEL_TO_RADIAN = 1/10;
+    params.vp.addEventListener( 'mousemove', ev => {
+      if ( this.dragging ) {
+        let deltaX = ev.clientX - this.lastMousePos.x;
+        let deltaY = ev.clientY - this.lastMousePos.y;
+        this.lastMousePos.x = ev.clientX;
+        this.lastMousePos.y = ev.clientY;
+
+        this.yaw = this.yaw.add( gml.fromRadians( -deltaX * PAN_PIXEL_TO_RADIAN ).negate() ).reduceToOneTurn();
+        this.pitch = this.pitch.add( gml.fromRadians( -deltaY * PAN_PIXEL_TO_RADIAN ) ).reduceToOneTurn();
+        this.dirty = true;
+        ev.preventDefault();
+        return false;
+      }
+    }, false );
   }
 
   public fixedUpdate() {
@@ -48,8 +95,6 @@ class SkyApp {
       this.renderer.update();
       this.renderer.render();
       this.dirty = false;
-
-
     }
   }
 }
