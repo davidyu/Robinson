@@ -54,14 +54,15 @@ class Scene {
   public lights: Light[];
   private static activeScene;
 
-  environment: CubeMap;
-  irradiance: CubeMap;
+  // maps
+  environmentMap : CubeMap;
+  irradianceMap  : CubeMap;
 
-  constructor( environment: CubeMap, irradiance: CubeMap ) {
+  constructor( environmentMap: CubeMap, irradianceMap: CubeMap ) {
     this.renderables = [];
     this.lights = [];
-    this.environment = environment;
-    this.irradiance = irradiance;
+    this.environmentMap = environmentMap;
+    this.irradianceMap = irradianceMap;
   }
 
   public addRenderable( renderable: Renderable ) {

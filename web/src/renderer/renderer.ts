@@ -516,10 +516,10 @@ class Renderer {
     gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
     gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
 
-    if ( scene.environment != null ) {
+    if ( scene.environmentMap != null ) {
       gl.uniform1i( locations.uEnvMap, 0 );
       gl.activeTexture( gl.TEXTURE0 );
-      gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environment.cubeMapTexture );
+      gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environmentMap.cubeMapTexture );
     }
 
     gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
@@ -618,14 +618,14 @@ class Renderer {
 
       gl.uniform1i( locations.uIrradianceMap, 1 );
 
-      if ( scene.environment != null ) {
+      if ( scene.environmentMap != null ) {
         gl.activeTexture( gl.TEXTURE0 );
-        gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environment.cubeMapTexture );
+        gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environmentMap.cubeMapTexture );
       }
 
-      if ( scene.irradiance != null ) {
+      if ( scene.irradianceMap != null ) {
         gl.activeTexture( gl.TEXTURE1 );
-        gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.irradiance.cubeMapTexture );
+        gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.irradianceMap.cubeMapTexture );
       }
 
       gl.drawElements( gl.TRIANGLES, p.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
@@ -687,10 +687,10 @@ class Renderer {
     gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
     gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
 
-    if ( scene.environment != null ) {
+    if ( scene.environmentMap != null ) {
       gl.uniform1i( locations.uEnvMap, 0 );
       gl.activeTexture( gl.TEXTURE0 );
-      gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environment.cubeMapTexture );
+      gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environmentMap.cubeMapTexture );
     }
 
     gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
@@ -729,20 +729,20 @@ class Renderer {
       if ( scene ) {
         // SET UP ENVIRONMENT MAP
         let cubeMapTexture = null;
-        if ( scene.environment != null && scene.environment.loaded && scene.environment.cubeMapTexture == null ) {
+        if ( scene.environmentMap != null && scene.environmentMap.loaded && scene.environmentMap.cubeMapTexture == null ) {
           let cubeMapTexture = gl.createTexture();
           gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapTexture );
 
-          this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_X, scene.environment.faces[ CUBEMAPTYPE.POS_X ] );
-          this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_X, scene.environment.faces[ CUBEMAPTYPE.NEG_X ] );
-          this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, scene.environment.faces[ CUBEMAPTYPE.POS_Y ] );
-          this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, scene.environment.faces[ CUBEMAPTYPE.NEG_Y ] );
-          this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Z, scene.environment.faces[ CUBEMAPTYPE.POS_Z ] );
-          this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, scene.environment.faces[ CUBEMAPTYPE.NEG_Z ] );
+          this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_X, scene.environmentMap.faces[ CUBEMAPTYPE.POS_X ] );
+          this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_X, scene.environmentMap.faces[ CUBEMAPTYPE.NEG_X ] );
+          this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, scene.environmentMap.faces[ CUBEMAPTYPE.POS_Y ] );
+          this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, scene.environmentMap.faces[ CUBEMAPTYPE.NEG_Y ] );
+          this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Z, scene.environmentMap.faces[ CUBEMAPTYPE.POS_Z ] );
+          this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, scene.environmentMap.faces[ CUBEMAPTYPE.NEG_Z ] );
 
           gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
 
-          scene.environment.cubeMapTexture = cubeMapTexture;
+          scene.environmentMap.cubeMapTexture = cubeMapTexture;
         }
 
         //
@@ -775,39 +775,39 @@ class Renderer {
           //
           // SET UP ENVIRONMENT MAP
           let cubeMapTexture = null;
-          if ( scene.environment != null && scene.environment.loaded && scene.environment.cubeMapTexture == null ) {
+          if ( scene.environmentMap != null && scene.environmentMap.loaded && scene.environmentMap.cubeMapTexture == null ) {
             let cubeMapTexture = gl.createTexture();
             gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapTexture );
 
-            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_X, scene.environment.faces[ CUBEMAPTYPE.POS_X ] );
-            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_X, scene.environment.faces[ CUBEMAPTYPE.NEG_X ] );
-            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, scene.environment.faces[ CUBEMAPTYPE.POS_Y ] );
-            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, scene.environment.faces[ CUBEMAPTYPE.NEG_Y ] );
-            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Z, scene.environment.faces[ CUBEMAPTYPE.POS_Z ] );
-            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, scene.environment.faces[ CUBEMAPTYPE.NEG_Z ] );
+            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_X, scene.environmentMap.faces[ CUBEMAPTYPE.POS_X ] );
+            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_X, scene.environmentMap.faces[ CUBEMAPTYPE.NEG_X ] );
+            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, scene.environmentMap.faces[ CUBEMAPTYPE.POS_Y ] );
+            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, scene.environmentMap.faces[ CUBEMAPTYPE.NEG_Y ] );
+            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Z, scene.environmentMap.faces[ CUBEMAPTYPE.POS_Z ] );
+            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, scene.environmentMap.faces[ CUBEMAPTYPE.NEG_Z ] );
 
             gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
 
-            scene.environment.cubeMapTexture = cubeMapTexture;
+            scene.environmentMap.cubeMapTexture = cubeMapTexture;
           }
 
           //
           // SET UP IRRADIANCE MAP
           let irradianceTexture = null;
-          if ( scene.irradiance != null && scene.irradiance.loaded && scene.irradiance.cubeMapTexture == null ) {
+          if ( scene.irradianceMap != null && scene.irradianceMap.loaded && scene.irradianceMap.cubeMapTexture == null ) {
             let cubeMapTexture = gl.createTexture();
             gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapTexture );
 
-            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_X, scene.irradiance.faces[ CUBEMAPTYPE.POS_X ] );
-            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_X, scene.irradiance.faces[ CUBEMAPTYPE.NEG_X ] );
-            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, scene.irradiance.faces[ CUBEMAPTYPE.POS_Y ] );
-            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, scene.irradiance.faces[ CUBEMAPTYPE.NEG_Y ] );
-            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Z, scene.irradiance.faces[ CUBEMAPTYPE.POS_Z ] );
-            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, scene.irradiance.faces[ CUBEMAPTYPE.NEG_Z ] );
+            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_X, scene.irradianceMap.faces[ CUBEMAPTYPE.POS_X ] );
+            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_X, scene.irradianceMap.faces[ CUBEMAPTYPE.NEG_X ] );
+            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, scene.irradianceMap.faces[ CUBEMAPTYPE.POS_Y ] );
+            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, scene.irradianceMap.faces[ CUBEMAPTYPE.NEG_Y ] );
+            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Z, scene.irradianceMap.faces[ CUBEMAPTYPE.POS_Z ] );
+            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, scene.irradianceMap.faces[ CUBEMAPTYPE.NEG_Z ] );
 
             gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
 
-            scene.irradiance.cubeMapTexture = cubeMapTexture;
+            scene.irradianceMap.cubeMapTexture = cubeMapTexture;
           }
 
           var mvStack: gml.Mat4[] = [];
