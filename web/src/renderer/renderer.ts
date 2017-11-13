@@ -500,30 +500,30 @@ class Renderer {
     gl.useProgram( this.programData[ SHADER_PROGRAM.SKYBOX ].program );
     this.currentProgram = SHADER_PROGRAM.SKYBOX;
 
-    let locations = this.programData[ SHADER_PROGRAM.SKYBOX ].uniforms;
+    let shaderVariables = this.programData[ SHADER_PROGRAM.SKYBOX ].uniforms;
 
     let fullscreen = new Quad();
     fullscreen.rebuildRenderData();
 
     let inverseProjectionMatrix = perspective.invert();
-    gl.uniformMatrix4fv( locations.uInverseProjection, false, inverseProjectionMatrix.m );
+    gl.uniformMatrix4fv( shaderVariables.uInverseProjection, false, inverseProjectionMatrix.m );
 
     let inverseViewMatrix = mvStack[ mvStack.length - 1 ].invert().mat3;
-    gl.uniformMatrix3fv( locations.uInverseView, false, inverseViewMatrix.m );
+    gl.uniformMatrix3fv( shaderVariables.uInverseView, false, inverseViewMatrix.m );
     
     gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.vertices, gl.STATIC_DRAW );
-    gl.vertexAttribPointer( locations.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
+    gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
     gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
     gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
 
     if ( scene.environmentMap != null ) {
-      gl.uniform1i( locations.uEnvMap, 0 );
+      gl.uniform1i( shaderVariables.uEnvMap, 0 );
       gl.activeTexture( gl.TEXTURE0 );
       gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environmentMap.cubeMapTexture );
     } else {
-      gl.uniform1i( locations.uProcSky, 1 );
+      gl.uniform1i( shaderVariables.uProcSky, 1 );
     }
 
     gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
@@ -539,13 +539,13 @@ class Renderer {
         this.currentProgram = SHADER_PROGRAM.BLINN_PHONG;
 
         let blinnphong = <BlinnPhongMaterial> p.material;
-        let locations = this.programData[ SHADER_PROGRAM.BLINN_PHONG ].uniforms;
+        let shaderVariables = this.programData[ SHADER_PROGRAM.BLINN_PHONG ].uniforms;
 
-        gl.uniform4fv( locations.uMaterial.diffuse, blinnphong.diffuse.v );
-        gl.uniform4fv( locations.uMaterial.ambient, blinnphong.ambient.v );
-        gl.uniform4fv( locations.uMaterial.specular, blinnphong.specular.v );
-        gl.uniform4fv( locations.uMaterial.emissive, blinnphong.emissive.v );
-        gl.uniform1f ( locations.uMaterial.shininess, blinnphong.shininess );
+        gl.uniform4fv( shaderVariables.uMaterial.diffuse, blinnphong.diffuse.v );
+        gl.uniform4fv( shaderVariables.uMaterial.ambient, blinnphong.ambient.v );
+        gl.uniform4fv( shaderVariables.uMaterial.specular, blinnphong.specular.v );
+        gl.uniform4fv( shaderVariables.uMaterial.emissive, blinnphong.emissive.v );
+        gl.uniform1f ( shaderVariables.uMaterial.shininess, blinnphong.shininess );
       } else if ( p.material instanceof DebugMaterial ) {
         gl.useProgram( this.programData[ SHADER_PROGRAM.DEBUG ].program );
         this.currentProgram = SHADER_PROGRAM.DEBUG;
@@ -554,73 +554,73 @@ class Renderer {
         this.currentProgram = SHADER_PROGRAM.OREN_NAYAR;
 
         let orennayar = <OrenNayarMaterial> p.material;
-        let locations = this.programData[ SHADER_PROGRAM.OREN_NAYAR ].uniforms;
+        let shaderVariables = this.programData[ SHADER_PROGRAM.OREN_NAYAR ].uniforms;
 
-        gl.uniform4fv( locations.uMaterial.diffuse, orennayar.diffuse.v );
-        gl.uniform1f ( locations.uMaterial.roughness, orennayar.roughness );
+        gl.uniform4fv( shaderVariables.uMaterial.diffuse, orennayar.diffuse.v );
+        gl.uniform1f ( shaderVariables.uMaterial.roughness, orennayar.roughness );
       } else if ( p.material instanceof LambertMaterial ) {
         gl.useProgram( this.programData[ SHADER_PROGRAM.LAMBERT ].program );
         this.currentProgram = SHADER_PROGRAM.LAMBERT;
 
         let lambert = <LambertMaterial> p.material;
-        let locations = this.programData[ SHADER_PROGRAM.LAMBERT ].uniforms;
-        gl.uniform4fv( locations.uMaterial.diffuse, lambert.diffuse.v );
+        let shaderVariables = this.programData[ SHADER_PROGRAM.LAMBERT ].uniforms;
+        gl.uniform4fv( shaderVariables.uMaterial.diffuse, lambert.diffuse.v );
       } else if ( p.material instanceof CookTorranceMaterial ) {
         gl.useProgram( this.programData[ SHADER_PROGRAM.COOK_TORRANCE ].program );
         this.currentProgram = SHADER_PROGRAM.COOK_TORRANCE;
 
         let cooktorrance = <CookTorranceMaterial> p.material;
-        let locations = this.programData[ SHADER_PROGRAM.COOK_TORRANCE ].uniforms;
-        gl.uniform4fv( locations.uMaterial.diffuse, cooktorrance.diffuse.v );
-        gl.uniform4fv( locations.uMaterial.specular, cooktorrance.specular.v );
-        gl.uniform1f ( locations.uMaterial.roughness, cooktorrance.roughness );
-        gl.uniform1f ( locations.uMaterial.fresnel, cooktorrance.fresnel );
+        let shaderVariables = this.programData[ SHADER_PROGRAM.COOK_TORRANCE ].uniforms;
+        gl.uniform4fv( shaderVariables.uMaterial.diffuse, cooktorrance.diffuse.v );
+        gl.uniform4fv( shaderVariables.uMaterial.specular, cooktorrance.specular.v );
+        gl.uniform1f ( shaderVariables.uMaterial.roughness, cooktorrance.roughness );
+        gl.uniform1f ( shaderVariables.uMaterial.fresnel, cooktorrance.fresnel );
       }
 
-      let locations = this.programData[ this.currentProgram ].uniforms;
+      let shaderVariables = this.programData[ this.currentProgram ].uniforms;
       scene.lights.forEach( ( l, i ) => {
         let lightpos = mvStack[ mvStack.length - 1 ].transform( l.position );
-        gl.uniform4fv( locations.uLights[i].position, lightpos.v );
-        gl.uniform4fv( locations.uLights[i].color, l.color.v );
-        gl.uniform1i( locations.uLights[i].enabled, l.enabled ? 1 : 0 );
-        gl.uniform1f( locations.uLights[i].radius, l.radius );
+        gl.uniform4fv( shaderVariables.uLights[i].position, lightpos.v );
+        gl.uniform4fv( shaderVariables.uLights[i].color, l.color.v );
+        gl.uniform1i( shaderVariables.uLights[i].enabled, l.enabled ? 1 : 0 );
+        gl.uniform1f( shaderVariables.uLights[i].radius, l.radius );
       } );
 
-      gl.uniformMatrix4fv( locations.uPerspective, false, perspective.m );
+      gl.uniformMatrix4fv( shaderVariables.uPerspective, false, perspective.m );
 
       if ( this.camera != null ) {
-        gl.uniform4fv( locations.uCameraPos, this.camera.matrix.translation.v );
+        gl.uniform4fv( shaderVariables.uCameraPos, this.camera.matrix.translation.v );
       }
 
       let primitiveModelView = mvStack[ mvStack.length - 1 ].multiply( p.transform );
-      gl.uniformMatrix4fv( locations.uModelView, false, primitiveModelView.m );
-      gl.uniformMatrix4fv( locations.uModelToWorld, false, p.transform.m );
+      gl.uniformMatrix4fv( shaderVariables.uModelView, false, primitiveModelView.m );
+      gl.uniformMatrix4fv( shaderVariables.uModelToWorld, false, p.transform.m );
 
       // the normal matrix is defined as the upper 3x3 block of transpose( inverse( model-view ) )
       let normalMVMatrix = primitiveModelView.invert().transpose().mat3;
-      gl.uniformMatrix3fv( locations.uNormalModelView, false, normalMVMatrix.m );
+      gl.uniformMatrix3fv( shaderVariables.uNormalModelView, false, normalMVMatrix.m );
 
       let normalWorldMatrix = p.transform.invert().transpose().mat3;
-      gl.uniformMatrix3fv( locations.uNormalWorld, false, normalWorldMatrix.m );
+      gl.uniformMatrix3fv( shaderVariables.uNormalWorld, false, normalWorldMatrix.m );
 
       let inverseViewMatrix = mvStack[ mvStack.length - 1 ].invert().mat3;
-      gl.uniformMatrix3fv( locations.uInverseView, false, inverseViewMatrix.m );
+      gl.uniformMatrix3fv( shaderVariables.uInverseView, false, inverseViewMatrix.m );
 
       gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
       gl.bufferData( gl.ARRAY_BUFFER, p.renderData.vertices, gl.STATIC_DRAW );
-      gl.vertexAttribPointer( locations.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
+      gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
       gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
       gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, p.renderData.indices, gl.STATIC_DRAW );
       gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexNormalBuffer );
       gl.bufferData( gl.ARRAY_BUFFER, p.renderData.normals, gl.STATIC_DRAW );
 
-      gl.vertexAttribPointer( locations.aVertexNormal, 3, gl.FLOAT, false, 0, 0 );
+      gl.vertexAttribPointer( shaderVariables.aVertexNormal, 3, gl.FLOAT, false, 0, 0 );
 
-      gl.uniform1i( locations.uEnvMap, 0 );
-      gl.uniform1f( locations.uEnvironmentMipMaps, 7 );
+      gl.uniform1i( shaderVariables.uEnvMap, 0 );
+      gl.uniform1f( shaderVariables.uEnvironmentMipMaps, 7 );
 
-      gl.uniform1i( locations.uIrradianceMap, 1 );
+      gl.uniform1i( shaderVariables.uIrradianceMap, 1 );
 
       if ( scene.environmentMap != null ) {
         gl.activeTexture( gl.TEXTURE0 );
@@ -647,22 +647,22 @@ class Renderer {
   useProgram( gl: WebGLRenderingContext, program: SHADER_PROGRAM ) {
     gl.useProgram( this.programData[ program ].program );
 
-    let locations = this.programData[ program ].uniforms;
+    let shaderVariables = this.programData[ program ].uniforms;
 
     gl.disableVertexAttribArray( 0 );
     gl.disableVertexAttribArray( 1 );
     gl.disableVertexAttribArray( 2 );
 
-    if ( locations.aVertexPosition >= 0 ) {
-      gl.enableVertexAttribArray( locations.aVertexPosition );
+    if ( shaderVariables.aVertexPosition >= 0 ) {
+      gl.enableVertexAttribArray( shaderVariables.aVertexPosition );
     }
 
-    if ( locations.aVertexNormal >= 0 ) {
-      gl.enableVertexAttribArray( locations.aVertexNormal );
+    if ( shaderVariables.aVertexNormal >= 0 ) {
+      gl.enableVertexAttribArray( shaderVariables.aVertexNormal );
     }
 
-    if ( locations.aVertexTexCoord >= 0 ) {
-      gl.enableVertexAttribArray( locations.aVertexTexCoord );
+    if ( shaderVariables.aVertexTexCoord >= 0 ) {
+      gl.enableVertexAttribArray( shaderVariables.aVertexTexCoord );
     }
 
     this.currentProgram = program;
@@ -674,25 +674,25 @@ class Renderer {
     let fullscreen = new Quad();
     fullscreen.rebuildRenderData();
 
-    let locations = this.programData[ this.currentProgram ].uniforms;
+    let shaderVariables = this.programData[ this.currentProgram ].uniforms;
 
-    gl.uniformMatrix4fv( locations.uModelView, false, gml.Mat4.identity().m );
-    gl.uniformMatrix3fv( locations.uNormalModelView, false, gml.Mat3.identity().m );
-    gl.uniformMatrix4fv( locations.uPerspective, false, gml.Mat4.identity().m );
+    gl.uniformMatrix4fv( shaderVariables.uModelView, false, gml.Mat4.identity().m );
+    gl.uniformMatrix3fv( shaderVariables.uNormalModelView, false, gml.Mat3.identity().m );
+    gl.uniformMatrix4fv( shaderVariables.uPerspective, false, gml.Mat4.identity().m );
     
     gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.vertices, gl.STATIC_DRAW );
-    gl.vertexAttribPointer( locations.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
+    gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
     gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexTexCoordBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.textureCoords, gl.STATIC_DRAW );
-    gl.vertexAttribPointer( locations.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer( shaderVariables.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
 
     gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
     gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
 
     if ( scene.environmentMap != null ) {
-      gl.uniform1i( locations.uEnvMap, 0 );
+      gl.uniform1i( shaderVariables.uEnvMap, 0 );
       gl.activeTexture( gl.TEXTURE0 );
       gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environmentMap.cubeMapTexture );
     }
@@ -706,20 +706,20 @@ class Renderer {
     let fullscreen = new Quad();
     fullscreen.rebuildRenderData();
 
-    let locations = this.programData[ this.currentProgram ].uniforms;
+    let shaderVariables = this.programData[ this.currentProgram ].uniforms;
 
     gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.vertices, gl.STATIC_DRAW );
-    gl.vertexAttribPointer( locations.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
+    gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
     gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexTexCoordBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.textureCoords, gl.STATIC_DRAW );
-    gl.vertexAttribPointer( locations.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer( shaderVariables.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
 
     gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
     gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
 
-    gl.uniform1i( locations.uMaterial.colorMap, 0 );
+    gl.uniform1i( shaderVariables.uMaterial.colorMap, 0 );
     gl.activeTexture( gl.TEXTURE0 );
     gl.bindTexture( gl.TEXTURE_2D, texture );
 
@@ -856,4 +856,4 @@ class Renderer {
     this.camera = camera;
     this.dirty = true;
   }
-};;
+};
