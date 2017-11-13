@@ -159,6 +159,7 @@ class ShaderUniforms {
   uInverseView: WebGLUniformLocation;
   uCameraPos: WebGLUniformLocation;
   uEnvMap: WebGLUniformLocation;
+  uProcSky: WebGLUniformLocation;
   uIrradianceMap: WebGLUniformLocation;
   uEnvironmentMipMaps: WebGLUniformLocation;
   uMaterial: ShaderMaterialProperties;
@@ -417,6 +418,7 @@ class Renderer {
     uniforms.uInverseView = gl.getUniformLocation( program, "uInverseViewMatrix" );
     uniforms.uCameraPos = gl.getUniformLocation( program, "cPosition_World" );
     uniforms.uEnvMap = gl.getUniformLocation( program, "environment" );
+    uniforms.uProcSky = gl.getUniformLocation( program, "proceduralSky" );
     uniforms.uIrradianceMap = gl.getUniformLocation( program, "irradiance" );
     uniforms.uEnvironmentMipMaps = gl.getUniformLocation( program, "environmentMipMaps" );
 
@@ -520,6 +522,8 @@ class Renderer {
       gl.uniform1i( locations.uEnvMap, 0 );
       gl.activeTexture( gl.TEXTURE0 );
       gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environmentMap.cubeMapTexture );
+    } else {
+      gl.uniform1i( locations.uProcSky, 1 );
     }
 
     gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );

@@ -59,7 +59,7 @@ class SkyApp {
       return false;
     }, false );
 
-    const PAN_PIXEL_TO_RADIAN = 1/10;
+    const PAN_PIXEL_TO_RADIAN = 1/40;
     params.vp.addEventListener( 'mousemove', ev => {
       if ( this.dragging ) {
         let deltaX = ev.clientX - this.lastMousePos.x;
