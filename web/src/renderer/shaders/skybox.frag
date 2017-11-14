@@ -9,11 +9,11 @@ vec3 flipX( vec3 v ) {
     return vec3( -v.x, v.y, v.z );
 }
 
-float sun( vec3 v ) {
+vec3 sun( vec3 v ) {
  	vec3 sun_pos = normalize( vec3( 1 ) );
-    float sun_body = max( 0.0, dot( v, sun_pos ) );
-    return 0.47 * pow( sun_body, 350.0 )
-         + 0.4 * pow( sun_body, 2.0 );
+    float sun_body = clamp( dot( v, sun_pos ), 0.0, 1.0 );
+    return vec3( 1.6, 1.4, 1.0 ) * 0.47 * pow( sun_body, 350.0 )
+         + vec3( 0.8, 0.9, 1.0 ) * 0.40 * pow( sun_body, 2.0 );
 }
 
 void main() {
@@ -26,7 +26,7 @@ void main() {
                        , 1.0 - eye.y                    // green...meh
                        , 0.6 + ( 1.0 - eye.y ) * 0.4 ); // blue depends on how far up we are
 
-        sky += vec3( 1.0 ) * sun( eye );
+        sky += sun( eye );
 
         gl_FragColor = vec4( sky.r, sky.g, sky.b, 1.0 );
     } else {
