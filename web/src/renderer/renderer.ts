@@ -209,6 +209,9 @@ class Renderer {
 
   dirty: boolean;
 
+  placeholderImage: HTMLCanvasElement;
+  placeholderCubemap: WebGLTexture;
+
   constructor( viewportElement: HTMLCanvasElement, sr: ShaderRepository, backgroundColor: gml.Vec4 = new gml.Vec4( 0, 0, 0, 1 ) ) {
     var gl = <WebGLRenderingContext>( viewportElement.getContext( "experimental-webgl" ) );
 
@@ -231,6 +234,16 @@ class Renderer {
     if ( !this.context ) {
       alert( "Unable to initialize WebGL. Your browser may not support it" );
       success = false;
+    }
+
+    this.placeholderImage = document.createElement( "canvas" );
+    this.placeholderImage.width = 2;
+    this.placeholderImage.height = 2;
+
+    {
+      let placeholder_context = this.placeholderImage.getContext( '2d' );
+      placeholder_context.fillStyle = 'black';
+      placeholder_context.fillRect( 0, 0, this.placeholderImage.width, this.placeholderImage.height );
     }
 
     this.shaderLODExtension = gl.getExtension( "EXT_shader_texture_lod" );
@@ -518,11 +531,12 @@ class Renderer {
     gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
     gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
 
+    gl.uniform1i( shaderVariables.uEnvMap, 0 );
+    gl.activeTexture( gl.TEXTURE0 );
     if ( scene.environmentMap != null ) {
-      gl.uniform1i( shaderVariables.uEnvMap, 0 );
-      gl.activeTexture( gl.TEXTURE0 );
       gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environmentMap.cubeMapTexture );
     } else {
+      gl.bindTexture( gl.TEXTURE_CUBE_MAP, this.placeholderCubemap );
       gl.uniform1i( shaderVariables.uProcSky, 1 );
     }
 
@@ -625,11 +639,17 @@ class Renderer {
       if ( scene.environmentMap != null ) {
         gl.activeTexture( gl.TEXTURE0 );
         gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environmentMap.cubeMapTexture );
+      } else {
+        gl.activeTexture( gl.TEXTURE0 );
+        gl.bindTexture( gl.TEXTURE_CUBE_MAP, this.placeholderCubemap );
       }
 
       if ( scene.irradianceMap != null ) {
         gl.activeTexture( gl.TEXTURE1 );
         gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.irradianceMap.cubeMapTexture );
+      } else {
+        gl.activeTexture( gl.TEXTURE1 );
+        gl.bindTexture( gl.TEXTURE_CUBE_MAP, this.placeholderCubemap );
       }
 
       gl.drawElements( gl.TRIANGLES, p.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
@@ -642,6 +662,10 @@ class Renderer {
     gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR );
     gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+  }
+
+  bindDummyCubeMapFace( gl: WebGLRenderingContext, face: number ) {
+    gl.texImage2D( face, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.placeholderImage );
   }
 
   useProgram( gl: WebGLRenderingContext, program: SHADER_PROGRAM ) {
@@ -695,6 +719,10 @@ class Renderer {
       gl.uniform1i( shaderVariables.uEnvMap, 0 );
       gl.activeTexture( gl.TEXTURE0 );
       gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environmentMap.cubeMapTexture );
+    } else {
+      gl.uniform1i( shaderVariables.uEnvMap, 0 );
+      gl.activeTexture( gl.TEXTURE0 );
+      gl.bindTexture( gl.TEXTURE_CUBE_MAP, this.placeholderCubemap );
     }
 
     gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
@@ -747,6 +775,20 @@ class Renderer {
           gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
 
           scene.environmentMap.cubeMapTexture = cubeMapTexture;
+        } else {
+          let cubeMapTexture = gl.createTexture();
+          gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapTexture );
+
+          this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_X );
+          this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_X );
+          this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Y );
+          this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y );
+          this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Z );
+          this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z );
+
+          gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+
+          this.placeholderCubemap = cubeMapTexture;
         }
 
         //
@@ -793,6 +835,20 @@ class Renderer {
             gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
 
             scene.environmentMap.cubeMapTexture = cubeMapTexture;
+          } else {
+            let cubeMapTexture = gl.createTexture();
+            gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapTexture );
+
+            this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_X );
+            this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_X );
+            this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Y );
+            this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y );
+            this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Z );
+            this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z );
+
+            gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+
+            this.placeholderCubemap = cubeMapTexture;
           }
 
           //
@@ -812,6 +868,18 @@ class Renderer {
             gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
 
             scene.irradianceMap.cubeMapTexture = cubeMapTexture;
+          } else {
+            let cubeMapTexture = gl.createTexture();
+            gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapTexture );
+
+            this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_X );
+            this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_X );
+            this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Y );
+            this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y );
+            this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Z );
+            this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z );
+
+            gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
           }
 
           var mvStack: gml.Mat4[] = [];
