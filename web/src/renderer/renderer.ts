@@ -796,17 +796,73 @@ class Renderer {
             gl.bindFramebuffer( gl.FRAMEBUFFER, renderTargetFramebuffer );
             gl.viewport( 0, 0, size, size );
 
-            gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X, cubeMapRenderTarget, 0 );
-            gl.colorMask( true, true, true, true );
-            gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
-
             // draw +x view
+            gl.texImage2D( gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
+            gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X, cubeMapRenderTarget, 0 );
+            gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
             var mvStack: gml.Mat4[] = [];
             mvStack.push( new gml.Mat4( 1, 0, 0, 0
                                       , 0, 1, 0, 0
                                       , 0, 0, 1, 0
                                       , 0, 0, 0, 1 ) );
             this.renderSceneEnvironment( gl, scene, mvStack, size, size );
+
+            // draw -x view
+            gl.texImage2D( gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
+            gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_NEGATIVE_X, cubeMapRenderTarget, 0 );
+            gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+            var mvStack: gml.Mat4[] = [];
+            mvStack.push( new gml.Mat4(-1, 0, 0, 0
+                                      , 0, 1, 0, 0
+                                      , 0, 0, 1, 0
+                                      , 0, 0, 0, 1 ) );
+            this.renderSceneEnvironment( gl, scene, mvStack, size, size );
+
+            // draw +y view
+            gl.texImage2D( gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
+            gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, cubeMapRenderTarget, 0 );
+            gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+            var mvStack: gml.Mat4[] = [];
+            mvStack.push( new gml.Mat4( 1, 0, 0, 0
+                                      , 0, 1, 0, 0
+                                      , 0, 0, 1, 0
+                                      , 0, 0, 0, 1 ) );
+            this.renderSceneEnvironment( gl, scene, mvStack, size, size );
+
+            // draw -y view
+            gl.texImage2D( gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
+            gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, cubeMapRenderTarget, 0 );
+            gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+            var mvStack: gml.Mat4[] = [];
+            mvStack.push( new gml.Mat4( 1, 0, 0, 0
+                                      , 0,-1, 0, 0
+                                      , 0, 0, 1, 0
+                                      , 0, 0, 0, 1 ) );
+            this.renderSceneEnvironment( gl, scene, mvStack, size, size );
+
+            // draw +z view
+            gl.texImage2D( gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
+            gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_Z, cubeMapRenderTarget, 0 );
+            gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+            var mvStack: gml.Mat4[] = [];
+            mvStack.push( new gml.Mat4( 1, 0, 0, 0
+                                      , 0, 1, 0, 0
+                                      , 0, 0, 1, 0
+                                      , 0, 0, 0, 1 ) );
+            this.renderSceneEnvironment( gl, scene, mvStack, size, size );
+
+            // draw -z view
+            gl.texImage2D( gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
+            gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, cubeMapRenderTarget, 0 );
+            gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+            var mvStack: gml.Mat4[] = [];
+            mvStack.push( new gml.Mat4( 1, 0, 0, 0
+                                      , 0, 1, 0, 0
+                                      , 0, 0,-1, 0
+                                      , 0, 0, 0, 1 ) );
+            this.renderSceneEnvironment( gl, scene, mvStack, size, size );
+
+            gl.generateMipmap( gl.TEXTURE_CUBE_MAP );
           }
 
           //
