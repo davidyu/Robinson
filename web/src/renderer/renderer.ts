@@ -201,6 +201,10 @@ class Renderer {
   shadowFramebuffer: WebGLFramebuffer;
   shadowmapSize: number;
 
+  // procedural environment map generation
+  environmentMapFramebuffer: WebGLFramebuffer;
+  environmentMapSize: number;
+
   // irradiance map generation
   envMapSHTexture: WebGLTexture;
   envMapSHFrameBuffer: WebGLFramebuffer;
@@ -208,9 +212,6 @@ class Renderer {
   programData: ShaderProgramData[];
 
   dirty: boolean;
-
-  placeholderImage: HTMLCanvasElement;
-  placeholderCubemap: WebGLTexture;
 
   constructor( viewportElement: HTMLCanvasElement, sr: ShaderRepository, backgroundColor: gml.Vec4 = new gml.Vec4( 0, 0, 0, 1 ) ) {
     var gl = <WebGLRenderingContext>( viewportElement.getContext( "experimental-webgl" ) );
@@ -234,16 +235,6 @@ class Renderer {
     if ( !this.context ) {
       alert( "Unable to initialize WebGL. Your browser may not support it" );
       success = false;
-    }
-
-    this.placeholderImage = document.createElement( "canvas" );
-    this.placeholderImage.width = 2;
-    this.placeholderImage.height = 2;
-
-    {
-      let placeholder_context = this.placeholderImage.getContext( '2d' );
-      placeholder_context.fillStyle = 'black';
-      placeholder_context.fillRect( 0, 0, this.placeholderImage.width, this.placeholderImage.height );
     }
 
     this.shaderLODExtension = gl.getExtension( "EXT_shader_texture_lod" );
@@ -349,6 +340,7 @@ class Renderer {
 
     // initialize shadowmap textures
     {
+      /*
       this.depthTextureExtension = gl.getExtension( "WEBGL_depth_texture" );
 
       let size = 64;
@@ -375,9 +367,21 @@ class Renderer {
       gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.shadowDepthTexture, 0 );
 
       this.shadowmapSize = size;
+       */
     }
 
     {
+      this.environmentMapSize = 1024;
+
+      this.envMapSHTexture = gl.createTexture();
+      gl.bindTexture( gl.TEXTURE_2D, this.envMapSHTexture );
+      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
+      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
+      gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, 8, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null );
+    }
+
+    {
+      /*
       this.envMapSHTexture = gl.createTexture();
       gl.bindTexture( gl.TEXTURE_2D, this.envMapSHTexture );
       gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
@@ -392,6 +396,7 @@ class Renderer {
       gl.bindFramebuffer( gl.FRAMEBUFFER, this.envMapSHFrameBuffer );
       gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.envMapSHTexture, 0 );
       gl.framebufferRenderbuffer( gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, sb );
+      */
     }
 
     this.vertexBuffer = gl.createBuffer();
@@ -531,15 +536,15 @@ class Renderer {
     gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
     gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
 
-    gl.uniform1i( shaderVariables.uEnvMap, 0 );
-    gl.activeTexture( gl.TEXTURE0 );
     if ( scene.environmentMap != null ) {
+      gl.uniform1i( shaderVariables.uEnvMap, 0 );
+      gl.activeTexture( gl.TEXTURE0 );
       gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environmentMap.cubeMapTexture );
     } else {
-      gl.bindTexture( gl.TEXTURE_CUBE_MAP, this.placeholderCubemap );
       gl.uniform1i( shaderVariables.uProcSky, 1 );
     }
 
+    // there is a bug in this code
     gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
   }
 
@@ -631,41 +636,20 @@ class Renderer {
 
       gl.vertexAttribPointer( shaderVariables.aVertexNormal, 3, gl.FLOAT, false, 0, 0 );
 
-      gl.uniform1i( shaderVariables.uEnvMap, 0 );
-      gl.uniform1f( shaderVariables.uEnvironmentMipMaps, 7 );
-
-      gl.uniform1i( shaderVariables.uIrradianceMap, 1 );
-
       if ( scene.environmentMap != null ) {
+        gl.uniform1i( shaderVariables.uEnvMap, 0 ); // tells shader to refer to texture slot 1 for the uEnvMap uniform
         gl.activeTexture( gl.TEXTURE0 );
         gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environmentMap.cubeMapTexture );
-      } else {
-        gl.activeTexture( gl.TEXTURE0 );
-        gl.bindTexture( gl.TEXTURE_CUBE_MAP, this.placeholderCubemap );
       }
 
       if ( scene.irradianceMap != null ) {
+        gl.uniform1i( shaderVariables.uIrradianceMap, 1 ); // tells shader to look at texture slot 1 for the uEnvMap uniform
         gl.activeTexture( gl.TEXTURE1 );
         gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.irradianceMap.cubeMapTexture );
-      } else {
-        gl.activeTexture( gl.TEXTURE1 );
-        gl.bindTexture( gl.TEXTURE_CUBE_MAP, this.placeholderCubemap );
       }
 
       gl.drawElements( gl.TRIANGLES, p.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
     } );
-  }
-
-  bindCubeMapFace( gl: WebGLRenderingContext, face: number, image: HTMLImageElement ) {
-    gl.texImage2D( face, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image );
-    gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR );
-    gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
-  }
-
-  bindDummyCubeMapFace( gl: WebGLRenderingContext, face: number ) {
-    gl.texImage2D( face, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.placeholderImage );
   }
 
   useProgram( gl: WebGLRenderingContext, program: SHADER_PROGRAM ) {
@@ -716,13 +700,9 @@ class Renderer {
     gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
 
     if ( scene.environmentMap != null ) {
-      gl.uniform1i( shaderVariables.uEnvMap, 0 );
+      gl.uniform1i( shaderVariables.uEnvMap, 0 ); // tells GL to look at texture slot 0
       gl.activeTexture( gl.TEXTURE0 );
       gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environmentMap.cubeMapTexture );
-    } else {
-      gl.uniform1i( shaderVariables.uEnvMap, 0 );
-      gl.activeTexture( gl.TEXTURE0 );
-      gl.bindTexture( gl.TEXTURE_CUBE_MAP, this.placeholderCubemap );
     }
 
     gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
@@ -762,33 +742,7 @@ class Renderer {
         // SET UP ENVIRONMENT MAP
         let cubeMapTexture = null;
         if ( scene.environmentMap != null && scene.environmentMap.loaded && scene.environmentMap.cubeMapTexture == null ) {
-          let cubeMapTexture = gl.createTexture();
-          gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapTexture );
-
-          this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_X, scene.environmentMap.faces[ CUBEMAPTYPE.POS_X ] );
-          this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_X, scene.environmentMap.faces[ CUBEMAPTYPE.NEG_X ] );
-          this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, scene.environmentMap.faces[ CUBEMAPTYPE.POS_Y ] );
-          this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, scene.environmentMap.faces[ CUBEMAPTYPE.NEG_Y ] );
-          this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Z, scene.environmentMap.faces[ CUBEMAPTYPE.POS_Z ] );
-          this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, scene.environmentMap.faces[ CUBEMAPTYPE.NEG_Z ] );
-
-          gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-
-          scene.environmentMap.cubeMapTexture = cubeMapTexture;
-        } else {
-          let cubeMapTexture = gl.createTexture();
-          gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapTexture );
-
-          this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_X );
-          this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_X );
-          this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Y );
-          this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y );
-          this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Z );
-          this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z );
-
-          gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-
-          this.placeholderCubemap = cubeMapTexture;
+          scene.environmentMap.generateCubeMapFromSources( gl );
         }
 
         //
@@ -822,64 +776,14 @@ class Renderer {
           // SET UP ENVIRONMENT MAP
           let cubeMapTexture = null;
           if ( scene.environmentMap != null && scene.environmentMap.loaded && scene.environmentMap.cubeMapTexture == null ) {
-            let cubeMapTexture = gl.createTexture();
-            gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapTexture );
-
-            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_X, scene.environmentMap.faces[ CUBEMAPTYPE.POS_X ] );
-            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_X, scene.environmentMap.faces[ CUBEMAPTYPE.NEG_X ] );
-            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, scene.environmentMap.faces[ CUBEMAPTYPE.POS_Y ] );
-            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, scene.environmentMap.faces[ CUBEMAPTYPE.NEG_Y ] );
-            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Z, scene.environmentMap.faces[ CUBEMAPTYPE.POS_Z ] );
-            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, scene.environmentMap.faces[ CUBEMAPTYPE.NEG_Z ] );
-
-            gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-
-            scene.environmentMap.cubeMapTexture = cubeMapTexture;
-          } else {
-            let cubeMapTexture = gl.createTexture();
-            gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapTexture );
-
-            this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_X );
-            this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_X );
-            this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Y );
-            this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y );
-            this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Z );
-            this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z );
-
-            gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-
-            this.placeholderCubemap = cubeMapTexture;
+            scene.environmentMap.generateCubeMapFromSources( gl );
           }
 
           //
           // SET UP IRRADIANCE MAP
           let irradianceTexture = null;
           if ( scene.irradianceMap != null && scene.irradianceMap.loaded && scene.irradianceMap.cubeMapTexture == null ) {
-            let cubeMapTexture = gl.createTexture();
-            gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapTexture );
-
-            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_X, scene.irradianceMap.faces[ CUBEMAPTYPE.POS_X ] );
-            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_X, scene.irradianceMap.faces[ CUBEMAPTYPE.NEG_X ] );
-            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, scene.irradianceMap.faces[ CUBEMAPTYPE.POS_Y ] );
-            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, scene.irradianceMap.faces[ CUBEMAPTYPE.NEG_Y ] );
-            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Z, scene.irradianceMap.faces[ CUBEMAPTYPE.POS_Z ] );
-            this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, scene.irradianceMap.faces[ CUBEMAPTYPE.NEG_Z ] );
-
-            gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-
-            scene.irradianceMap.cubeMapTexture = cubeMapTexture;
-          } else {
-            let cubeMapTexture = gl.createTexture();
-            gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapTexture );
-
-            this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_X );
-            this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_X );
-            this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Y );
-            this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y );
-            this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_Z );
-            this.bindDummyCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z );
-
-            gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+            scene.irradianceMap.generateCubeMapFromSources( gl );
           }
 
           var mvStack: gml.Mat4[] = [];
@@ -894,11 +798,15 @@ class Renderer {
 
           //
           // RENDER TO SHADOW TEXTURE
+          /*
           gl.bindFramebuffer( gl.FRAMEBUFFER, this.shadowFramebuffer );
           gl.viewport( 0, 0, this.shadowmapSize, this.shadowmapSize );
           gl.colorMask( false, false, false, false ); // shadow map; no need to touch colors
           gl.clear( gl.DEPTH_BUFFER_BIT );
           this.renderScene( gl, scene, mvStack, PASS.SHADOW );
+           */
+
+          // RENDER TO 
 
           // 
           // RENDER TO SCREEN
