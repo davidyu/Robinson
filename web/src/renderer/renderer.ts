@@ -511,9 +511,8 @@ class Renderer {
     }
   }
 
-  renderSceneEnvironment( gl: WebGLRenderingContext, scene: Scene, mvStack: gml.Mat4[] ) {
-    // TODO unhardcode me
-    let perspective = gml.makePerspective( gml.fromDegrees( 45 ), 640.0/480.0, 0.1, 100.0 );
+  renderSceneEnvironment( gl: WebGLRenderingContext, scene: Scene, mvStack: gml.Mat4[], viewportW, viewportH ) {
+    let perspective = gml.makePerspective( gml.fromDegrees( 45 ), viewportW/viewportH, 0.1, 100.0 );
 
     gl.useProgram( this.programData[ SHADER_PROGRAM.SKYBOX ].program );
     this.currentProgram = SHADER_PROGRAM.SKYBOX;
@@ -544,7 +543,6 @@ class Renderer {
       gl.uniform1i( shaderVariables.uProcSky, 1 );
     }
 
-    // there is a bug in this code
     gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
   }
 
@@ -779,6 +777,38 @@ class Renderer {
             scene.environmentMap.generateCubeMapFromSources( gl );
           }
 
+          // 
+          // GENERATE ENVIRONMENT MAP, IF NECESSARY
+          if ( scene.environmentMap == null ) {
+            let renderTargetFramebuffer = gl.createFramebuffer();
+            let size = 1024; // this is the pixel size of each side of the cube map
+
+            // this is the texture we'll render each face of the cube map into
+            // as we render each face of the cubemap into it, we'll bind it to the actual cubemap
+            let cubeMapRenderTarget = gl.createTexture();
+            gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapRenderTarget );
+            gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR );
+            gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+            // 
+            // RENDER TO TEXTURE
+            gl.bindFramebuffer( gl.FRAMEBUFFER, renderTargetFramebuffer );
+            gl.viewport( 0, 0, size, size );
+
+            gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X, cubeMapRenderTarget, 0 );
+            gl.colorMask( true, true, true, true );
+            gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+
+            // draw +x view
+            var mvStack: gml.Mat4[] = [];
+            mvStack.push( new gml.Mat4( 1, 0, 0, 0
+                                      , 0, 1, 0, 0
+                                      , 0, 0, 1, 0
+                                      , 0, 0, 0, 1 ) );
+            this.renderSceneEnvironment( gl, scene, mvStack, size, size );
+          }
+
           //
           // SET UP IRRADIANCE MAP
           let irradianceTexture = null;
@@ -806,8 +836,6 @@ class Renderer {
           this.renderScene( gl, scene, mvStack, PASS.SHADOW );
            */
 
-          // RENDER TO 
-
           // 
           // RENDER TO SCREEN
           gl.bindFramebuffer( gl.FRAMEBUFFER, null );
@@ -816,7 +844,7 @@ class Renderer {
           gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
           // draw environment map
-          this.renderSceneEnvironment( gl, scene, mvStack );
+          this.renderSceneEnvironment( gl, scene, mvStack, this.viewportW, this.viewportH );
 
           // draw scene
           gl.clear( gl.DEPTH_BUFFER_BIT );

@@ -17,27 +17,44 @@ class CubeMap {
   // resulting texture
   cubeMapTexture: WebGLTexture;
 
-  constructor( px: string, nx: string, py: string, ny: string, pz: string, nz: string, finishedLoading: () => void = null ) {
-    this.faces = [];
-    this.facesLoaded = 0;
-    this.cubeMapTexture = null;
+  constructor( gl: WebGLTexture );
+  constructor( px: string, nx: string, py: string, ny: string, pz: string, nz: string, finishedLoading: () => void );
 
-    for ( var t in CUBEMAPTYPE ) {
-      if ( !isNaN( <any> t ) ) {
-        this.faces[ t ] = new Image();
+  constructor( ...args: any[] ) {
+    if ( args.length == 1 ) {
+      this.cubeMapTexture = args[0];
+      // we're generating a cube map from a shader, at constructor time
+      // This should just take in a cubeMapTexture
+    } else if ( args.length == 7 ) {
+      // we're generating a cube map from an array of 6 images
+      let px: string = args[0];
+      let nx: string = args[1];
+      let py: string = args[2];
+      let ny: string = args[3];
+      let pz: string = args[4];
+      let nz: string = args[5];
+      let finishedLoading: () => void = args[6];
+
+      this.faces = [];
+      this.facesLoaded = 0;
+      this.cubeMapTexture = null;
+
+      for ( var t in CUBEMAPTYPE ) {
+        if ( !isNaN( <any> t ) ) {
+          this.faces[ t ] = new Image();
+        }
       }
-    }
 
-    this.asyncLoadFace( px, CUBEMAPTYPE.POS_X, finishedLoading );
-    this.asyncLoadFace( nx, CUBEMAPTYPE.NEG_X, finishedLoading );
-    this.asyncLoadFace( py, CUBEMAPTYPE.POS_Y, finishedLoading );
-    this.asyncLoadFace( ny, CUBEMAPTYPE.NEG_Y, finishedLoading );
-    this.asyncLoadFace( pz, CUBEMAPTYPE.POS_Z, finishedLoading );
-    this.asyncLoadFace( nz, CUBEMAPTYPE.NEG_Z, finishedLoading );
+      this.asyncLoadFace( px, CUBEMAPTYPE.POS_X, finishedLoading );
+      this.asyncLoadFace( nx, CUBEMAPTYPE.NEG_X, finishedLoading );
+      this.asyncLoadFace( py, CUBEMAPTYPE.POS_Y, finishedLoading );
+      this.asyncLoadFace( ny, CUBEMAPTYPE.NEG_Y, finishedLoading );
+      this.asyncLoadFace( pz, CUBEMAPTYPE.POS_Z, finishedLoading );
+      this.asyncLoadFace( nz, CUBEMAPTYPE.NEG_Z, finishedLoading );
+    }
   }
 
-  generateCubeMapFromShader() {
-
+  generateCubeMapFromShader( gl: WebGLRenderingContext ) {
   }
 
   generateCubeMapFromSources( gl: WebGLRenderingContext ) {
