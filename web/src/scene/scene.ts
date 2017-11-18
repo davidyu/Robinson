@@ -60,6 +60,10 @@ class CubeMap {
   generateCubeMapFromSources( gl: WebGLRenderingContext ) {
     this.cubeMapTexture = gl.createTexture();
     gl.bindTexture( gl.TEXTURE_CUBE_MAP, this.cubeMapTexture );
+    gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR );
+    gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
 
     this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_POSITIVE_X, this.faces[ CUBEMAPTYPE.POS_X ] );
     this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_X, this.faces[ CUBEMAPTYPE.NEG_X ] );
@@ -74,10 +78,6 @@ class CubeMap {
 
   bindCubeMapFace( gl: WebGLRenderingContext, face: number, image: HTMLImageElement ) {
     gl.texImage2D( face, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image );
-    gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR );
-    gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
   }
 
   asyncLoadFace( url: string, ctype: CUBEMAPTYPE, finishedLoading: () => void ) {
