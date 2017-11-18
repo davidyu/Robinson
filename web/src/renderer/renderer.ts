@@ -199,7 +199,6 @@ class Renderer {
   depthTextureExtension;
   shadowDepthTexture: WebGLTexture;
   shadowFramebuffer: WebGLFramebuffer;
-  shadowmapSize: number;
 
   // procedural environment map generation
   environmentMapFramebuffer: WebGLFramebuffer;
@@ -337,38 +336,6 @@ class Renderer {
     this.programData[ SHADER_PROGRAM.UNLIT ] = new ShaderProgramData();
     this.programData[ SHADER_PROGRAM.UNLIT ].program = unlitProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.UNLIT );
-
-    // initialize shadowmap textures
-    {
-      /*
-      this.depthTextureExtension = gl.getExtension( "WEBGL_depth_texture" );
-
-      let size = 64;
-
-      let shadowColorTexture = gl.createTexture();
-      gl.bindTexture( gl.TEXTURE_2D, shadowColorTexture );
-      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
-      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
-      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
-      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
-      gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, null );
-
-      this.shadowDepthTexture = gl.createTexture();
-      gl.bindTexture( gl.TEXTURE_2D, this.shadowDepthTexture );
-      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
-      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
-      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
-      gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
-      gl.texImage2D( gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, size, size, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null );
-
-      this.shadowFramebuffer = gl.createFramebuffer();
-      gl.bindFramebuffer( gl.FRAMEBUFFER, this.shadowFramebuffer );
-      gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, shadowColorTexture, 0 );
-      gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.shadowDepthTexture, 0 );
-
-      this.shadowmapSize = size;
-       */
-    }
 
     {
       /*
@@ -880,19 +847,6 @@ class Renderer {
           } else {
             mvStack.push( gml.Mat4.identity() );
           }
-
-          // for each renderable, set up shader and shader parameters
-          // lights, and buffers. For now, only render a single shadow map.
-
-          //
-          // RENDER TO SHADOW TEXTURE
-          /*
-          gl.bindFramebuffer( gl.FRAMEBUFFER, this.shadowFramebuffer );
-          gl.viewport( 0, 0, this.shadowmapSize, this.shadowmapSize );
-          gl.colorMask( false, false, false, false ); // shadow map; no need to touch colors
-          gl.clear( gl.DEPTH_BUFFER_BIT );
-          this.renderScene( gl, scene, mvStack, PASS.SHADOW );
-           */
 
           // 
           // RENDER TO SCREEN
