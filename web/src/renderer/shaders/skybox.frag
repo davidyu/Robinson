@@ -24,7 +24,7 @@ void main() {
 
         vec3 sky = vec3( pow( 1.0 - eye.y, 2.0 )        // red...meh
                        , 1.0 - eye.y                    // green...meh
-                       , 0.6 + ( 1.0 - eye.y ) * 0.4 ); // blue depends on how far up we are
+                       , 0.4 + ( 1.0 - eye.y ) * 0.4 ); // blue depends on how far up we are
 
         sky += sun( eye );
 

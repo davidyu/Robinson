@@ -33,7 +33,7 @@ class SkyApp {
     this.dragStart = new gml.Vec2( 0, 0 );
     this.lastMousePos = new gml.Vec2( 0, 0 );
 
-    setInterval( () => { this.fixedUpdate() }, 1000/30 );
+    setInterval( () => { this.fixedUpdate() }, 1000/60 );
 
     params.vp.addEventListener( 'mousedown', ev => {
       switch ( ev.button ) {
