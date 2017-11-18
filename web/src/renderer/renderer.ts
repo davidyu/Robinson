@@ -514,8 +514,7 @@ class Renderer {
   renderSceneEnvironment( gl: WebGLRenderingContext, scene: Scene, mvStack: gml.Mat4[], viewportW, viewportH ) {
     let perspective = gml.makePerspective( gml.fromDegrees( 45 ), viewportW/viewportH, 0.1, 100.0 );
 
-    gl.useProgram( this.programData[ SHADER_PROGRAM.SKYBOX ].program );
-    this.currentProgram = SHADER_PROGRAM.SKYBOX;
+    this.useProgram( gl, SHADER_PROGRAM.SKYBOX );
 
     let shaderVariables = this.programData[ SHADER_PROGRAM.SKYBOX ].uniforms;
 
@@ -527,13 +526,15 @@ class Renderer {
 
     let inverseViewMatrix = mvStack[ mvStack.length - 1 ].invert().mat3;
     gl.uniformMatrix3fv( shaderVariables.uInverseView, false, inverseViewMatrix.m );
-    
+
     gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.vertices, gl.STATIC_DRAW );
-    gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
     gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
     gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
+
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
+    gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
     if ( scene.environmentMap != null ) {
       gl.uniform1i( shaderVariables.uEnvMap, 0 );
@@ -552,8 +553,7 @@ class Renderer {
 
     scene.renderables.forEach( ( p, i ) => {
       if ( p.material instanceof BlinnPhongMaterial ) {
-        gl.useProgram( this.programData[ SHADER_PROGRAM.BLINN_PHONG ].program );
-        this.currentProgram = SHADER_PROGRAM.BLINN_PHONG;
+        this.useProgram( gl, SHADER_PROGRAM.BLINN_PHONG );
 
         let blinnphong = <BlinnPhongMaterial> p.material;
         let shaderVariables = this.programData[ SHADER_PROGRAM.BLINN_PHONG ].uniforms;
@@ -564,11 +564,9 @@ class Renderer {
         gl.uniform4fv( shaderVariables.uMaterial.emissive, blinnphong.emissive.v );
         gl.uniform1f ( shaderVariables.uMaterial.shininess, blinnphong.shininess );
       } else if ( p.material instanceof DebugMaterial ) {
-        gl.useProgram( this.programData[ SHADER_PROGRAM.DEBUG ].program );
-        this.currentProgram = SHADER_PROGRAM.DEBUG;
+        this.useProgram( gl, SHADER_PROGRAM.DEBUG );
       } else if ( p.material instanceof OrenNayarMaterial ) {
-        gl.useProgram( this.programData[ SHADER_PROGRAM.OREN_NAYAR ].program );
-        this.currentProgram = SHADER_PROGRAM.OREN_NAYAR;
+        this.useProgram( gl, SHADER_PROGRAM.OREN_NAYAR );
 
         let orennayar = <OrenNayarMaterial> p.material;
         let shaderVariables = this.programData[ SHADER_PROGRAM.OREN_NAYAR ].uniforms;
@@ -576,15 +574,13 @@ class Renderer {
         gl.uniform4fv( shaderVariables.uMaterial.diffuse, orennayar.diffuse.v );
         gl.uniform1f ( shaderVariables.uMaterial.roughness, orennayar.roughness );
       } else if ( p.material instanceof LambertMaterial ) {
-        gl.useProgram( this.programData[ SHADER_PROGRAM.LAMBERT ].program );
-        this.currentProgram = SHADER_PROGRAM.LAMBERT;
+        this.useProgram( gl, SHADER_PROGRAM.LAMBERT );
 
         let lambert = <LambertMaterial> p.material;
         let shaderVariables = this.programData[ SHADER_PROGRAM.LAMBERT ].uniforms;
         gl.uniform4fv( shaderVariables.uMaterial.diffuse, lambert.diffuse.v );
       } else if ( p.material instanceof CookTorranceMaterial ) {
-        gl.useProgram( this.programData[ SHADER_PROGRAM.COOK_TORRANCE ].program );
-        this.currentProgram = SHADER_PROGRAM.COOK_TORRANCE;
+        this.useProgram( gl, SHADER_PROGRAM.COOK_TORRANCE );
 
         let cooktorrance = <CookTorranceMaterial> p.material;
         let shaderVariables = this.programData[ SHADER_PROGRAM.COOK_TORRANCE ].uniforms;
@@ -781,24 +777,35 @@ class Renderer {
           // GENERATE ENVIRONMENT MAP, IF NECESSARY
           if ( scene.environmentMap == null ) {
             let renderTargetFramebuffer = gl.createFramebuffer();
-            let size = 1024; // this is the pixel size of each side of the cube map
+            gl.bindFramebuffer( gl.FRAMEBUFFER, renderTargetFramebuffer );
+
+            let size = 512; // this is the pixel size of each side of the cube map
+
+            // 
+            // RENDER TO TEXTURE
+            let depthBuffer = gl.createRenderbuffer();   // renderbuffer for depth buffer in framebuffer
+            gl.bindRenderbuffer( gl.RENDERBUFFER, depthBuffer ); // so we can create storage for the depthBuffer
+            gl.renderbufferStorage( gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, size, size );
+            gl.framebufferRenderbuffer( gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer );
 
             // this is the texture we'll render each face of the cube map into
             // as we render each face of the cubemap into it, we'll bind it to the actual cubemap
             let cubeMapRenderTarget = gl.createTexture();
             gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapRenderTarget );
+            gl.texImage2D( gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
+            gl.texImage2D( gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
+            gl.texImage2D( gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
+            gl.texImage2D( gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
+            gl.texImage2D( gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
+            gl.texImage2D( gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
             gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR );
             gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
-            // 
-            // RENDER TO TEXTURE
-            gl.bindFramebuffer( gl.FRAMEBUFFER, renderTargetFramebuffer );
-            gl.viewport( 0, 0, size, size );
 
             // draw +x view
-            gl.texImage2D( gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
             gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X, cubeMapRenderTarget, 0 );
+            gl.viewport( 0, 0, size, size );
             gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
             var mvStack: gml.Mat4[] = [];
             mvStack.push( new gml.Mat4( 1, 0, 0, 0
@@ -808,7 +815,6 @@ class Renderer {
             this.renderSceneEnvironment( gl, scene, mvStack, size, size );
 
             // draw -x view
-            gl.texImage2D( gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
             gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_NEGATIVE_X, cubeMapRenderTarget, 0 );
             gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
             var mvStack: gml.Mat4[] = [];
@@ -819,7 +825,6 @@ class Renderer {
             this.renderSceneEnvironment( gl, scene, mvStack, size, size );
 
             // draw +y view
-            gl.texImage2D( gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
             gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, cubeMapRenderTarget, 0 );
             gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
             var mvStack: gml.Mat4[] = [];
@@ -830,7 +835,6 @@ class Renderer {
             this.renderSceneEnvironment( gl, scene, mvStack, size, size );
 
             // draw -y view
-            gl.texImage2D( gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
             gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, cubeMapRenderTarget, 0 );
             gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
             var mvStack: gml.Mat4[] = [];
@@ -841,7 +845,6 @@ class Renderer {
             this.renderSceneEnvironment( gl, scene, mvStack, size, size );
 
             // draw +z view
-            gl.texImage2D( gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
             gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_Z, cubeMapRenderTarget, 0 );
             gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
             var mvStack: gml.Mat4[] = [];
@@ -852,7 +855,6 @@ class Renderer {
             this.renderSceneEnvironment( gl, scene, mvStack, size, size );
 
             // draw -z view
-            gl.texImage2D( gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
             gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, cubeMapRenderTarget, 0 );
             gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
             var mvStack: gml.Mat4[] = [];
@@ -896,7 +898,6 @@ class Renderer {
           // RENDER TO SCREEN
           gl.bindFramebuffer( gl.FRAMEBUFFER, null );
           gl.viewport( 0, 0, this.viewportW, this.viewportH );
-          gl.colorMask( true, true, true, true );
           gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
           // draw environment map

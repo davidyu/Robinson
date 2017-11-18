@@ -113,7 +113,13 @@ function StartSky() {
 
     var testScene = new Scene( null, null );
     Scene.setActiveScene( testScene );
-    testScene.addRenderable( new Quad( 1, gml.Vec4.origin, new BlinnPhongMaterial( new gml.Vec4( 0.1, 0.1, 0.1, 1 ), new gml.Vec4( 0.5, 0.5, 0.5, 1 ), new gml.Vec4( 0.5, 0.5, 0.5, 1 ), new gml.Vec4( 0, 0, 0, 1 ), 20.0 ) ) );
+    // testScene.addRenderable( new Quad( 1, gml.Vec4.origin, new BlinnPhongMaterial( new gml.Vec4( 0.1, 0.1, 0.1, 1 ), new gml.Vec4( 0.5, 0.5, 0.5, 1 ), new gml.Vec4( 0.5, 0.5, 0.5, 1 ), new gml.Vec4( 0, 0, 0, 1 ), 20.0 ) ) );
+    testScene.addRenderable( new Sphere( 1
+                                       , new gml.Vec4( -4, 0, 0, 1 )
+                                       , new CookTorranceMaterial( new gml.Vec4( 0.9, 0.9, 0.6, 1 )
+                                                                 , new gml.Vec4( 0.9, 0.9, 0.6, 1 )
+                                                                 , 0.1
+                                                                 , 1.53 ) ) );
 
     /*
     testScene.addLight( new PointLight( new gml.Vec4( 9.0, 0, 0, 1.0 ), new gml.Vec4( 1.0, 1.0, 1.0, 1.0 ), 10 ) );
