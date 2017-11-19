@@ -11,6 +11,7 @@ enum SHADERTYPE {
   UTILS,
   SKYBOX_VERTEX,
   SKYBOX_FRAG,
+  SKY_FRAG,
   CUBE_SH_FRAG,
   PASSTHROUGH_VERT,
 };
@@ -23,6 +24,7 @@ enum SHADER_PROGRAM {
   BLINN_PHONG,
   COOK_TORRANCE,
   SKYBOX,
+  SKY,
   SHADOWMAP,
   CUBE_SH
 };
@@ -75,6 +77,7 @@ class ShaderRepository {
     this.asyncLoadShader( "utils.frag"                , SHADERTYPE.UTILS                         , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "skybox.vert"               , SHADERTYPE.SKYBOX_VERTEX                 , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "skybox.frag"               , SHADERTYPE.SKYBOX_FRAG                   , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "sky.frag"                  , SHADERTYPE.SKY_FRAG                      , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "cube-sh.frag"              , SHADERTYPE.CUBE_SH_FRAG                  , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "passthrough.vert"          , SHADERTYPE.PASSTHROUGH_VERT              , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
   }
@@ -313,6 +316,17 @@ class Renderer {
     this.programData[ SHADER_PROGRAM.SKYBOX ].program = skyboxProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.SKYBOX );
 
+    let skyProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SKYBOX_VERTEX ].source
+                                              , sr.files[ SHADERTYPE.SKY_FRAG ].source );
+    if ( skyProgram == null ) {
+      alert( "Sky shader compilation failed. Please check the log for details." );
+      success = false;
+    }
+
+    this.programData[ SHADER_PROGRAM.SKY ] = new ShaderProgramData();
+    this.programData[ SHADER_PROGRAM.SKY ].program = skyProgram;
+    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.SKY );
+
     let cubeMapSHProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.PASSTHROUGH_VERT ].source
                                                     , sr.files[ SHADERTYPE.CUBE_SH_FRAG ].source );
 
@@ -473,9 +487,13 @@ class Renderer {
       perspective = gml.makePerspective( gml.fromDegrees( 45 ), viewportW / viewportH, 0.1, 100.0 );
     }
 
-    this.useProgram( gl, SHADER_PROGRAM.SKYBOX );
+    if ( scene.environmentMap != null ) {
+      this.useProgram( gl, SHADER_PROGRAM.SKYBOX );
+    } else {
+      this.useProgram( gl, SHADER_PROGRAM.SKY );
+    }
 
-    let shaderVariables = this.programData[ SHADER_PROGRAM.SKYBOX ].uniforms;
+    let shaderVariables = this.programData[ this.currentProgram ].uniforms;
 
     let fullscreen = new Quad();
     fullscreen.rebuildRenderData();
@@ -495,12 +513,10 @@ class Renderer {
     gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
     gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
-    if ( scene.environmentMap != null ) {
+    if ( this.currentProgram == SHADER_PROGRAM.SKYBOX ) {
       gl.uniform1i( shaderVariables.uEnvMap, 0 );
       gl.activeTexture( gl.TEXTURE0 );
       gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environmentMap.cubeMapTexture );
-    } else {
-      gl.uniform1i( shaderVariables.uProcSky, 1 );
     }
 
     gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
