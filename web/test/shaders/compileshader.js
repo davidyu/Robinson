@@ -15,6 +15,7 @@ var sources = [
   new ProgramSource( 'basic.vert' , 'cook-torrance.frag' ),
   new ProgramSource( 'debug.vert' , 'debug.frag' ),
   new ProgramSource( 'skybox.vert', 'skybox.frag' ),
+  new ProgramSource( 'skybox.vert', 'sky.frag' ),
   new ProgramSource( 'passthrough.vert' , 'cube-sh.frag' ),
   new ProgramSource( 'passthrough.vert' , 'unlit.frag' )
 ];
