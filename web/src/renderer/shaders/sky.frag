@@ -1,6 +1,6 @@
 precision mediump float;
 
-uniform vec3 cPosition_World;
+uniform vec4 cPosition_World;
 varying vec3 vDirection;
 const   vec3 unit = normalize( vec3( 1 ) ); // radius of unit sphere, representing the sun
 const  float vTime = 1.0;
@@ -53,13 +53,27 @@ vec3 sun( vec3 v ) {
 
 vec4 clouds( vec3 v )
 {
-    vec2 pos = vec2( vTime * 80.0, vTime * 60.0 );
+    vec2 ofs = vec2( vTime * 80.0, vTime * 60.0 );
     vec4 acc = vec4( 0, 0, 0, 0 );
 
     const int layers = 100;
     for ( int i = 0; i < layers; i++ ) {
         float height = ( float( i ) * 12.0 + 350.0 - cPosition_World.y ) / v.y;
+        vec3 cloudPos = cPosition_World.xyz + height*v + vec3( 831.0, 321.0 + float( i ) * 0.15 - 0.2*ofs.x, 1330.0 + 0.3*ofs.y );
+        float density = 0.9 * smoothstep( 0.5, 1.0, fbm( cloudPos * 0.0015 ) );
+        vec3  color = mix( vec3( 1.1, 1.05, 1.0 ), vec3( 0.3, 0.3, 0.2 ), density );
+
+        density = ( 1.0 - acc.w ) * density;
+        acc += vec4( color * density, density );
+
+        if ( acc.w > 0.95 ) break;
     }
+
+    acc.rgb /= acc.w + 0.0001;
+    float alpha = smoothstep( 0.7, 1.0, acc.w );
+
+    acc.rgb -= 0.6 * vec3( 0.8, 0.75, 0.7 ) * alpha * pow( unit, vec3( 13.0 ) );
+    acc.rgb += 0.2 * vec3( 1.3, 1.2, 1.0 ) * ( 1.0 - alpha ) * pow( unit, vec3( 5.0 ) );
 
     return acc;
 }
@@ -76,7 +90,9 @@ void main() {
     sky += sun( eye );
 
     vec4 cl = clouds( eye );
-    sky = mix( sky, cl.rgb, cl.a * ( 1.0 - eye.y ) );
+
+    float t = pow( 1.0 - 0.7 * vDirection.y, 15.0 ); // what is t?
+    sky = mix( sky, cl.rgb, cl.a * ( 1.0 - t ) );
 
     gl_FragColor = vec4( sky.r, sky.g, sky.b, 1.0 );
 }
