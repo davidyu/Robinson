@@ -504,6 +504,10 @@ class Renderer {
     let inverseViewMatrix = mvStack[ mvStack.length - 1 ].invert().mat3;
     gl.uniformMatrix3fv( shaderVariables.uInverseView, false, inverseViewMatrix.m );
 
+    if ( this.camera != null ) {
+      gl.uniform4fv( shaderVariables.uCameraPos, this.camera.matrix.translation.v );
+    }
+
     gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.vertices, gl.STATIC_DRAW );
 

@@ -1,9 +1,9 @@
 precision mediump float;
 
+uniform vec3 cPosition_World;
 varying vec3 vDirection;
 const   vec3 unit = normalize( vec3( 1 ) ); // radius of unit sphere, representing the sun
 const  float vTime = 1.0;
-const   vec3 camPos = vec3( 0, 0, 0 );
 
 // noise functions from https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
 float mod289( float x ) { return x - floor( x * ( 1.0 / 289.0 ) ) * 289.0; }
@@ -58,7 +58,7 @@ vec4 clouds( vec3 v )
 
     const int layers = 100;
     for ( int i = 0; i < layers; i++ ) {
-        float height = ( float( i ) * 12.0 + 350.0 - camPos.y ) / v.y;
+        float height = ( float( i ) * 12.0 + 350.0 - cPosition_World.y ) / v.y;
     }
 
     return acc;
