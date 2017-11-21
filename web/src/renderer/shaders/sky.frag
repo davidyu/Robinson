@@ -1,9 +1,10 @@
 precision mediump float;
 
 uniform vec4 cPosition_World;
+uniform float uTime;
 varying vec3 vDirection;
 const   vec3 unit = normalize( vec3( 1 ) ); // radius of unit sphere, representing the sun
-const  float vTime = 1.0;
+const   float cloudiness = 0.2;
 
 // noise functions from https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
 float mod289( float x ) { return x - floor( x * ( 1.0 / 289.0 ) ) * 289.0; }
@@ -53,14 +54,14 @@ vec3 sun( vec3 v ) {
 
 vec4 clouds( vec3 v )
 {
-    vec2 ofs = vec2( vTime * 80.0, vTime * 60.0 );
+    vec2 ofs = vec2( uTime * 80.0, uTime * 60.0 );
     vec4 acc = vec4( 0, 0, 0, 0 );
 
-    const int layers = 100;
+    const int layers = int( float( 100 ) * cloudiness );
     for ( int i = 0; i < layers; i++ ) {
         float height = ( float( i ) * 12.0 + 350.0 - cPosition_World.y ) / v.y;
         vec3 cloudPos = cPosition_World.xyz + height*v + vec3( 831.0, 321.0 + float( i ) * 0.15 - 0.2*ofs.x, 1330.0 + 0.3*ofs.y );
-        float density = 0.9 * smoothstep( 0.5, 1.0, fbm( cloudPos * 0.0015 ) );
+        float density = cloudiness * smoothstep( 0.5, 1.0, fbm( cloudPos * 0.0015 ) );
         vec3  color = mix( vec3( 1.1, 1.05, 1.0 ), vec3( 0.3, 0.3, 0.2 ), density );
 
         density = ( 1.0 - acc.w ) * density;

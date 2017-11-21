@@ -10,6 +10,8 @@ enum CUBEMAPTYPE {
 // the cube map should be responsible for constructing from source
 // or being injected one via cubeMapTexture (rendered externally)
 class CubeMap {
+  dynamic: boolean;
+
   // sources
   faces: HTMLImageElement[];
   facesLoaded: number;
@@ -52,6 +54,7 @@ class CubeMap {
       this.asyncLoadFace( pz, CUBEMAPTYPE.POS_Z, finishedLoading );
       this.asyncLoadFace( nz, CUBEMAPTYPE.NEG_Z, finishedLoading );
     }
+    this.dynamic = false;
   }
 
   generateCubeMapFromShader( gl: WebGLRenderingContext ) {
@@ -102,6 +105,7 @@ class Scene {
   public renderables: Renderable[];
   public lights: Light[];
   private static activeScene;
+  public time: number;
 
   // maps
   environmentMap : CubeMap;
@@ -112,6 +116,7 @@ class Scene {
     this.lights = [];
     this.environmentMap = environmentMap;
     this.irradianceMap = irradianceMap;
+    this.time = 0;
   }
 
   public addRenderable( renderable: Renderable ) {

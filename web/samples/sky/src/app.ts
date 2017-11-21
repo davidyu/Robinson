@@ -1,4 +1,5 @@
 var shaderRepo: ShaderRepository = null; // global for debugging
+var skyScene: Scene;
 
 interface SkyAppParams {
   vp : HTMLCanvasElement;
@@ -33,7 +34,7 @@ class SkyApp {
     this.dragStart = new gml.Vec2( 0, 0 );
     this.lastMousePos = new gml.Vec2( 0, 0 );
 
-    setInterval( () => { this.fixedUpdate() }, 1000/60 );
+    setInterval( () => { this.fixedUpdate( 1.0 / 60 ); }, 1000/60 );
 
     params.vp.addEventListener( 'mousedown', ev => {
       switch ( ev.button ) {
@@ -76,7 +77,9 @@ class SkyApp {
     }, false );
   }
 
-  public fixedUpdate() {
+  public fixedUpdate( delta: number ) {
+    skyScene.time += delta;
+
     if ( this.dirty ) {
       // rebuild camera
       let baseAim = new gml.Vec4( 0, 0, -1, 0 );
@@ -93,9 +96,12 @@ class SkyApp {
       this.camera = new Camera( rotPos, rotAim, rotUp, rotRight );
       this.renderer.setCamera( this.camera );
       this.renderer.update();
-      this.renderer.render();
       this.dirty = false;
     }
+
+    // this is way too slow
+    this.renderer.dirty = true;
+    this.renderer.render();
   }
 }
 
@@ -111,21 +117,14 @@ function StartSky() {
 
     shaderRepo = new ShaderRepository( ( repo ) => { app = new SkyApp( params, repo ); } );
 
-    var testScene = new Scene( null, null );
-    Scene.setActiveScene( testScene );
+    skyScene = new Scene( null, null );
+    Scene.setActiveScene( skyScene );
     // testScene.addRenderable( new Quad( 1, gml.Vec4.origin, new BlinnPhongMaterial( new gml.Vec4( 0.1, 0.1, 0.1, 1 ), new gml.Vec4( 0.5, 0.5, 0.5, 1 ), new gml.Vec4( 0.5, 0.5, 0.5, 1 ), new gml.Vec4( 0, 0, 0, 1 ), 20.0 ) ) );
-    testScene.addRenderable( new Sphere( 1
-                                       , new gml.Vec4( -4, 0, 0, 1 )
-                                       , new CookTorranceMaterial( new gml.Vec4( 1.0, 1.0, 1.0, 1 )
-                                                                 , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
-                                                                 , 0.1
-                                                                 , 1.53 ) ) );
-
-    /*
-    testScene.addLight( new PointLight( new gml.Vec4( 9.0, 0, 0, 1.0 ), new gml.Vec4( 1.0, 1.0, 1.0, 1.0 ), 10 ) );
-    testScene.addLight( new PointLight( new gml.Vec4( 3.0, 3.0, 0, 1.0 ), new gml.Vec4( 1.0, 0.0, 0.0, 1.0 ), 10 ) );
-    testScene.addLight( new PointLight( new gml.Vec4( 0, 9.0, 0, 1.0 ), new gml.Vec4( 0.0, 1.0, 0.0, 1.0 ), 10 ) );
-    testScene.addLight( new PointLight( new gml.Vec4( 0, 0, 9.0, 1.0 ), new gml.Vec4( 0.0, 0.0, 1.0, 1.0 ), 10 ) );
-     */
+    skyScene.addRenderable( new Sphere( 1
+                                      , new gml.Vec4( -4, 0, 0, 1 )
+                                      , new CookTorranceMaterial( new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                                                , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                                                , 0.1
+                                                                , 1.53 ) ) );
   }
 }
