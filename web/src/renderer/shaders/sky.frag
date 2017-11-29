@@ -6,7 +6,8 @@ varying vec3 vDirection;
 const   vec3 unit = normalize( vec3( 1 ) ); // radius of unit sphere, representing the sun
 const   float cloudiness = 0.2;
 const   float horizon_blueness = 0.02;      // how blue should the sky be at the horizon
-const   float sky_blueness = 1.1;           // how quickly should the sky turn blue when we look up
+const   float sky_bluestep = 1.1;           // how quickly should the sky turn blue when we look up (default = 1.0/1x)
+const   float sky_blueness = 0.8;           // how blue should the sky be at the top (if we look straight up)
 const   float sun_flare_size = 0.5;
 
 // noise functions by Inigo Quilez
