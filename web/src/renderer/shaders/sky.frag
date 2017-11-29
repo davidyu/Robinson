@@ -3,11 +3,12 @@ precision mediump float;
 uniform vec4 cPosition_World;
 uniform float uTime;
 varying vec3 vDirection;
-const   vec3 unit = normalize( vec3( 1 ) ); // radius of unit sphere, representing the sun
+const   vec3 unit = normalize( vec3( 1 ) );   // radius of unit sphere, representing the sun
 const   float cloudiness = 0.2;
-const   float horizon_blueness = 0.02;      // how blue should the sky be at the horizon
-const   float sky_bluestep = 1.1;           // how quickly should the sky turn blue when we look up (default = 1.0/1x)
-const   float sky_blueness = 0.8;           // how blue should the sky be at the top (if we look straight up)
+const   float horizon_blueness = 0.02;        // how blue should the sky be at the horizon
+const   float sky_bluestep = 1.0;             // how quickly should the sky turn blue when we look up (default = 1.0/1x)
+const   float sky_blueness = 0.5;             // how blue should the sky be at the top (if we look straight up)
+const   float sky_horizon_offset = -0.2;      // between -1 and 1, if negative, moves horizon down, if positive moves horizon up
 const   float sun_flare_size = 0.5;
 
 // noise functions by Inigo Quilez
@@ -75,14 +76,21 @@ vec4 clouds( vec3 v )
 void main() {
     // procedural sky
     vec3 eye = normalize( vDirection );
-    eye.y = max( eye.y, 0.0 );
 
-    float eye_h = clamp( eye.y, horizon_blueness, 1.0 );
+    // instead of clamping, we want to extend the range
+    float eye_for_sky = clamp( eye.y, sky_horizon_offset, 1.0 );
+
+    // now transform to [0, 1.0]
+    eye_for_sky = ( eye_for_sky - sky_horizon_offset ) / ( 1.0 + sky_horizon_offset );
+
+    float eye_h = clamp( eye_for_sky, horizon_blueness, 1.0 );
     float blueness = min( eye_h * sky_blueness, 1.0 );
 
     vec3 sky = vec3( pow( 1.0 - blueness, 2.0 )       // less red as we move up, quadratic
                    , 1.0 - blueness                   // less green as we move up, linear
                    , 0.6 + ( 1.0 - blueness ) * 0.4 );            // blue depends on how far up we are
+
+    eye.y = clamp( eye.y, 0.0, 1.0 );
 
     sky += sun( eye );
     vec4 cl = clouds( eye );
