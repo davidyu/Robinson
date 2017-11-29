@@ -34,7 +34,7 @@ class SkyApp {
     this.dragStart = new gml.Vec2( 0, 0 );
     this.lastMousePos = new gml.Vec2( 0, 0 );
 
-    setInterval( () => { this.fixedUpdate( 1.0 / 60 ); }, 1000/60 );
+    setInterval( () => { this.fixedUpdate( 1.0 / 30 ); }, 1000/30 );
 
     params.vp.addEventListener( 'mousedown', ev => {
       switch ( ev.button ) {
@@ -78,7 +78,7 @@ class SkyApp {
   }
 
   public fixedUpdate( delta: number ) {
-    skyScene.time += delta;
+    skyScene.time += 20/30.0;
 
     if ( this.dirty ) {
       // rebuild camera
@@ -119,7 +119,9 @@ function StartSky() {
 
     skyScene = new Scene( null, null );
     Scene.setActiveScene( skyScene );
-    // testScene.addRenderable( new Quad( 1, gml.Vec4.origin, new BlinnPhongMaterial( new gml.Vec4( 0.1, 0.1, 0.1, 1 ), new gml.Vec4( 0.5, 0.5, 0.5, 1 ), new gml.Vec4( 0.5, 0.5, 0.5, 1 ), new gml.Vec4( 0, 0, 0, 1 ), 20.0 ) ) );
+
+    // ocean
+    skyScene.addRenderable( new Quad( 1000, gml.Vec4.origin, { x: gml.fromDegrees( 90 ), y: gml.fromDegrees( 0 ), z: gml.fromDegrees( 0 ) }, new BlinnPhongMaterial( new gml.Vec4( 1.0, 0.1, 0.1, 1 ), new gml.Vec4( 1.0, 0.5, 0.5, 1 ), new gml.Vec4( 1.0, 0.5, 0.5, 1 ), new gml.Vec4( 0, 0, 0, 1 ), 20.0 ) ) );
     skyScene.addRenderable( new Sphere( 1
                                       , new gml.Vec4( -4, 0, 0, 1 )
                                       , new CookTorranceMaterial( new gml.Vec4( 1.0, 1.0, 1.0, 1 )

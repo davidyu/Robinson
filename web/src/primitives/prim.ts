@@ -21,6 +21,12 @@ class RenderData {
   }
 }
 
+interface EulerAngleGroup {
+  x: gml.Angle;
+  y: gml.Angle;
+  z: gml.Angle;
+}
+
 class Primitive {
   // properties
   transform: gml.Mat4;
