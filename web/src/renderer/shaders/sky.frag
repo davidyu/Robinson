@@ -5,6 +5,9 @@ uniform float uTime;
 varying vec3 vDirection;
 const   vec3 unit = normalize( vec3( 1 ) ); // radius of unit sphere, representing the sun
 const   float cloudiness = 0.2;
+const   float horizon_blueness = 0.02;      // how blue should the sky be at the horizon
+const   float sky_blueness = 1.1;           // how quickly should the sky turn blue when we look up
+const   float sun_flare_size = 0.5;
 
 // noise functions by Inigo Quilez
 float hash(float n) { return fract(sin(n) * 1e4); }
@@ -40,7 +43,7 @@ float fbm( vec3 x ) {
 vec3 sun( vec3 v ) {
     float sun_body = clamp( dot( v, unit ), 0.0, 1.0 );
     return vec3( 1.6, 1.4, 1.0 ) * 0.47 * pow( sun_body, 350.0 )
-         + vec3( 0.8, 0.9, 1.0 ) * 0.40 * pow( sun_body, 2.0 );
+         + vec3( 0.8, 0.9, 1.0 ) * 0.40 * pow( sun_body, ( 1.0 - sun_flare_size ) * 100.0 );
 }
 
 vec4 clouds( vec3 v )
@@ -73,12 +76,14 @@ void main() {
     vec3 eye = normalize( vDirection );
     eye.y = max( eye.y, 0.0 );
 
-    vec3 sky = vec3( pow( 1.0 - eye.y, 2.0 )        // red...meh
-                   , 1.0 - eye.y                    // green...meh
-                   , 0.6 + ( 1.0 - eye.y ) * 0.4 ); // blue depends on how far up we are
+    float eye_h = clamp( eye.y, horizon_blueness, 1.0 );
+    float blueness = min( eye_h * sky_blueness, 1.0 );
+
+    vec3 sky = vec3( pow( 1.0 - blueness, 2.0 )       // less red as we move up, quadratic
+                   , 1.0 - blueness                   // less green as we move up, linear
+                   , 0.6 + ( 1.0 - blueness ) * 0.4 );            // blue depends on how far up we are
 
     sky += sun( eye );
-
     vec4 cl = clouds( eye );
 
     float t = pow( 1.0 - 0.7 * vDirection.y, 15.0 ); // what is t?
