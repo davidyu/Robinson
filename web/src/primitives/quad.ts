@@ -41,6 +41,8 @@ class Quad extends Primitive implements Renderable {
       this.transform = m.multiply( this.transform );
     }
 
+    this.transform.translation = position;
+
     this.renderData = new RenderData();
     this.material = mat;
     // trigger a rebuild when the renderer updates
