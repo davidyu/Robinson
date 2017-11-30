@@ -69,7 +69,15 @@ class SkyApp {
         this.lastMousePos.y = ev.clientY;
 
         this.yaw = this.yaw.add( gml.fromRadians( -deltaX * PAN_PIXEL_TO_RADIAN ).negate() ).reduceToOneTurn();
+
         this.pitch = this.pitch.add( gml.fromRadians( -deltaY * PAN_PIXEL_TO_RADIAN ) ).reduceToOneTurn();
+
+        /*
+        if ( this.pitch.toDegrees() > 40 ) {
+          this.pitch = gml.fromDegrees( 40 );
+        }
+         */
+
         this.dirty = true;
         ev.preventDefault();
         return false;
@@ -111,7 +119,7 @@ function StartSky() {
   if ( app == null ) {
     var params : SkyAppParams = {
       vp : <HTMLCanvasElement> document.getElementById( "big-viewport" ),
-      orbitCenter: new gml.Vec4( 0, 0, 0, 1 ),
+      orbitCenter: new gml.Vec4( 0, 40, 0, 1 ),
       orbitDistance: 10
     };
 
@@ -121,9 +129,17 @@ function StartSky() {
     Scene.setActiveScene( skyScene );
 
     // ocean
-    skyScene.addRenderable( new Quad( 1000, gml.Vec4.origin, { x: gml.fromDegrees( 90 ), y: gml.fromDegrees( 0 ), z: gml.fromDegrees( 0 ) }, new BlinnPhongMaterial( new gml.Vec4( 1.0, 0.1, 0.1, 1 ), new gml.Vec4( 1.0, 0.5, 0.5, 1 ), new gml.Vec4( 1.0, 0.5, 0.5, 1 ), new gml.Vec4( 0, 0, 0, 1 ), 20.0 ) ) );
+    skyScene.addRenderable( new Quad( 1000
+                                    , new gml.Vec4( 0, 20, 0, 1 )
+                                    , { x: gml.fromDegrees( 90 ), y: gml.fromDegrees( 0 ), z: gml.fromDegrees( 0 ) }
+                                    , new WaterMaterial( new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                                       , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                                       , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                                       , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                                       , 1.53 ) ) );
+
     skyScene.addRenderable( new Sphere( 1
-                                      , new gml.Vec4( -4, 0, 0, 1 )
+                                      , new gml.Vec4( -4, 40, 0, 1 )
                                       , new CookTorranceMaterial( new gml.Vec4( 1.0, 1.0, 1.0, 1 )
                                                                 , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
                                                                 , 0.1
