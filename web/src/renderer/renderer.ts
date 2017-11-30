@@ -14,6 +14,8 @@ enum SHADERTYPE {
   SKY_FRAG,
   CUBE_SH_FRAG,
   PASSTHROUGH_VERT,
+  WATER_VERT,
+  WATER_FRAG,
 };
 
 enum SHADER_PROGRAM {
@@ -25,6 +27,7 @@ enum SHADER_PROGRAM {
   COOK_TORRANCE,
   SKYBOX,
   SKY,
+  WATER,
   SHADOWMAP,
   CUBE_SH
 };
@@ -80,6 +83,8 @@ class ShaderRepository {
     this.asyncLoadShader( "sky.frag"                  , SHADERTYPE.SKY_FRAG                      , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "cube-sh.frag"              , SHADERTYPE.CUBE_SH_FRAG                  , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "passthrough.vert"          , SHADERTYPE.PASSTHROUGH_VERT              , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "water.vert"                , SHADERTYPE.WATER_VERT                    , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "water.frag"                , SHADERTYPE.WATER_FRAG                    , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
   }
 
   asyncLoadShader( name: string, stype: SHADERTYPE, loaded: ( stype: SHADERTYPE, contents: string ) => void ) {
@@ -328,6 +333,17 @@ class Renderer {
     this.programData[ SHADER_PROGRAM.SKY ].program = skyProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.SKY );
 
+    let waterProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.WATER_VERT ].source
+                                                , sr.files[ SHADERTYPE.WATER_FRAG ].source );
+    if ( waterProgram == null ) {
+      alert( "Water shader compilation failed. Please check the log for details." );
+      success = false;
+    }
+
+    this.programData[ SHADER_PROGRAM.WATER ] = new ShaderProgramData();
+    this.programData[ SHADER_PROGRAM.WATER ].program = waterProgram;
+    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.WATER );
+
     let cubeMapSHProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.PASSTHROUGH_VERT ].source
                                                     , sr.files[ SHADERTYPE.CUBE_SH_FRAG ].source );
 
@@ -507,7 +523,7 @@ class Renderer {
     gl.uniformMatrix3fv( shaderVariables.uInverseView, false, inverseViewMatrix.m );
 
     if ( this.camera != null ) {
-      gl.uniform4fv( shaderVariables.uCameraPos, this.camera.matrix.translation.v );
+      gl.uniform4fv( shaderVariables.uCameraPos, this.camera.matrix.translation.negate().v );
     }
 
     gl.uniform1f( shaderVariables.uTime, scene.time );
@@ -762,7 +778,7 @@ class Renderer {
             let renderTargetFramebuffer = gl.createFramebuffer();
             gl.bindFramebuffer( gl.FRAMEBUFFER, renderTargetFramebuffer );
 
-            let size = 512; // this is the pixel size of each side of the cube map
+            let size = 256; // this is the pixel size of each side of the cube map
 
             // 
             // RENDER TO TEXTURE
