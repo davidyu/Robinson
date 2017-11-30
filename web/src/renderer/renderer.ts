@@ -587,6 +587,8 @@ class Renderer {
         gl.uniform4fv( shaderVariables.uMaterial.specular, cooktorrance.specular.v );
         gl.uniform1f ( shaderVariables.uMaterial.roughness, cooktorrance.roughness );
         gl.uniform1f ( shaderVariables.uMaterial.fresnel, cooktorrance.fresnel );
+      } else if ( p.material instanceof WaterMaterial ) {
+        this.useProgram( gl, SHADER_PROGRAM.WATER );
       }
 
       let shaderVariables = this.programData[ this.currentProgram ].uniforms;
