@@ -4,7 +4,7 @@ uniform vec4 cPosition_World;
 uniform float uTime;
 varying vec3 vDirection;
 
-const   float sun_size = 1.0;  // radius of sun sphere
+const   float sun_size = sqrt( 1.0 / 3.0 );  // radius of sun sphere
 const   float sun_flare_size = 0.5;
 
 const   float sky_saturation = 0.5;       // how blue should the sky be (if we look straight up)
