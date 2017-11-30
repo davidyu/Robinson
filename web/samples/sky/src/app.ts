@@ -129,14 +129,15 @@ function StartSky() {
     Scene.setActiveScene( skyScene );
 
     // ocean
-    skyScene.addRenderable( new Quad( 1000
-                                    , new gml.Vec4( 0, 20, 0, 1 )
-                                    , { x: gml.fromDegrees( 90 ), y: gml.fromDegrees( 0 ), z: gml.fromDegrees( 0 ) }
-                                    , new WaterMaterial( new gml.Vec4( 1.0, 1.0, 1.0, 1 )
-                                                       , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
-                                                       , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
-                                                       , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
-                                                       , 1.53 ) ) );
+    skyScene.addRenderable( new Plane( 1000
+                                     , new gml.Vec4( 0, 20, 0, 1 )
+                                     , { x: gml.fromDegrees( 90 ), y: gml.fromDegrees( 0 ), z: gml.fromDegrees( 0 ) }
+                                     , { u: 10, v: 10 }
+                                     , new WaterMaterial( new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                                        , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                                        , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                                        , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                                        , 1.53 ) ) );
 
     skyScene.addRenderable( new Sphere( 1
                                       , new gml.Vec4( -4, 40, 0, 1 )
