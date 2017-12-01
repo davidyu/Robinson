@@ -132,7 +132,7 @@ function StartSky() {
     skyScene.addRenderable( new Plane( 1000
                                      , new gml.Vec4( 0, 20, 0, 1 )
                                      , { x: gml.fromDegrees( 90 ), y: gml.fromDegrees( 0 ), z: gml.fromDegrees( 0 ) }
-                                     , { u: 10, v: 10 }
+                                     , { u: 3, v: 3 }
                                      , new WaterMaterial( new gml.Vec4( 1.0, 1.0, 1.0, 1 )
                                                         , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
                                                         , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
