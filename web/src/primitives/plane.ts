@@ -130,6 +130,7 @@ class Plane extends Primitive implements Renderable {
 
       let vertexNormals = [];
 
+      // flat plane; normals are all the same
       for ( let i = 0; i < vertices.length / 3; i++ ) {
         vertexNormals.push( 0.0 );
         vertexNormals.push( 0.0 );
@@ -138,13 +139,27 @@ class Plane extends Primitive implements Renderable {
 
       this.renderData.normals = new Float32Array( vertexNormals );
 
-      var quadVertexIndices = [
-        0,  1,  2,      0,  2,  3,    // front
-      ];
+      let planeVertexIndices = [];
 
-      this.renderData.indices = new Uint16Array( quadVertexIndices );
+      // push two triangles (1 quad) each iteration
+      for ( let i = 0; i < vs.length - 1; i++ ) { // iterate over rows
+        for ( let j = 0; j < us.length - 1; j++ ) { // iterate over cols
+          // *-*
+          //  \|
+          //   *
+          planeVertexIndices.push( i * us.length + j );     // top left
+          planeVertexIndices.push( i * us.length + j + 1 ); // top right
+          planeVertexIndices.push( ( i + 1 ) * us.length + j + 1 ); // bottom right
+          // *
+          // |\
+          // *-*
+          planeVertexIndices.push( i * us.length * 1 + j );             // top left
+          planeVertexIndices.push( ( i + 1 ) * us.length + j + 1 ); // bottom right
+          planeVertexIndices.push( ( i + 1 ) * us.length + j );     // bottom left
+        }
+      }
 
-      // indices are fucked up
+      this.renderData.indices = new Uint16Array( planeVertexIndices );
     }
   }
 }
