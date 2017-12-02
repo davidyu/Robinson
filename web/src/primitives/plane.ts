@@ -111,8 +111,8 @@ class Plane extends Primitive implements Renderable {
       for ( let i = 0; i < ys.length; i++ ) {
         for ( let j = 0; j < xs.length; j++ ) {
           vertices.push( xs[j] );
-          vertices.push( ys[i] );
           vertices.push( 0 );
+          vertices.push( ys[i] );
         }
       }
 
@@ -133,8 +133,8 @@ class Plane extends Primitive implements Renderable {
       // flat plane; normals are all the same
       for ( let i = 0; i < vertices.length / 3; i++ ) {
         vertexNormals.push( 0.0 );
-        vertexNormals.push( 0.0 );
         vertexNormals.push( 1.0 );
+        vertexNormals.push( 0.0 );
       }
 
       this.renderData.normals = new Float32Array( vertexNormals );
