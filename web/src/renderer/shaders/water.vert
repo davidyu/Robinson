@@ -1,7 +1,8 @@
 attribute highp vec3 aVertexPosition;
 attribute highp vec3 aVertexNormal;
 
-uniform highp mat4 uMVMatrix;          // model view matrix
+uniform highp mat4 uMMatrix;           // model matrix
+uniform highp mat4 uVMatrix;           // view matrix
 uniform highp mat4 uPMatrix;           // projection matrix
 uniform highp mat4 uInverseProjectionMatrix;
 uniform highp mat3 uInverseViewMatrix;
@@ -15,7 +16,7 @@ varying mediump vec3 vNormal;
 
 const float sea_choppiness = 4.0;
 const float sea_frequency = 0.16;
-const float sea_amplitude = 0.6;
+const float sea_amplitude = 10.0;
 
 // based on Shadertoy "Seascape" entry by TDM
 
@@ -85,9 +86,12 @@ float height( vec2 p )
 void main() {
     vPosition = vec4( aVertexPosition, 1.0 );
 
-    vPosition = uMVMatrix * vPosition;
-    // apply heightmap
+    // transform from local to world
+    vPosition = uMMatrix * vPosition;
     vPosition.y += height( vPosition.xz );
+
+    // then world to eye
+    vPosition = uVMatrix * vPosition;
 
     vNormal = uNormalMVMatrix * aVertexNormal;
 

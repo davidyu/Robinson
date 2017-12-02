@@ -86,7 +86,7 @@ class SkyApp {
   }
 
   public fixedUpdate( delta: number ) {
-    skyScene.time += 20/30.0;
+    skyScene.time += 1.0/30.0;
 
     if ( this.dirty ) {
       // rebuild camera
@@ -132,7 +132,7 @@ function StartSky() {
     skyScene.addRenderable( new Plane( 1000
                                      , new gml.Vec4( 0, 20, 0, 1 )
                                      , { x: gml.fromDegrees( 0 ), y: gml.fromDegrees( 0 ), z: gml.fromDegrees( 0 ) }
-                                     , { u: 5, v: 5 }
+                                     , { u: 6, v: 6 }
                                      , new WaterMaterial( new gml.Vec4( 1.0, 1.0, 1.0, 1 )
                                                         , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
                                                         , new gml.Vec4( 1.0, 1.0, 1.0, 1 )

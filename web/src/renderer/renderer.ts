@@ -159,6 +159,7 @@ class ShaderUniforms {
   aVertexNormal: number;
   aVertexTexCoord: number;
   uModelView: WebGLUniformLocation;
+  uView: WebGLUniformLocation;
   uModelToWorld: WebGLUniformLocation;
   uPerspective: WebGLUniformLocation;
   uNormalModelView: WebGLUniformLocation;
@@ -416,6 +417,7 @@ class Renderer {
     }
 
     uniforms.uModelView = gl.getUniformLocation( program, "uMVMatrix" );
+    uniforms.uView = gl.getUniformLocation( program, "uVMatrix" );
     uniforms.uModelToWorld = gl.getUniformLocation( program, "uMMatrix" );
     uniforms.uPerspective = gl.getUniformLocation( program, "uPMatrix" );
     uniforms.uNormalModelView = gl.getUniformLocation( program, "uNormalMVMatrix" );
@@ -611,6 +613,7 @@ class Renderer {
       let primitiveModelView = mvStack[ mvStack.length - 1 ].multiply( p.transform );
       gl.uniformMatrix4fv( shaderVariables.uModelView, false, primitiveModelView.m );
       gl.uniformMatrix4fv( shaderVariables.uModelToWorld, false, p.transform.m );
+      gl.uniformMatrix4fv( shaderVariables.uView, false, mvStack[ mvStack.length - 1 ].m );
 
       // the normal matrix is defined as the upper 3x3 block of transpose( inverse( model-view ) )
       let normalMVMatrix = primitiveModelView.invert().transpose().mat3;

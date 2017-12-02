@@ -11,6 +11,7 @@ const   float sky_saturation = 0.5;       // how blue should the sky be (if we l
 const   float sky_horizon_offset = -0.3;  // between -1 and 1, moves horizon down if negative, moves horizon up if positive 
 
 const   float cloudiness = 0.2;
+const   float cloud_movement_speed = 2.0;
 
 // noise functions by Inigo Quilez
 float hash(float n) { return fract(sin(n) * 1e4); }
@@ -51,7 +52,7 @@ vec3 sun( vec3 v ) {
 
 vec4 clouds( vec3 v )
 {
-    vec2 ofs = vec2( uTime * 80.0, uTime * 60.0 );
+    vec2 ofs = vec2( uTime * cloud_movement_speed * 80.0, uTime * cloud_movement_speed * 60.0 );
     vec4 acc = vec4( 0, 0, 0, 0 );
 
     const int layers = int( float( 100 ) * cloudiness );
