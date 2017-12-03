@@ -335,7 +335,7 @@ class Renderer {
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.SKY );
 
     let waterProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.WATER_VERT ].source
-                                                , sr.files[ SHADERTYPE.WATER_FRAG ].source );
+                                                , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.WATER_FRAG ].source );
     if ( waterProgram == null ) {
       alert( "Water shader compilation failed. Please check the log for details." );
       success = false;

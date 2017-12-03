@@ -13,7 +13,7 @@ class Plane extends Primitive implements Renderable {
 
   constructor( size: number = 1, position: gml.Vec4 = gml.Vec4.origin, rotation: EulerAngleGroup = null, subdivisions: Subdivisions = { u: 0, v: 0 }, mat: Material = new BlinnPhongMaterial() ) {
     super();
-    this.transform.scale = new gml.Vec3( size, size, size );
+    this.transform = gml.Mat4.identity();
     this.subdivs = subdivisions;
 
     if ( rotation != null ) {
@@ -26,7 +26,7 @@ class Plane extends Primitive implements Renderable {
       let sz = Math.sin( rotation.z.toRadians() );
       let cz = Math.cos( rotation.z.toRadians() );
 
-      m.r00 = size * cz * cy;
+      m.r00 = cz * cy;
       m.r01 = sz * cy;
       m.r02 = -sy;
 
@@ -46,6 +46,12 @@ class Plane extends Primitive implements Renderable {
       m.ty  = 0;
       m.tz  = 0;
 
+      this.transform = m.multiply( this.transform );
+    }
+
+    {
+      let m = gml.Mat4.identity();
+      m.scale = new gml.Vec3( size, size, size );
       this.transform = m.multiply( this.transform );
     }
 
@@ -116,6 +122,12 @@ class Plane extends Primitive implements Renderable {
         }
       }
 
+      console.log( "xs" );
+      console.log( xs );
+
+      console.log( "ys" );
+      console.log( ys );
+
       this.renderData.vertices = new Float32Array( vertices );
 
       let uvs = [];
@@ -158,6 +170,8 @@ class Plane extends Primitive implements Renderable {
           planeVertexIndices.push( ( i + 1 ) * us.length + j );     // bottom left
         }
       }
+
+      console.log( planeVertexIndices );
 
       this.renderData.indices = new Uint16Array( planeVertexIndices );
     }

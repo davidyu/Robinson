@@ -7,11 +7,11 @@ varying vec3 vDirection;
 const   float sun_size = sqrt( 1.0 / 3.0 );  // radius of sun sphere
 const   float sun_flare_size = 0.5;
 
-const   float sky_saturation = 0.5;       // how blue should the sky be (if we look straight up)
+const   float sky_saturation = 0.7;       // how blue should the sky be (if we look straight up)
 const   float sky_horizon_offset = -0.3;  // between -1 and 1, moves horizon down if negative, moves horizon up if positive 
 
 const   float cloudiness = 0.2;
-const   float cloud_movement_speed = 2.0;
+const   float cloud_speed = 10.0;
 
 // noise functions by Inigo Quilez
 float hash(float n) { return fract(sin(n) * 1e4); }
@@ -19,7 +19,7 @@ float hash(float n) { return fract(sin(n) * 1e4); }
 float noise(vec3 x) {
     const vec3 step = vec3(110, 241, 171);
 
-    vec3 i = mod( floor(x), vec3( 5 ) * step );
+    vec3 i = floor(x);
     vec3 f = fract(x);
  
     float n = dot(i, step);
@@ -52,7 +52,7 @@ vec3 sun( vec3 v ) {
 
 vec4 clouds( vec3 v )
 {
-    vec2 ofs = vec2( uTime * cloud_movement_speed * 80.0, uTime * cloud_movement_speed * 60.0 );
+    vec2 ofs = vec2( uTime * cloud_speed * 80.0, uTime * cloud_speed * 60.0 );
     vec4 acc = vec4( 0, 0, 0, 0 );
 
     const int layers = int( float( 100 ) * cloudiness );

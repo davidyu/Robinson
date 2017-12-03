@@ -129,21 +129,14 @@ function StartSky() {
     Scene.setActiveScene( skyScene );
 
     // ocean
-    skyScene.addRenderable( new Plane( 1000
-                                     , new gml.Vec4( 0, 20, 0, 1 )
+    skyScene.addRenderable( new Plane( 100
+                                     , new gml.Vec4( 0, 30, 0, 1 )
                                      , { x: gml.fromDegrees( 0 ), y: gml.fromDegrees( 0 ), z: gml.fromDegrees( 0 ) }
-                                     , { u: 6, v: 6 }
+                                     , { u: 7, v: 7 }
                                      , new WaterMaterial( new gml.Vec4( 1.0, 1.0, 1.0, 1 )
                                                         , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
                                                         , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
                                                         , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
                                                         , 1.53 ) ) );
-
-    skyScene.addRenderable( new Sphere( 1
-                                      , new gml.Vec4( -4, 40, 0, 1 )
-                                      , new CookTorranceMaterial( new gml.Vec4( 1.0, 1.0, 1.0, 1 )
-                                                                , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
-                                                                , 0.1
-                                                                , 1.53 ) ) );
   }
 }
