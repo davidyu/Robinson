@@ -8,6 +8,7 @@ varying vec4 vPosition;
 varying vec4 vPosition_World;
 varying vec3 vNormal;    // normal vector in world space
 
+uniform highp mat4 uVMatrix;
 uniform highp mat3 uInverseViewMatrix;
 uniform highp mat3 uNormalMVMatrix;    // inverse model view matrix
 
@@ -15,14 +16,14 @@ uniform samplerCube environment;
 uniform float environmentMipMaps;
 
 const   float sun_size = sqrt( 1.0 / 3.0 );  // radius of sun sphere
-const   vec3  sea_base_color  = vec3(0.11,0.19,0.22);
-const   vec3  sea_water_color = vec3(0.55,0.9,0.7);
-const   float sea_height      = 3.0;
+const   vec3  sea_base_color  = vec3(0.11,0.25,0.33);
+const   vec3  sea_water_color = vec3(0.15,0.9,0.8);
+const   float sea_height      = 1.2;
 
 const float sea_speed = 3.0;
-const float sea_choppiness = 4.0;
-const float sea_frequency = 0.16;
-const float sea_amplitude = 3.0;
+const float sea_choppiness = 1.0;
+const float sea_frequency = 0.15;
+const float sea_amplitude = 1.2;
 
 float diffuse( vec3 normal, vec3 light, float p ) {
     return pow( dot( normal, light ) * 0.4 + 0.6, p );
@@ -96,9 +97,9 @@ float height_detailed( vec2 p )
         d += octave( ( p - uTime * sea_speed ) * freq, choppiness ), 
         height += d * amp;
         p *= octave_matrix;
-        freq *= 1.9;
+        freq *= 1.5;
         amp *= 0.22;
-        choppiness = mix( choppiness, 1.0, 0.2 );
+        choppiness = mix( choppiness, 0.9, 0.2 );
     }
 
     return height;
@@ -121,12 +122,14 @@ float get_specular( vec3 n, vec3 l, vec3 e, float s ) {
 
 void main( void ) {
     vec3 view = normalize( -( vPosition.xyz / vPosition.w ) );
-    vec3 normal = normalize( uNormalMVMatrix * get_normal( vPosition_World.xz, 0.05 ) );
+    vec3 normal = normalize( uNormalMVMatrix * get_normal( vPosition_World.xz, 0.1 ) );
 
     mediump vec3 reflected = uInverseViewMatrix * ( -reflect( view, normal ) );
-    vec4 ibl_specular = textureCube( environment, reflected );
+    vec4 ibl_specular = textureCube( environment, reflected ) * 0.9;
+    
+    vec3 lightdir = normalize( uVMatrix * vec4( vec3( sun_size ), 0 ) ).xyz;
 
-    vec4 refracted = vec4( sea_base_color + diffuse( normal, vec3( sun_size ), 80.0 ), 1.0 ); 
+    vec4 refracted = vec4( sea_base_color + diffuse( normal, -lightdir, 80.0 ), 1.0 ); 
 
     float fresnel = 1.0 - max(dot(normal,-view),0.0);
     fresnel = pow(fresnel,3.0) * 0.7;
@@ -139,7 +142,7 @@ void main( void ) {
     color += vec4( sea_water_color * ( vPosition_World.y - sea_height ) * 0.18 * atten, 1.0 );
     
     // bteitler: Apply specular highlight
-    color += vec4(get_specular(normal,vec3(sun_size),view,90.0))*0.5;
+    color += vec4(get_specular(normal,-lightdir,view,90.0))*0.5;
 
     gl_FragColor = color;
 }

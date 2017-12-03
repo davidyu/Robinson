@@ -27,7 +27,7 @@ class SkyApp {
     this.renderer = new Renderer( params.vp, shaderRepo );
     this.orbitCenter = params.orbitCenter;
     this.orbitDistance = params.orbitDistance;
-    this.yaw = gml.fromDegrees( 0 );
+    this.yaw = gml.fromDegrees( 140 );
     this.pitch = gml.fromDegrees( 0 );
     this.renderer.setCamera( this.camera );
     this.dirty = true;
