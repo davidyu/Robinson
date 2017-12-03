@@ -17,12 +17,12 @@ uniform float environmentMipMaps;
 const   float sun_size = sqrt( 1.0 / 3.0 );  // radius of sun sphere
 const   vec3  sea_base_color  = vec3(0.11,0.19,0.22);
 const   vec3  sea_water_color = vec3(0.55,0.9,0.7);
-const   float sea_height      = 1.0;
+const   float sea_height      = 3.0;
 
 const float sea_speed = 3.0;
 const float sea_choppiness = 4.0;
 const float sea_frequency = 0.16;
-const float sea_amplitude = 1.0;
+const float sea_amplitude = 3.0;
 
 float diffuse( vec3 normal, vec3 light, float p ) {
     return pow( dot( normal, light ) * 0.4 + 0.6, p );
@@ -121,7 +121,7 @@ float get_specular( vec3 n, vec3 l, vec3 e, float s ) {
 
 void main( void ) {
     vec3 view = normalize( -( vPosition.xyz / vPosition.w ) );
-    vec3 normal = normalize( uNormalMVMatrix * get_normal( vPosition_World.xz, 0.1 ) );
+    vec3 normal = normalize( uNormalMVMatrix * get_normal( vPosition_World.xz, 0.05 ) );
 
     mediump vec3 reflected = uInverseViewMatrix * ( -reflect( view, normal ) );
     vec4 ibl_specular = textureCube( environment, reflected );
