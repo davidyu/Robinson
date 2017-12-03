@@ -55,7 +55,7 @@ class Sphere extends Primitive implements Renderable {
 
       this.renderData.vertices = new Float32Array( vertices );
       this.renderData.normals = new Float32Array( vertices ); // for a unit sphere located at 0,0,0, the normals are exactly the same as the vertices
-      this.renderData.indices = new Uint16Array( indices );
+      this.renderData.indices = new Uint32Array( indices );
 
       this.renderData.dirty = false;
     }

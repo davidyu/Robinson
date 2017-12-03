@@ -13,7 +13,6 @@ uniform mediump float uTime;
 varying mediump vec3 vDirection;
 varying mediump vec4 vPosition;
 varying mediump vec4 vPosition_World;
-varying mediump vec3 vNormal;
 
 const float sea_speed = 3.0;
 const float sea_choppiness = 1.0;
@@ -134,16 +133,15 @@ void main() {
 
     // transform from local to world
     vPosition = uMMatrix * vPosition;
+
+    // apply water noise height offset
     vPosition.y += height( vPosition.xz );
+
+    // cache world position
     vPosition_World = vPosition;
 
     // then world to eye
     vPosition = uVMatrix * vPosition;
-
-    vNormal = uNormalMVMatrix * aVertexNormal;
-
-    // reproduce the eye/camera aim, per vertex, which is automatically interpolated to be per-pixel when we're in the fragment shader
-    vDirection = uInverseViewMatrix * ( uInverseProjectionMatrix * vec4( aVertexPosition, 1.0 ) ).xyz;
 
     gl_Position = uPMatrix * vPosition;
 }

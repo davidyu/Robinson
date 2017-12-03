@@ -3,10 +3,8 @@ precision mediump float;
 uniform vec4 cPosition_World;
 uniform float uTime;
 
-varying vec3 vDirection;
 varying vec4 vPosition;
 varying vec4 vPosition_World;
-varying vec3 vNormal;    // normal vector in world space
 
 uniform highp mat4 uVMatrix;
 uniform highp mat3 uInverseViewMatrix;

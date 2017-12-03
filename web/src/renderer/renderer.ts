@@ -191,6 +191,8 @@ class Renderer {
   viewportW: number;
   viewportH: number;
 
+  elementIndexExtension;
+
   shaderLODExtension;
 
   camera: Camera;
@@ -247,6 +249,7 @@ class Renderer {
     }
 
     this.shaderLODExtension = gl.getExtension( "EXT_shader_texture_lod" );
+    this.elementIndexExtension = gl.getExtension( "OES_element_index_uint" );
 
     this.programData = [];
 
@@ -648,7 +651,7 @@ class Renderer {
         gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.irradianceMap.cubeMapTexture );
       }
 
-      gl.drawElements( gl.TRIANGLES, p.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
+      gl.drawElements( gl.TRIANGLES, p.renderData.indices.length, gl.UNSIGNED_INT, 0 );
     } );
   }
 

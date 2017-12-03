@@ -1,20 +1,21 @@
 ///<reference path='prim.ts' />
 
+/*
 interface Subdivisions {
   u: number;
   v: number;
 }
 
-// TODO make me a plane with UV subdivision count
-class Plane extends Primitive implements Renderable {
+// an plane with LOD (most detail in its center, less detail as we move further out)
+class InfinitePlane extends Primitive implements Renderable {
   renderData: RenderData;
   material: Material;
-  subdivs: Subdivisions;
 
-  constructor( size: number = 1, position: gml.Vec4 = gml.Vec4.origin, rotation: EulerAngleGroup = null, subdivisions: Subdivisions = { u: 0, v: 0 }, mat: Material = new BlinnPhongMaterial() ) {
+  constructor( position: gml.Vec4 = gml.Vec4.origin, rotation: EulerAngleGroup = null, mat: Material = new BlinnPhongMaterial() ) {
     super();
     this.transform = gml.Mat4.identity();
-    this.subdivs = subdivisions;
+    let size = 1000000; // not quite infinite :) but very large.
+    let shells = 10;    // Each tile is 64x64 verts. Center has 8x8 tiles. Each shell after the center is 2x the size of the previous shell
 
     if ( rotation != null ) {
       let m = gml.Mat4.identity();
@@ -159,7 +160,7 @@ class Plane extends Primitive implements Renderable {
           // *
           // |\
           // *-*
-          planeVertexIndices.push( i * us.length * 1 + j );         // top left
+          planeVertexIndices.push( i * us.length * 1 + j );             // top left
           planeVertexIndices.push( ( i + 1 ) * us.length + j + 1 ); // bottom right
           planeVertexIndices.push( ( i + 1 ) * us.length + j );     // bottom left
         }
@@ -167,7 +168,8 @@ class Plane extends Primitive implements Renderable {
 
       console.log( planeVertexIndices );
 
-      this.renderData.indices = new Uint32Array( planeVertexIndices );
+      this.renderData.indices = new Uint16Array( planeVertexIndices );
     }
   }
 }
+*/
