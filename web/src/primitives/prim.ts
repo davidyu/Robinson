@@ -27,6 +27,11 @@ interface EulerAngleGroup {
   z: gml.Angle;
 }
 
+interface Subdivisions {
+  u: number;
+  v: number;
+}
+
 class Primitive {
   // properties
   transform: gml.Mat4;

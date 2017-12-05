@@ -1,11 +1,5 @@
 ///<reference path='prim.ts' />
 
-interface Subdivisions {
-  u: number;
-  v: number;
-}
-
-// TODO make me a plane with UV subdivision count
 class Plane extends Primitive implements Renderable {
   renderData: RenderData;
   material: Material;
