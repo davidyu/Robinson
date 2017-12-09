@@ -337,7 +337,7 @@ class InfinitePlane extends Primitive implements Renderable {
       // bottom left
       {
         let xs = [ -this.planesize / this.transform.scale.x, -1 ]; // left to right
-        let ys = [  1, -this.planesize / this.transform.scale.y ]; // top to bottom
+        let ys = [ -1, -this.planesize / this.transform.scale.y ]; // top to bottom
 
         // uvs are incorrect but whatever
         let us = [  0,  1 ]; // left to right
@@ -398,7 +398,7 @@ class InfinitePlane extends Primitive implements Renderable {
       // bot mid
       {
         let xs = [ -1, 1 ]; // left to right
-        let ys = [  1, -this.planesize / this.transform.scale.y ]; // top to bottom
+        let ys = [ -1, -this.planesize / this.transform.scale.y ]; // top to bottom
 
         // uvs are incorrect but whatever
         let us = [  0,  1 ]; // left to right
@@ -458,8 +458,8 @@ class InfinitePlane extends Primitive implements Renderable {
 
       // bot right
       {
-        let xs = [ 1, this.planesize / this.transform.scale.x ]; // left to right
-        let ys = [ 1, -this.planesize / this.transform.scale.y ]; // top to bottom
+        let xs = [  1, this.planesize / this.transform.scale.x ]; // left to right
+        let ys = [ -1, -this.planesize / this.transform.scale.y ]; // top to bottom
 
         // uvs are incorrect but whatever
         let us = [  0,  1 ]; // left to right
