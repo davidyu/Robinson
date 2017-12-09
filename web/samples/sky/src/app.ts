@@ -119,8 +119,8 @@ function StartSky() {
   if ( app == null ) {
     var params : SkyAppParams = {
       vp : <HTMLCanvasElement> document.getElementById( "big-viewport" ),
-      orbitCenter: new gml.Vec4( 0, 40, 0, 1 ),
-      orbitDistance: 10
+      orbitCenter: new gml.Vec4( 0, 50, 0, 1 ),
+      orbitDistance: 30
     };
 
     shaderRepo = new ShaderRepository( ( repo ) => { app = new SkyApp( params, repo ); } );
@@ -129,10 +129,10 @@ function StartSky() {
     Scene.setActiveScene( skyScene );
 
     // ocean
-    skyScene.addRenderable( new Plane( 10000
+    skyScene.addRenderable( new InfinitePlane( 10
                                      , new gml.Vec4( 0, 30, 0, 1 )
                                      , { x: gml.fromDegrees( 0 ), y: gml.fromDegrees( 0 ), z: gml.fromDegrees( 0 ) }
-                                     , { u: 9, v: 9 }
+                                     , { u: 6, v: 6 }
                                      , new WaterMaterial( new gml.Vec4( 1.0, 1.0, 1.0, 1 )
                                                         , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
                                                         , new gml.Vec4( 1.0, 1.0, 1.0, 1 )

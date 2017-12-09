@@ -552,8 +552,7 @@ class Renderer {
   }
 
   renderScene( gl: WebGLRenderingContext, scene: Scene, mvStack: gml.Mat4[], pass: PASS ) {
-
-    let perspective = gml.makePerspective( gml.fromDegrees( 45 ), 640.0/480.0, 0.1, 100.0 );
+    let perspective = gml.makePerspective( gml.fromDegrees( 45 ), 640.0/480.0, 0.1, 1000.0 );
 
     scene.renderables.forEach( ( p, i ) => {
       if ( p.material instanceof BlinnPhongMaterial ) {
@@ -637,7 +636,10 @@ class Renderer {
       gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexNormalBuffer );
       gl.bufferData( gl.ARRAY_BUFFER, p.renderData.normals, gl.STATIC_DRAW );
 
-      gl.vertexAttribPointer( shaderVariables.aVertexNormal, 3, gl.FLOAT, false, 0, 0 );
+      if ( shaderVariables.aVertexNormal != -1 ) {
+        // look into why this is -1!!!!!!!!
+        gl.vertexAttribPointer( shaderVariables.aVertexNormal, 3, gl.FLOAT, false, 0, 0 );
+      }
 
       if ( scene.environmentMap != null ) {
         gl.uniform1i( shaderVariables.uEnvMap, 0 ); // tells shader to refer to texture slot 1 for the uEnvMap uniform
