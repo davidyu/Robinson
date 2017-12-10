@@ -17,7 +17,7 @@ varying mediump vec4 vPosition_World;
 const float sea_speed = 3.0;
 const float sea_choppiness = 1.0;
 const float sea_frequency = 0.15;
-const float sea_amplitude = 1.2;
+const float sea_amplitude = 2.0;
 
 // based on Shadertoy "Seascape" entry by TDM
 
