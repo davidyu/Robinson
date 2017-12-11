@@ -245,6 +245,8 @@ class Renderer {
     gl.clearDepth( 1.0 );                                        // Clear everything
     gl.enable( gl.DEPTH_TEST );                                  // Enable depth testing
     gl.depthFunc( gl.LEQUAL );                                   // Near things obscure far things
+    gl.enable( gl.BLEND );                                       // Enable blending
+    gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA );
 
     this.context = gl;
     var success = true;

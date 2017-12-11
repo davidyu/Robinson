@@ -199,5 +199,7 @@ void main( void ) {
     // bteitler: Apply specular highlight
     color += vec4( get_specular( normal, lightdir, view, 90.0 ) ) * 0.5;
 
-    gl_FragColor = color;
+    gl_FragColor = mix( vec4( 0.0, 0.0, 0.0, 0.0 ) // transparent - draw what's behind us (environment)
+                      , color // ocean color
+    	              , pow( smoothstep( 0.0, -0.05, view.y ), 0.3 ) );
 }
