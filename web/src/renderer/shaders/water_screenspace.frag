@@ -3,29 +3,26 @@ precision mediump float;
 uniform vec4 cPosition_World;
 uniform float uTime;
 
-varying vec4 vPosition;
-varying vec4 vPosition_World;
-
-uniform highp mat4 uVMatrix;
-uniform highp mat3 uInverseViewMatrix;
-uniform highp mat3 uNormalMVMatrix;    // inverse model view matrix
-
 uniform samplerCube environment;
 uniform float environmentMipMaps;
 
 const   float sun_size = sqrt( 1.0 / 3.0 );  // radius of sun sphere
 const   vec3  sea_base_color  = vec3(0.1,0.19,0.22);
-const   vec3  sea_water_color = vec3(0.8,0.9,0.6);
+const   vec3  sea_water_color = vec3(0.15,0.9,0.8);
+const   float sea_height      = 1.2;
 
 const float sea_speed = 3.0;
 const float sea_choppiness = 4.0;
 const float sea_frequency = 0.06;
-const float sea_amplitude = 0.6;
-const float sea_scale = 0.1;
+const float sea_amplitude = 2.0;
+
+varying vec3 vDirection;
 
 float diffuse( vec3 normal, vec3 light, float p ) {
     return pow( dot( normal, light ) * 0.4 + 0.6, p );
 }
+
+// testing to see if valid heightmap tracing makes a difference
 
 // based on Shadertoy "Seascape" entry by TDM
 
@@ -80,6 +77,29 @@ float octave( vec2 uv, float choppiness )
     return pow( 1.0 - pow( wave.x * wave.y, 0.65 ), choppiness );
 }
 
+float height( vec2 p )
+{
+    float freq = sea_frequency;
+    float amp  = sea_amplitude;
+    float choppiness = sea_choppiness;
+
+    p.x *= 0.75;
+
+    const mat2 octave_matrix = mat2( 1.6, 1.2, -1.2, 1.6 );
+    float d, height = 0.0;
+    for ( int i = 0; i < 3; i++ ) {
+        d = octave( ( p + uTime * sea_speed ) * freq, choppiness ), 
+        d += octave( ( p - uTime * sea_speed ) * freq, choppiness ), 
+        height += d * amp;
+        p *= octave_matrix;
+        freq *= 1.9;
+        amp *= 0.22;
+        choppiness = mix( choppiness, 1.0, 0.2 );
+    }
+
+    return height;
+}
+
 float height_detailed( vec2 p )
 {
     float freq = sea_frequency;
@@ -118,29 +138,66 @@ float get_specular( vec3 n, vec3 l, vec3 e, float s ) {
     return pow( max ( dot( reflect( e, n ), l ), 0.0 ), s ) * nrm;
 }
 
-void main( void ) {
-    vec3 view = normalize( -( vPosition.xyz / vPosition.w ) );
-    vec3 normal = normalize( uNormalMVMatrix * get_normal( vPosition_World.xz * sea_scale, 0.01 ) );
+// raymarching function from TDM's seascape shader
+float heightMapTracing(vec3 ori, vec3 dir, out vec3 p) {  
+    float tm = 0.0;
+    float tx = 1000.0;
 
-    vec3 reflected = uInverseViewMatrix * ( -reflect( view, normal ) );
+    float hx = height( ( ori + dir * tx ).xz );
+    
+    if ( hx > 0.0 ) return tx;   
+
+    float hm = height( ( ori + dir * tm ).xz );
+   
+    float tmid = 0.0;
+    for ( int i = 0; i < 8; i++ ) {
+        tmid = mix( tm,tx, hm / ( hm-hx) );
+        p = ori + dir * tmid; 
+                  
+    	float hmid = height( p.xz );
+
+        if(hmid < 0.0) {
+            tx = tmid;
+            hx = hmid;
+        } else {
+            // Haven't hit surface yet, easy case, just march forward
+            tm = tmid;
+            hm = hmid;
+        }
+    }
+
+    return tmid;
+}
+
+void main( void ) {
+    vec3 view = normalize( vDirection );
+    vec3 ori = cPosition_World.xyz;
+
+    vec3 p;
+    heightMapTracing( ori, view, p );
+
+    vec3 dist = p - ori;
+
+    vec3 normal = get_normal( p.xz, dot( dist,dist ) * 0.001 );
+
+    mediump vec3 reflected = ( -reflect( view, normal ) );
     vec4 ibl_specular = textureCube( environment, reflected ) * 0.9;
     
-    vec3 lightdir = normalize( uVMatrix * vec4( vec3( sun_size ), 0 ) ).xyz;
+    vec3 lightdir = normalize( vec4( vec3( sun_size ), 0 ) ).xyz;
 
     vec4 refracted = vec4( sea_base_color + diffuse( normal, lightdir, 80.0 ) * sea_water_color * 0.12, 1.0 ); 
 
     float fresnel = 1.0 - max(dot(normal,-view),0.0);
-    fresnel = pow(fresnel,3.0) * 0.65;
+    fresnel = pow(fresnel,3.0) * 0.7;
     
     vec4 color = mix( refracted, ibl_specular, fresnel );
 
-    float dist = length( cPosition_World.xz - vPosition_World.xz );
     float atten = max( 1.0 - dot( dist, dist ) * 0.0000015, 0.0 );
 
-    // foam
-    color += vec4( sea_water_color * ( height_detailed( vPosition_World.xz * sea_scale ) ) * 0.05 * atten, 1.0 );
-
-    color += vec4( get_specular( normal, lightdir, view, 60.0 ) );
+    color += vec4( sea_water_color * ( height_detailed( p.xz ) ) * 0.05 * atten, 1.0 );
+    
+    // bteitler: Apply specular highlight
+    color += vec4( get_specular( normal, lightdir, view, 90.0 ) ) * 0.5;
 
     gl_FragColor = color;
 }

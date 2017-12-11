@@ -129,14 +129,27 @@ function StartSky() {
     Scene.setActiveScene( skyScene );
 
     // ocean
+    /*
     skyScene.addRenderable( new InfinitePlane( 500
                                      , new gml.Vec4( 0, 30, 0, 1 )
                                      , { x: gml.fromDegrees( 0 ), y: gml.fromDegrees( 0 ), z: gml.fromDegrees( 0 ) }
-                                     , { u: 6, v: 6 }
+                                     , { u: 8, v: 8 }
                                      , new WaterMaterial( new gml.Vec4( 1.0, 1.0, 1.0, 1 )
                                                         , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
                                                         , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
                                                         , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
                                                         , 1.53 ) ) );
+     */
+
+    // screenspace ocean
+    skyScene.addRenderable( new Quad( 1
+                                     , new gml.Vec4( 0, 30, 0, 1 )
+                                     , null
+                                     , new WaterMaterial( new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                                        , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                                        , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                                        , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                                        , 1.53
+                                                        , true ) ) );
   }
 }

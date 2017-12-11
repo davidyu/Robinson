@@ -15,7 +15,9 @@ enum SHADERTYPE {
   CUBE_SH_FRAG,
   PASSTHROUGH_VERT,
   WATER_VERT,
+  SS_QUAD_VERT,
   WATER_FRAG,
+  WATER_SS_FRAG,
 };
 
 enum SHADER_PROGRAM {
@@ -28,6 +30,7 @@ enum SHADER_PROGRAM {
   SKYBOX,
   SKY,
   WATER,
+  WATER_SS,
   SHADOWMAP,
   CUBE_SH
 };
@@ -85,6 +88,8 @@ class ShaderRepository {
     this.asyncLoadShader( "passthrough.vert"          , SHADERTYPE.PASSTHROUGH_VERT              , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "water.vert"                , SHADERTYPE.WATER_VERT                    , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "water.frag"                , SHADERTYPE.WATER_FRAG                    , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "screenspacequad.vert"      , SHADERTYPE.SS_QUAD_VERT                  , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "water_screenspace.frag"    , SHADERTYPE.WATER_SS_FRAG                 , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
   }
 
   asyncLoadShader( name: string, stype: SHADERTYPE, loaded: ( stype: SHADERTYPE, contents: string ) => void ) {
@@ -348,6 +353,19 @@ class Renderer {
     this.programData[ SHADER_PROGRAM.WATER ].program = waterProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.WATER );
 
+    let waterSSProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SS_QUAD_VERT ].source
+                                                  , sr.files[ SHADERTYPE.WATER_SS_FRAG ].source );
+
+    if ( waterSSProgram == null ) {
+      alert( "Screenspace water compilation failed. Please check the log for details." );
+      success = false;
+    }
+
+    this.programData[ SHADER_PROGRAM.WATER_SS ] = new ShaderProgramData();
+    this.programData[ SHADER_PROGRAM.WATER_SS ].program = waterSSProgram;
+    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.WATER_SS );
+
+
     let cubeMapSHProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.PASSTHROUGH_VERT ].source
                                                     , sr.files[ SHADERTYPE.CUBE_SH_FRAG ].source );
 
@@ -548,7 +566,7 @@ class Renderer {
       gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environmentMap.cubeMapTexture );
     }
 
-    gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
+    gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_INT, 0 );
   }
 
   renderScene( gl: WebGLRenderingContext, scene: Scene, mvStack: gml.Mat4[], pass: PASS ) {
@@ -592,9 +610,17 @@ class Renderer {
         gl.uniform1f ( shaderVariables.uMaterial.roughness, cooktorrance.roughness );
         gl.uniform1f ( shaderVariables.uMaterial.fresnel, cooktorrance.fresnel );
       } else if ( p.material instanceof WaterMaterial ) {
-        this.useProgram( gl, SHADER_PROGRAM.WATER );
-        let shaderVariables = this.programData[ this.currentProgram ].uniforms
-        gl.uniform1f( shaderVariables.uTime, scene.time );
+        if ( ( <WaterMaterial>p.material ).screenspace ) {
+          this.useProgram( gl, SHADER_PROGRAM.WATER_SS );
+          let shaderVariables = this.programData[ this.currentProgram ].uniforms
+          gl.uniform1f( shaderVariables.uTime, scene.time );
+          let inverseProjectionMatrix = perspective.invert();
+          gl.uniformMatrix4fv( shaderVariables.uInverseProjection, false, inverseProjectionMatrix.m );
+        } else {
+          this.useProgram( gl, SHADER_PROGRAM.WATER );
+          let shaderVariables = this.programData[ this.currentProgram ].uniforms
+          gl.uniform1f( shaderVariables.uTime, scene.time );
+        }
       }
 
       let shaderVariables = this.programData[ this.currentProgram ].uniforms;

@@ -17,6 +17,7 @@ var sources = [
   new ProgramSource( 'skybox.vert', 'skybox.frag' ),
   new ProgramSource( 'skybox.vert', 'sky.frag' ),
   new ProgramSource( 'water.vert' , 'water.frag' ),
+  new ProgramSource( 'screenspacequad.vert' , 'water_screenspace.frag' ),
   new ProgramSource( 'passthrough.vert' , 'cube-sh.frag' ),
   new ProgramSource( 'passthrough.vert' , 'unlit.frag' )
 ];

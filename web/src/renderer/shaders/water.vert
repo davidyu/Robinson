@@ -15,9 +15,10 @@ varying mediump vec4 vPosition;
 varying mediump vec4 vPosition_World;
 
 const float sea_speed = 3.0;
-const float sea_choppiness = 1.0;
-const float sea_frequency = 0.15;
-const float sea_amplitude = 2.0;
+const float sea_choppiness = 4.0;
+const float sea_frequency = 0.06;
+const float sea_amplitude = 0.6;
+const float sea_scale = 0.1;
 
 // based on Shadertoy "Seascape" entry by TDM
 
@@ -135,7 +136,7 @@ void main() {
     vPosition = uMMatrix * vPosition;
 
     // apply water noise height offset
-    vPosition.y += height( vPosition.xz );
+    vPosition.y = 5.0 * height( vPosition.xz * sea_scale );
 
     // cache world position
     vPosition_World = vPosition;

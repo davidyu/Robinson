@@ -86,7 +86,7 @@ class Quad extends Primitive implements Renderable {
         0,  1,  2,      0,  2,  3,    // front
       ];
 
-      this.renderData.indices = new Uint16Array( quadVertexIndices );
+      this.renderData.indices = new Uint32Array( quadVertexIndices );
     }
   }
 }
