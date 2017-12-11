@@ -18,7 +18,7 @@ const float sea_speed = 3.0;
 const float sea_choppiness = 4.0;
 const float sea_frequency = 0.06;
 const float sea_amplitude = 0.6;
-const float sea_scale = 0.1;
+const float sea_scale = 0.5;
 
 // based on Shadertoy "Seascape" entry by TDM
 

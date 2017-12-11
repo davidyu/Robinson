@@ -21,7 +21,7 @@ const float sea_speed = 3.0;
 const float sea_choppiness = 4.0;
 const float sea_frequency = 0.06;
 const float sea_amplitude = 0.6;
-const float sea_scale = 0.1;
+const float sea_scale = 0.5;
 
 float diffuse( vec3 normal, vec3 light, float p ) {
     return pow( dot( normal, light ) * 0.4 + 0.6, p );
@@ -106,9 +106,9 @@ float height_detailed( vec2 p )
 vec3 get_normal( vec2 p, float epsilon )
 {
     vec3 n;
-    float original = height_detailed( p );
-    n.x = height_detailed( vec2( p.x + epsilon, p.y ) ) - original;
-    n.z = height_detailed( vec2( p.x, p.y + epsilon ) ) - original;
+    float original = -height_detailed( p );
+    n.x = -height_detailed( vec2( p.x + epsilon, p.y ) ) - original;
+    n.z = -height_detailed( vec2( p.x, p.y + epsilon ) ) - original;
     n.y = epsilon;
     return normalize( n );
 }
@@ -129,8 +129,8 @@ void main( void ) {
 
     vec4 refracted = vec4( sea_base_color + diffuse( normal, lightdir, 80.0 ) * sea_water_color * 0.12, 1.0 ); 
 
-    float fresnel = 1.0 - max(dot(normal,-view),0.0);
-    fresnel = pow(fresnel,3.0) * 0.65;
+    float fresnel = 1.0 - max(dot(-normal,-view),0.0);
+    fresnel = pow(fresnel,3.0);
     
     vec4 color = mix( refracted, ibl_specular, fresnel );
 
@@ -140,7 +140,7 @@ void main( void ) {
     // foam
     color += vec4( sea_water_color * ( height_detailed( vPosition_World.xz * sea_scale ) ) * 0.05 * atten, 1.0 );
 
-    color += vec4( get_specular( normal, lightdir, view, 60.0 ) );
+    color += vec4( get_specular( normal, lightdir, -view, 100.0 ) ) * 0.5;
 
     gl_FragColor = color;
 }

@@ -9,12 +9,12 @@ uniform float environmentMipMaps;
 const   float sun_size = sqrt( 1.0 / 3.0 );  // radius of sun sphere
 const   vec3  sea_base_color  = vec3(0.1,0.19,0.22);
 const   vec3  sea_water_color = vec3(0.15,0.9,0.8);
-const   float sea_height      = 1.2;
 
-const float sea_speed = 3.0;
+const float sea_speed = 1.0;
 const float sea_choppiness = 4.0;
-const float sea_frequency = 0.06;
-const float sea_amplitude = 2.0;
+const float sea_frequency = 0.16;
+const float sea_amplitude = 0.6;
+const float sea_scale = 1.0;
 
 varying vec3 vDirection;
 
@@ -77,12 +77,13 @@ float octave( vec2 uv, float choppiness )
     return pow( 1.0 - pow( wave.x * wave.y, 0.65 ), choppiness );
 }
 
-float height( vec2 p )
+float height( vec3 pp )
 {
     float freq = sea_frequency;
     float amp  = sea_amplitude;
     float choppiness = sea_choppiness;
 
+    vec2 p = pp.xz;
     p.x *= 0.75;
 
     const mat2 octave_matrix = mat2( 1.6, 1.2, -1.2, 1.6 );
@@ -97,15 +98,16 @@ float height( vec2 p )
         choppiness = mix( choppiness, 1.0, 0.2 );
     }
 
-    return height;
+    return pp.y - height;
 }
 
-float height_detailed( vec2 p )
+float height_detailed( vec3 pp )
 {
     float freq = sea_frequency;
     float amp  = sea_amplitude;
     float choppiness = sea_choppiness;
 
+    vec2 p = pp.xz;
     p.x *= 0.75;
 
     const mat2 octave_matrix = mat2( 1.6, 1.2, -1.2, 1.6 );
@@ -120,15 +122,15 @@ float height_detailed( vec2 p )
         choppiness = mix( choppiness, 1.0, 0.2 );
     }
 
-    return height;
+    return pp.y - height;
 }
 
-vec3 get_normal( vec2 p, float epsilon )
+vec3 get_normal( vec3 p, float epsilon )
 {
     vec3 n;
     float original = height_detailed( p );
-    n.x = height_detailed( vec2( p.x + epsilon, p.y ) ) - original;
-    n.z = height_detailed( vec2( p.x, p.y + epsilon ) ) - original;
+    n.x = height_detailed( vec3( p.x + epsilon, p.y, p.z ) ) - original;
+    n.z = height_detailed( vec3( p.x, p.y, p.z + epsilon ) ) - original;
     n.y = epsilon;
     return normalize( n );
 }
@@ -143,18 +145,18 @@ float heightMapTracing(vec3 ori, vec3 dir, out vec3 p) {
     float tm = 0.0;
     float tx = 1000.0;
 
-    float hx = height( ( ori + dir * tx ).xz );
+    float hx = height( ori + dir * tx );
     
     if ( hx > 0.0 ) return tx;   
 
-    float hm = height( ( ori + dir * tm ).xz );
+    float hm = height( ori + dir * tm );
    
     float tmid = 0.0;
     for ( int i = 0; i < 8; i++ ) {
         tmid = mix( tm,tx, hm / ( hm-hx) );
         p = ori + dir * tmid; 
                   
-    	float hmid = height( p.xz );
+    	float hmid = height( p );
 
         if(hmid < 0.0) {
             tx = tmid;
@@ -172,32 +174,33 @@ float heightMapTracing(vec3 ori, vec3 dir, out vec3 p) {
 void main( void ) {
     vec3 view = normalize( vDirection );
     vec3 ori = cPosition_World.xyz;
+    ori.y = 3.0;
 
     vec3 p;
-    heightMapTracing( ori, view, p );
+    heightMapTracing( ori, view * sea_scale, p );
 
     vec3 dist = p - ori;
 
-    vec3 normal = get_normal( p.xz, dot( dist,dist ) * 0.001 );
+    vec3 normal = get_normal( p * sea_scale, dot( dist,dist ) * 0.00007 );
 
-    mediump vec3 reflected = ( -reflect( view, normal ) );
-    vec4 ibl_specular = textureCube( environment, reflected ) * 0.9;
+    vec3 reflected = ( reflect( view, normal ) );
+    vec4 ibl_specular = textureCube( environment, reflected );
     
     vec3 lightdir = normalize( vec4( vec3( sun_size ), 0 ) ).xyz;
 
     vec4 refracted = vec4( sea_base_color + diffuse( normal, lightdir, 80.0 ) * sea_water_color * 0.12, 1.0 ); 
 
     float fresnel = 1.0 - max(dot(normal,-view),0.0);
-    fresnel = pow(fresnel,3.0) * 0.7;
+    fresnel = pow(fresnel,3.0) * 0.65;
     
     vec4 color = mix( refracted, ibl_specular, fresnel );
 
-    float atten = max( 1.0 - dot( dist, dist ) * 0.0000015, 0.0 );
+    float atten = max( 1.0 - dot( dist, dist ) * 0.001, 0.0 );
 
-    color += vec4( sea_water_color * ( height_detailed( p.xz ) ) * 0.05 * atten, 1.0 );
+    color += vec4( sea_water_color * ( height_detailed( p * sea_scale ) ) * 0.18 * atten * sea_scale, 1.0 );
     
     // bteitler: Apply specular highlight
-    color += vec4( get_specular( normal, lightdir, view, 90.0 ) ) * 0.5;
+    color += vec4( get_specular( normal, lightdir, view, 60.0 ) );
 
     gl_FragColor = mix( vec4( 0.0, 0.0, 0.0, 0.0 ) // transparent - draw what's behind us (environment)
                       , color // ocean color
