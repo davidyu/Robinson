@@ -61,6 +61,21 @@ class InfinitePlane extends Primitive implements Renderable {
     this.renderData.dirty = true;
   }
 
+  subdivide( min: number, max: number, times: number ): number[] {
+    let subdivided = [ min, max ];
+    for ( let iter = 0; iter < times; iter++ ) {
+      let intermediate = [];
+      for ( let i = 0; i < subdivided.length - 1; i++ ) {
+        intermediate.push( subdivided[i] );
+        intermediate.push( ( subdivided[i] + subdivided[i+1] ) / 2 );
+      }
+      intermediate.push( subdivided[subdivided.length-1] );
+      subdivided = intermediate;
+    }
+
+    return subdivided;
+  }
+
   // this should only be called by the renderer module
   public rebuildRenderData() {
     if ( this.renderData.dirty ) {
@@ -70,48 +85,10 @@ class InfinitePlane extends Primitive implements Renderable {
       let uvs = [];
       let planeVertexIndices = [];
       {
-        // By default 4-vertex plane (no subdivisions) is in XY plane with z = 0
-        // Create values for each axis in its own array for easier subdivision implementation
-        let xs = [ -1,  1 ]; // left to right
-        let ys = [  1, -1 ]; // top to bottom
-        let us = [  0,  1 ]; // left to right
-        let vs = [  0,  1 ]; // top to bottom
-
-        // perform X subdivision (subdivisions along x-axis)
-        for ( let iter = 0; iter < this.subdivs.u; iter++ ) {
-          let subdivided = [];
-          for ( let i = 0; i < xs.length - 1; i++ ) {
-            subdivided.push( xs[i] );
-            subdivided.push( ( xs[i] + xs[i+1] ) / 2 );
-          }
-          subdivided.push( xs[xs.length-1] );
-          xs = subdivided;
-          let subdivided_us = [];
-          for ( let i = 0; i < us.length - 1; i++ ) {
-            subdivided_us.push( us[i] );
-            subdivided_us.push( ( us[i] + us[i+1] ) / 2 );
-          }
-          subdivided_us.push( us[us.length-1] );
-          us = subdivided_us;
-        }
-
-        // perform Y subdivision (subdivisions along x-axis)
-        for ( let iter = 0; iter < this.subdivs.v; iter++ ) {
-          let subdivided = [];
-          for ( let i = 0; i < ys.length - 1; i++ ) {
-            subdivided.push( ys[i] );
-            subdivided.push( ( ys[i] + ys[i+1] ) / 2 );
-          }
-          subdivided.push( ys[ys.length-1] );
-          ys = subdivided;
-          let subdivided_vs = [];
-          for ( let i = 0; i < vs.length - 1; i++ ) {
-            subdivided_vs.push( vs[i] );
-            subdivided_vs.push( ( vs[i] + vs[i+1] ) / 2 );
-          }
-          subdivided_vs.push( vs[vs.length-1] );
-          vs = subdivided_vs;
-        }
+        let xs = this.subdivide( -1,  1, this.subdivs.u );
+        let ys = this.subdivide(  1, -1, this.subdivs.v );
+        let us = this.subdivide(  0,  1, this.subdivs.u );
+        let vs = this.subdivide(  0,  1, this.subdivs.v );
 
         // combine xys into vertex position array
         // going left to right, top to bottom (row major flat array)
@@ -151,30 +128,11 @@ class InfinitePlane extends Primitive implements Renderable {
       // now push shells (8 shells in total)
       // top left
       {
-        let xs = [ -this.planesize / this.transform.scale.x, -1 ]; // left to right
-        let ys = [  this.planesize / this.transform.scale.y,  1 ]; // top to bottom
+        let xs = this.subdivide( -this.planesize / this.transform.scale.x, -1, 6 );
+        let ys = this.subdivide(  this.planesize / this.transform.scale.y,  1, 6 );
+        let us = this.subdivide(  0,  1, 6 );
+        let vs = this.subdivide(  0,  1, 6 );
 
-        // uvs are incorrect but whatever
-        let us = [  0,  1 ]; // left to right
-        let vs = [  0,  1 ]; // top to bottom
-
-        // 64 vertices per shell, subdivide 6 times
-        for ( let iter = 0; iter < 6; iter++ ) {
-          let subdivided = [];
-          for ( let i = 0; i < ys.length - 1; i++ ) {
-            subdivided.push( ys[i] );
-            subdivided.push( ( ys[i] + ys[i+1] ) / 2 );
-          }
-          subdivided.push( ys[ys.length-1] );
-          ys = subdivided;
-          let subdivided_vs = [];
-          for ( let i = 0; i < vs.length - 1; i++ ) {
-            subdivided_vs.push( vs[i] );
-            subdivided_vs.push( ( vs[i] + vs[i+1] ) / 2 );
-          }
-          subdivided_vs.push( vs[vs.length-1] );
-          vs = subdivided_vs;
-        }
         // combine xys into vertex position array
         // going left to right, top to bottom (row major flat array)
         let offset = vertices.length / 3;
@@ -212,30 +170,11 @@ class InfinitePlane extends Primitive implements Renderable {
       
       // top mid
       {
-        let xs = [ -1, 1 ]; // left to right
-        let ys = [  this.planesize / this.transform.scale.y,  1 ]; // top to bottom
+        let xs = this.subdivide( -1,  1, 6 );
+        let ys = this.subdivide(  this.planesize / this.transform.scale.y,  1, 6 );
+        let us = this.subdivide(  0,  1, 6 );
+        let vs = this.subdivide(  0,  1, 6 );
 
-        // uvs are incorrect but whatever
-        let us = [  0,  1 ]; // left to right
-        let vs = [  0,  1 ]; // top to bottom
-
-        // 64 vertices per shell, subdivide 6 times
-        for ( let iter = 0; iter < 6; iter++ ) {
-          let subdivided = [];
-          for ( let i = 0; i < ys.length - 1; i++ ) {
-            subdivided.push( ys[i] );
-            subdivided.push( ( ys[i] + ys[i+1] ) / 2 );
-          }
-          subdivided.push( ys[ys.length-1] );
-          ys = subdivided;
-          let subdivided_vs = [];
-          for ( let i = 0; i < vs.length - 1; i++ ) {
-            subdivided_vs.push( vs[i] );
-            subdivided_vs.push( ( vs[i] + vs[i+1] ) / 2 );
-          }
-          subdivided_vs.push( vs[vs.length-1] );
-          vs = subdivided_vs;
-        }
         // combine xys into vertex position array
         // going left to right, top to bottom (row major flat array)
         let offset = vertices.length / 3;
@@ -273,30 +212,11 @@ class InfinitePlane extends Primitive implements Renderable {
 
       // top right
       {
-        let xs = [ 1, this.planesize / this.transform.scale.x ]; // left to right
-        let ys = [  this.planesize / this.transform.scale.y,  1 ]; // top to bottom
+        let xs = this.subdivide(  1,  this.planesize / this.transform.scale.x, 6 );
+        let ys = this.subdivide(  this.planesize / this.transform.scale.y,  1, 6 );
+        let us = this.subdivide(  0,  1, 6 );
+        let vs = this.subdivide(  0,  1, 6 );
 
-        // uvs are incorrect but whatever
-        let us = [  0,  1 ]; // left to right
-        let vs = [  0,  1 ]; // top to bottom
-
-        // 64 vertices per shell, subdivide 6 times
-        for ( let iter = 0; iter < 6; iter++ ) {
-          let subdivided = [];
-          for ( let i = 0; i < ys.length - 1; i++ ) {
-            subdivided.push( ys[i] );
-            subdivided.push( ( ys[i] + ys[i+1] ) / 2 );
-          }
-          subdivided.push( ys[ys.length-1] );
-          ys = subdivided;
-          let subdivided_vs = [];
-          for ( let i = 0; i < vs.length - 1; i++ ) {
-            subdivided_vs.push( vs[i] );
-            subdivided_vs.push( ( vs[i] + vs[i+1] ) / 2 );
-          }
-          subdivided_vs.push( vs[vs.length-1] );
-          vs = subdivided_vs;
-        }
         // combine xys into vertex position array
         // going left to right, top to bottom (row major flat array)
         let offset = vertices.length / 3;
@@ -334,30 +254,11 @@ class InfinitePlane extends Primitive implements Renderable {
 
       // bottom left
       {
-        let xs = [ -this.planesize / this.transform.scale.x, -1 ]; // left to right
-        let ys = [ -1, -this.planesize / this.transform.scale.y ]; // top to bottom
+        let xs = this.subdivide( -this.planesize / this.transform.scale.x, -1, 6 );
+        let ys = this.subdivide( -1, -this.planesize / this.transform.scale.y, 6 );
+        let us = this.subdivide(  0,  1, 6 );
+        let vs = this.subdivide(  0,  1, 6 );
 
-        // uvs are incorrect but whatever
-        let us = [  0,  1 ]; // left to right
-        let vs = [  0,  1 ]; // top to bottom
-
-        // 64 vertices per shell, subdivide 6 times
-        for ( let iter = 0; iter < 6; iter++ ) {
-          let subdivided = [];
-          for ( let i = 0; i < ys.length - 1; i++ ) {
-            subdivided.push( ys[i] );
-            subdivided.push( ( ys[i] + ys[i+1] ) / 2 );
-          }
-          subdivided.push( ys[ys.length-1] );
-          ys = subdivided;
-          let subdivided_vs = [];
-          for ( let i = 0; i < vs.length - 1; i++ ) {
-            subdivided_vs.push( vs[i] );
-            subdivided_vs.push( ( vs[i] + vs[i+1] ) / 2 );
-          }
-          subdivided_vs.push( vs[vs.length-1] );
-          vs = subdivided_vs;
-        }
         // combine xys into vertex position array
         // going left to right, top to bottom (row major flat array)
         let offset = vertices.length / 3;
@@ -395,30 +296,11 @@ class InfinitePlane extends Primitive implements Renderable {
 
       // bot mid
       {
-        let xs = [ -1, 1 ]; // left to right
-        let ys = [ -1, -this.planesize / this.transform.scale.y ]; // top to bottom
+        let xs = this.subdivide( -1,  1, 6 );
+        let ys = this.subdivide( -1, -this.planesize / this.transform.scale.y, 6 );
+        let us = this.subdivide(  0,  1, 6 );
+        let vs = this.subdivide(  0,  1, 6 );
 
-        // uvs are incorrect but whatever
-        let us = [  0,  1 ]; // left to right
-        let vs = [  0,  1 ]; // top to bottom
-
-        // 64 vertices per shell, subdivide 6 times
-        for ( let iter = 0; iter < 6; iter++ ) {
-          let subdivided = [];
-          for ( let i = 0; i < ys.length - 1; i++ ) {
-            subdivided.push( ys[i] );
-            subdivided.push( ( ys[i] + ys[i+1] ) / 2 );
-          }
-          subdivided.push( ys[ys.length-1] );
-          ys = subdivided;
-          let subdivided_vs = [];
-          for ( let i = 0; i < vs.length - 1; i++ ) {
-            subdivided_vs.push( vs[i] );
-            subdivided_vs.push( ( vs[i] + vs[i+1] ) / 2 );
-          }
-          subdivided_vs.push( vs[vs.length-1] );
-          vs = subdivided_vs;
-        }
         // combine xys into vertex position array
         // going left to right, top to bottom (row major flat array)
         let offset = vertices.length / 3;
@@ -456,30 +338,11 @@ class InfinitePlane extends Primitive implements Renderable {
 
       // bot right
       {
-        let xs = [  1, this.planesize / this.transform.scale.x ]; // left to right
-        let ys = [ -1, -this.planesize / this.transform.scale.y ]; // top to bottom
+        let xs = this.subdivide(  1, this.planesize / this.transform.scale.x, 6 );
+        let ys = this.subdivide( -1, -this.planesize / this.transform.scale.y, 6 );
+        let us = this.subdivide(  0,  1, 6 );
+        let vs = this.subdivide(  0,  1, 6 );
 
-        // uvs are incorrect but whatever
-        let us = [  0,  1 ]; // left to right
-        let vs = [  0,  1 ]; // top to bottom
-
-        // 64 vertices per shell, subdivide 6 times
-        for ( let iter = 0; iter < 6; iter++ ) {
-          let subdivided = [];
-          for ( let i = 0; i < ys.length - 1; i++ ) {
-            subdivided.push( ys[i] );
-            subdivided.push( ( ys[i] + ys[i+1] ) / 2 );
-          }
-          subdivided.push( ys[ys.length-1] );
-          ys = subdivided;
-          let subdivided_vs = [];
-          for ( let i = 0; i < vs.length - 1; i++ ) {
-            subdivided_vs.push( vs[i] );
-            subdivided_vs.push( ( vs[i] + vs[i+1] ) / 2 );
-          }
-          subdivided_vs.push( vs[vs.length-1] );
-          vs = subdivided_vs;
-        }
         // combine xys into vertex position array
         // going left to right, top to bottom (row major flat array)
         let offset = vertices.length / 3;
@@ -517,30 +380,11 @@ class InfinitePlane extends Primitive implements Renderable {
 
       // mid left
       {
-        let xs = [ -this.planesize / this.transform.scale.x, -1 ]; // left to right
-        let ys = [ 1, -1 ]; // top to bottom
+        let xs = this.subdivide( -this.planesize / this.transform.scale.x, -1, 6 );
+        let ys = this.subdivide(  1, -1, 6 );
+        let us = this.subdivide(  0,  1, 6 );
+        let vs = this.subdivide(  0,  1, 6 );
 
-        // uvs are incorrect but whatever
-        let us = [  0,  1 ]; // left to right
-        let vs = [  0,  1 ]; // top to bottom
-
-        // 64 vertices per shell, subdivide 6 times
-        for ( let iter = 0; iter < 6; iter++ ) {
-          let subdivided = [];
-          for ( let i = 0; i < ys.length - 1; i++ ) {
-            subdivided.push( ys[i] );
-            subdivided.push( ( ys[i] + ys[i+1] ) / 2 );
-          }
-          subdivided.push( ys[ys.length-1] );
-          ys = subdivided;
-          let subdivided_vs = [];
-          for ( let i = 0; i < vs.length - 1; i++ ) {
-            subdivided_vs.push( vs[i] );
-            subdivided_vs.push( ( vs[i] + vs[i+1] ) / 2 );
-          }
-          subdivided_vs.push( vs[vs.length-1] );
-          vs = subdivided_vs;
-        }
         // combine xys into vertex position array
         // going left to right, top to bottom (row major flat array)
         let offset = vertices.length / 3;
@@ -578,30 +422,11 @@ class InfinitePlane extends Primitive implements Renderable {
 
       // mid right
       {
-        let xs = [  1, this.planesize / this.transform.scale.x ]; // left to right
-        let ys = [ 1, -1 ]; // top to bottom
+        let xs = this.subdivide(  1, this.planesize / this.transform.scale.x, 6 );
+        let ys = this.subdivide(  1, -1, 6 );
+        let us = this.subdivide(  0,  1, 6 );
+        let vs = this.subdivide(  0,  1, 6 );
 
-        // uvs are incorrect but whatever
-        let us = [  0,  1 ]; // left to right
-        let vs = [  0,  1 ]; // top to bottom
-
-        // 64 vertices per shell, subdivide 6 times
-        for ( let iter = 0; iter < 6; iter++ ) {
-          let subdivided = [];
-          for ( let i = 0; i < ys.length - 1; i++ ) {
-            subdivided.push( ys[i] );
-            subdivided.push( ( ys[i] + ys[i+1] ) / 2 );
-          }
-          subdivided.push( ys[ys.length-1] );
-          ys = subdivided;
-          let subdivided_vs = [];
-          for ( let i = 0; i < vs.length - 1; i++ ) {
-            subdivided_vs.push( vs[i] );
-            subdivided_vs.push( ( vs[i] + vs[i+1] ) / 2 );
-          }
-          subdivided_vs.push( vs[vs.length-1] );
-          vs = subdivided_vs;
-        }
         // combine xys into vertex position array
         // going left to right, top to bottom (row major flat array)
         let offset = vertices.length / 3;
@@ -657,4 +482,3 @@ class InfinitePlane extends Primitive implements Renderable {
     }
   }
 }
-
