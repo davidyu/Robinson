@@ -84,14 +84,9 @@ class InfinitePlane extends Primitive implements Renderable {
       let vertices = [];
       let uvs = [];
       let planeVertexIndices = [];
-      {
-        let xs = this.subdivide( -1,  1, this.subdivs.u );
-        let ys = this.subdivide(  1, -1, this.subdivs.v );
-        let us = this.subdivide(  0,  1, this.subdivs.u );
-        let vs = this.subdivide(  0,  1, this.subdivs.v );
 
-        // combine xys into vertex position array
-        // going left to right, top to bottom (row major flat array)
+      // locally defined functions to reduce copy-paste
+      function pushVertices( xs: number[], ys: number[] ) {
         for ( let i = 0; i < ys.length; i++ ) {
           for ( let j = 0; j < xs.length; j++ ) {
             vertices.push( xs[j] );
@@ -99,30 +94,46 @@ class InfinitePlane extends Primitive implements Renderable {
             vertices.push( ys[i] );
           }
         }
+      }
 
+      function pushUVs( us: number[], vs: number[] ) {
         for ( let i = 0; i < vs.length; i++ ) {
           for ( let j = 0; j < us.length; j++ ) {
             uvs.push( us[j] );
             uvs.push( vs[i] );
           }
         }
-        // push two triangles (1 quad) each iteration
-        for ( let i = 0; i < vs.length - 1; i++ ) { // iterate over rows
-          for ( let j = 0; j < us.length - 1; j++ ) { // iterate over cols
+      }
+
+      // pushes indices for a subdivided quad
+      function pushIndices( offset, cols, rows ) {
+        for ( let i = 0; i < rows - 1; i++ ) { // iterate over rows
+          for ( let j = 0; j < cols - 1; j++ ) { // iterate over cols
             // *-*
             //  \|
             //   *
-            planeVertexIndices.push( i * us.length + j );     // top left
-            planeVertexIndices.push( i * us.length + j + 1 ); // top right
-            planeVertexIndices.push( ( i + 1 ) * us.length + j + 1 ); // bottom right
+            planeVertexIndices.push( offset + i * cols + j );             // top left
+            planeVertexIndices.push( offset + i * cols + j + 1 );         // top right
+            planeVertexIndices.push( offset + ( i + 1 ) * cols + j + 1 ); // bottom right
             // *
             // |\
             // *-*
-            planeVertexIndices.push( i * us.length * 1 + j );             // top left
-            planeVertexIndices.push( ( i + 1 ) * us.length + j + 1 ); // bottom right
-            planeVertexIndices.push( ( i + 1 ) * us.length + j );     // bottom left
+            planeVertexIndices.push( offset + i * cols * 1 + j );         // top left
+            planeVertexIndices.push( offset + ( i + 1 ) * cols + j + 1 ); // bottom right
+            planeVertexIndices.push( offset + ( i + 1 ) * cols + j );     // bottom left
           }
         }
+      }
+
+      {
+        let xs = this.subdivide( -1,  1, this.subdivs.u );
+        let ys = this.subdivide(  1, -1, this.subdivs.v );
+        let us = this.subdivide(  0,  1, this.subdivs.u );
+        let vs = this.subdivide(  0,  1, this.subdivs.v );
+
+        pushVertices( xs, ys );
+        pushUVs( us, vs );
+        pushIndices( 0, xs.length, ys.length );
       }
 
       // now push shells (8 shells in total)
@@ -133,39 +144,11 @@ class InfinitePlane extends Primitive implements Renderable {
         let us = this.subdivide(  0,  1, 6 );
         let vs = this.subdivide(  0,  1, 6 );
 
-        // combine xys into vertex position array
-        // going left to right, top to bottom (row major flat array)
         let offset = vertices.length / 3;
-        for ( let i = 0; i < ys.length; i++ ) {
-          for ( let j = 0; j < xs.length; j++ ) {
-            vertices.push( xs[j] );
-            vertices.push( 0 );
-            vertices.push( ys[i] );
-          }
-        }
-        for ( let i = 0; i < vs.length; i++ ) {
-          for ( let j = 0; j < us.length; j++ ) {
-            uvs.push( us[j] );
-            uvs.push( vs[i] );
-          }
-        }
-        // push two triangles (1 quad) each iteration
-        for ( let i = 0; i < vs.length - 1; i++ ) { // iterate over rows
-          for ( let j = 0; j < us.length - 1; j++ ) { // iterate over cols
-            // *-*
-            //  \|
-            //   *
-            planeVertexIndices.push( offset + i * us.length + j );     // top left
-            planeVertexIndices.push( offset + i * us.length + j + 1 ); // top right
-            planeVertexIndices.push( offset + ( i + 1 ) * us.length + j + 1 ); // bottom right
-            // *
-            // |\
-            // *-*
-            planeVertexIndices.push( offset + i * us.length * 1 + j );             // top left
-            planeVertexIndices.push( offset + ( i + 1 ) * us.length + j + 1 ); // bottom right
-            planeVertexIndices.push( offset + ( i + 1 ) * us.length + j );     // bottom left
-          }
-        }
+
+        pushVertices( xs, ys );
+        pushUVs( us, vs );
+        pushIndices( offset, xs.length, ys.length );
       }
       
       // top mid
@@ -175,39 +158,11 @@ class InfinitePlane extends Primitive implements Renderable {
         let us = this.subdivide(  0,  1, 6 );
         let vs = this.subdivide(  0,  1, 6 );
 
-        // combine xys into vertex position array
-        // going left to right, top to bottom (row major flat array)
         let offset = vertices.length / 3;
-        for ( let i = 0; i < ys.length; i++ ) {
-          for ( let j = 0; j < xs.length; j++ ) {
-            vertices.push( xs[j] );
-            vertices.push( 0 );
-            vertices.push( ys[i] );
-          }
-        }
-        for ( let i = 0; i < vs.length; i++ ) {
-          for ( let j = 0; j < us.length; j++ ) {
-            uvs.push( us[j] );
-            uvs.push( vs[i] );
-          }
-        }
-        // push two triangles (1 quad) each iteration
-        for ( let i = 0; i < vs.length - 1; i++ ) { // iterate over rows
-          for ( let j = 0; j < us.length - 1; j++ ) { // iterate over cols
-            // *-*
-            //  \|
-            //   *
-            planeVertexIndices.push( offset + i * us.length + j );     // top left
-            planeVertexIndices.push( offset + i * us.length + j + 1 ); // top right
-            planeVertexIndices.push( offset + ( i + 1 ) * us.length + j + 1 ); // bottom right
-            // *
-            // |\
-            // *-*
-            planeVertexIndices.push( offset + i * us.length * 1 + j );             // top left
-            planeVertexIndices.push( offset + ( i + 1 ) * us.length + j + 1 ); // bottom right
-            planeVertexIndices.push( offset + ( i + 1 ) * us.length + j );     // bottom left
-          }
-        }
+
+        pushVertices( xs, ys );
+        pushUVs( us, vs );
+        pushIndices( offset, xs.length, ys.length );
       }
 
       // top right
@@ -217,39 +172,11 @@ class InfinitePlane extends Primitive implements Renderable {
         let us = this.subdivide(  0,  1, 6 );
         let vs = this.subdivide(  0,  1, 6 );
 
-        // combine xys into vertex position array
-        // going left to right, top to bottom (row major flat array)
         let offset = vertices.length / 3;
-        for ( let i = 0; i < ys.length; i++ ) {
-          for ( let j = 0; j < xs.length; j++ ) {
-            vertices.push( xs[j] );
-            vertices.push( 0 );
-            vertices.push( ys[i] );
-          }
-        }
-        for ( let i = 0; i < vs.length; i++ ) {
-          for ( let j = 0; j < us.length; j++ ) {
-            uvs.push( us[j] );
-            uvs.push( vs[i] );
-          }
-        }
-        // push two triangles (1 quad) each iteration
-        for ( let i = 0; i < vs.length - 1; i++ ) { // iterate over rows
-          for ( let j = 0; j < us.length - 1; j++ ) { // iterate over cols
-            // *-*
-            //  \|
-            //   *
-            planeVertexIndices.push( offset + i * us.length + j );     // top left
-            planeVertexIndices.push( offset + i * us.length + j + 1 ); // top right
-            planeVertexIndices.push( offset + ( i + 1 ) * us.length + j + 1 ); // bottom right
-            // *
-            // |\
-            // *-*
-            planeVertexIndices.push( offset + i * us.length * 1 + j );             // top left
-            planeVertexIndices.push( offset + ( i + 1 ) * us.length + j + 1 ); // bottom right
-            planeVertexIndices.push( offset + ( i + 1 ) * us.length + j );     // bottom left
-          }
-        }
+
+        pushVertices( xs, ys );
+        pushUVs( us, vs );
+        pushIndices( offset, xs.length, ys.length );
       }
 
       // bottom left
@@ -259,39 +186,11 @@ class InfinitePlane extends Primitive implements Renderable {
         let us = this.subdivide(  0,  1, 6 );
         let vs = this.subdivide(  0,  1, 6 );
 
-        // combine xys into vertex position array
-        // going left to right, top to bottom (row major flat array)
         let offset = vertices.length / 3;
-        for ( let i = 0; i < ys.length; i++ ) {
-          for ( let j = 0; j < xs.length; j++ ) {
-            vertices.push( xs[j] );
-            vertices.push( 0 );
-            vertices.push( ys[i] );
-          }
-        }
-        for ( let i = 0; i < vs.length; i++ ) {
-          for ( let j = 0; j < us.length; j++ ) {
-            uvs.push( us[j] );
-            uvs.push( vs[i] );
-          }
-        }
-        // push two triangles (1 quad) each iteration
-        for ( let i = 0; i < vs.length - 1; i++ ) { // iterate over rows
-          for ( let j = 0; j < us.length - 1; j++ ) { // iterate over cols
-            // *-*
-            //  \|
-            //   *
-            planeVertexIndices.push( offset + i * us.length + j );     // top left
-            planeVertexIndices.push( offset + i * us.length + j + 1 ); // top right
-            planeVertexIndices.push( offset + ( i + 1 ) * us.length + j + 1 ); // bottom right
-            // *
-            // |\
-            // *-*
-            planeVertexIndices.push( offset + i * us.length * 1 + j );             // top left
-            planeVertexIndices.push( offset + ( i + 1 ) * us.length + j + 1 ); // bottom right
-            planeVertexIndices.push( offset + ( i + 1 ) * us.length + j );     // bottom left
-          }
-        }
+
+        pushVertices( xs, ys );
+        pushUVs( us, vs );
+        pushIndices( offset, xs.length, ys.length );
       }
 
       // bot mid
@@ -301,39 +200,11 @@ class InfinitePlane extends Primitive implements Renderable {
         let us = this.subdivide(  0,  1, 6 );
         let vs = this.subdivide(  0,  1, 6 );
 
-        // combine xys into vertex position array
-        // going left to right, top to bottom (row major flat array)
         let offset = vertices.length / 3;
-        for ( let i = 0; i < ys.length; i++ ) {
-          for ( let j = 0; j < xs.length; j++ ) {
-            vertices.push( xs[j] );
-            vertices.push( 0 );
-            vertices.push( ys[i] );
-          }
-        }
-        for ( let i = 0; i < vs.length; i++ ) {
-          for ( let j = 0; j < us.length; j++ ) {
-            uvs.push( us[j] );
-            uvs.push( vs[i] );
-          }
-        }
-        // push two triangles (1 quad) each iteration
-        for ( let i = 0; i < vs.length - 1; i++ ) { // iterate over rows
-          for ( let j = 0; j < us.length - 1; j++ ) { // iterate over cols
-            // *-*
-            //  \|
-            //   *
-            planeVertexIndices.push( offset + i * us.length + j );     // top left
-            planeVertexIndices.push( offset + i * us.length + j + 1 ); // top right
-            planeVertexIndices.push( offset + ( i + 1 ) * us.length + j + 1 ); // bottom right
-            // *
-            // |\
-            // *-*
-            planeVertexIndices.push( offset + i * us.length * 1 + j );             // top left
-            planeVertexIndices.push( offset + ( i + 1 ) * us.length + j + 1 ); // bottom right
-            planeVertexIndices.push( offset + ( i + 1 ) * us.length + j );     // bottom left
-          }
-        }
+
+        pushVertices( xs, ys );
+        pushUVs( us, vs );
+        pushIndices( offset, xs.length, ys.length );
       }
 
       // bot right
@@ -343,39 +214,11 @@ class InfinitePlane extends Primitive implements Renderable {
         let us = this.subdivide(  0,  1, 6 );
         let vs = this.subdivide(  0,  1, 6 );
 
-        // combine xys into vertex position array
-        // going left to right, top to bottom (row major flat array)
         let offset = vertices.length / 3;
-        for ( let i = 0; i < ys.length; i++ ) {
-          for ( let j = 0; j < xs.length; j++ ) {
-            vertices.push( xs[j] );
-            vertices.push( 0 );
-            vertices.push( ys[i] );
-          }
-        }
-        for ( let i = 0; i < vs.length; i++ ) {
-          for ( let j = 0; j < us.length; j++ ) {
-            uvs.push( us[j] );
-            uvs.push( vs[i] );
-          }
-        }
-        // push two triangles (1 quad) each iteration
-        for ( let i = 0; i < vs.length - 1; i++ ) { // iterate over rows
-          for ( let j = 0; j < us.length - 1; j++ ) { // iterate over cols
-            // *-*
-            //  \|
-            //   *
-            planeVertexIndices.push( offset + i * us.length + j );     // top left
-            planeVertexIndices.push( offset + i * us.length + j + 1 ); // top right
-            planeVertexIndices.push( offset + ( i + 1 ) * us.length + j + 1 ); // bottom right
-            // *
-            // |\
-            // *-*
-            planeVertexIndices.push( offset + i * us.length * 1 + j );             // top left
-            planeVertexIndices.push( offset + ( i + 1 ) * us.length + j + 1 ); // bottom right
-            planeVertexIndices.push( offset + ( i + 1 ) * us.length + j );     // bottom left
-          }
-        }
+
+        pushVertices( xs, ys );
+        pushUVs( us, vs );
+        pushIndices( offset, xs.length, ys.length );
       }
 
       // mid left
@@ -385,39 +228,11 @@ class InfinitePlane extends Primitive implements Renderable {
         let us = this.subdivide(  0,  1, 6 );
         let vs = this.subdivide(  0,  1, 6 );
 
-        // combine xys into vertex position array
-        // going left to right, top to bottom (row major flat array)
         let offset = vertices.length / 3;
-        for ( let i = 0; i < ys.length; i++ ) {
-          for ( let j = 0; j < xs.length; j++ ) {
-            vertices.push( xs[j] );
-            vertices.push( 0 );
-            vertices.push( ys[i] );
-          }
-        }
-        for ( let i = 0; i < vs.length; i++ ) {
-          for ( let j = 0; j < us.length; j++ ) {
-            uvs.push( us[j] );
-            uvs.push( vs[i] );
-          }
-        }
-        // push two triangles (1 quad) each iteration
-        for ( let i = 0; i < vs.length - 1; i++ ) { // iterate over rows
-          for ( let j = 0; j < us.length - 1; j++ ) { // iterate over cols
-            // *-*
-            //  \|
-            //   *
-            planeVertexIndices.push( offset + i * us.length + j );     // top left
-            planeVertexIndices.push( offset + i * us.length + j + 1 ); // top right
-            planeVertexIndices.push( offset + ( i + 1 ) * us.length + j + 1 ); // bottom right
-            // *
-            // |\
-            // *-*
-            planeVertexIndices.push( offset + i * us.length * 1 + j );             // top left
-            planeVertexIndices.push( offset + ( i + 1 ) * us.length + j + 1 ); // bottom right
-            planeVertexIndices.push( offset + ( i + 1 ) * us.length + j );     // bottom left
-          }
-        }
+
+        pushVertices( xs, ys );
+        pushUVs( us, vs );
+        pushIndices( offset, xs.length, ys.length );
       }
 
       // mid right
@@ -427,39 +242,11 @@ class InfinitePlane extends Primitive implements Renderable {
         let us = this.subdivide(  0,  1, 6 );
         let vs = this.subdivide(  0,  1, 6 );
 
-        // combine xys into vertex position array
-        // going left to right, top to bottom (row major flat array)
         let offset = vertices.length / 3;
-        for ( let i = 0; i < ys.length; i++ ) {
-          for ( let j = 0; j < xs.length; j++ ) {
-            vertices.push( xs[j] );
-            vertices.push( 0 );
-            vertices.push( ys[i] );
-          }
-        }
-        for ( let i = 0; i < vs.length; i++ ) {
-          for ( let j = 0; j < us.length; j++ ) {
-            uvs.push( us[j] );
-            uvs.push( vs[i] );
-          }
-        }
-        // push two triangles (1 quad) each iteration
-        for ( let i = 0; i < vs.length - 1; i++ ) { // iterate over rows
-          for ( let j = 0; j < us.length - 1; j++ ) { // iterate over cols
-            // *-*
-            //  \|
-            //   *
-            planeVertexIndices.push( offset + i * us.length + j );     // top left
-            planeVertexIndices.push( offset + i * us.length + j + 1 ); // top right
-            planeVertexIndices.push( offset + ( i + 1 ) * us.length + j + 1 ); // bottom right
-            // *
-            // |\
-            // *-*
-            planeVertexIndices.push( offset + i * us.length * 1 + j );             // top left
-            planeVertexIndices.push( offset + ( i + 1 ) * us.length + j + 1 ); // bottom right
-            planeVertexIndices.push( offset + ( i + 1 ) * us.length + j );     // bottom left
-          }
-        }
+
+        pushVertices( xs, ys );
+        pushUVs( us, vs );
+        pushIndices( offset, xs.length, ys.length );
       }
 
       this.renderData.vertices = new Float32Array( vertices );
