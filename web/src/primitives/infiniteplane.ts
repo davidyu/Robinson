@@ -125,9 +125,11 @@ class InfinitePlane extends Primitive implements Renderable {
         }
       }
 
+      let centerSize = 2;
+      // center quad
       {
-        let xs = this.subdivide( -1,  1, this.subdivs.u );
-        let ys = this.subdivide(  1, -1, this.subdivs.v );
+        let xs = this.subdivide( -centerSize / 2,  centerSize / 2, this.subdivs.u );
+        let ys = this.subdivide(  centerSize / 2, -centerSize / 2, this.subdivs.v );
         let us = this.subdivide(  0,  1, this.subdivs.u );
         let vs = this.subdivide(  0,  1, this.subdivs.v );
 
@@ -136,11 +138,46 @@ class InfinitePlane extends Primitive implements Renderable {
         pushIndices( 0, xs.length, ys.length );
       }
 
-      // now push shells (8 shells in total)
-      // top left
+      let inner_tl = new gml.Vec2( -1,  1 );
+      let inner_br = new gml.Vec2(  1, -1 );
+
+      // shells
+      //
+      // reference layout:
+      // +---+---+---+---+
+      // | 0 | 1 | 2 | 3 |
+      // +---+-------+---+
+      // | 11|       | 4 |
+      // +---|       |---+
+      // | 10|       | 5 |
+      // +---+-------+---+
+      // | 9 | 8 | 7 | 6 |
+      // +---+---+---+---+
+
+      // layer 0
+      let lastSize = centerSize;
+      let size = lastSize / 2;
+      let outer_tl = inner_tl.add( -size,  size );
+      let outer_br = inner_br.add(  size, -size );
+
+      // shell 0
       {
-        let xs = this.subdivide( -this.planesize / this.transform.scale.x, -1, 6 );
-        let ys = this.subdivide(  this.planesize / this.transform.scale.y,  1, 6 );
+        let xs = this.subdivide( outer_tl.x, inner_tl.x, 6 );
+        let ys = this.subdivide( outer_tl.y, inner_tl.y, 6 );
+        let us = this.subdivide(  0,  1, 6 );
+        let vs = this.subdivide(  0,  1, 6 );
+
+        let offset = vertices.length / 3;
+
+        pushVertices( xs, ys );
+        pushUVs( us, vs );
+        pushIndices( offset, xs.length, ys.length );
+      }
+
+      // shell 1
+      {
+        let xs = this.subdivide( inner_tl.x, inner_tl.x + size, 6 );
+        let ys = this.subdivide( outer_tl.y, inner_tl.y, 6 );
         let us = this.subdivide(  0,  1, 6 );
         let vs = this.subdivide(  0,  1, 6 );
 
@@ -152,6 +189,7 @@ class InfinitePlane extends Primitive implements Renderable {
       }
       
       // top mid
+      /*
       {
         let xs = this.subdivide( -1,  1, 6 );
         let ys = this.subdivide(  this.planesize / this.transform.scale.y,  1, 6 );
@@ -248,6 +286,7 @@ class InfinitePlane extends Primitive implements Renderable {
         pushUVs( us, vs );
         pushIndices( offset, xs.length, ys.length );
       }
+       */
 
       this.renderData.vertices = new Float32Array( vertices );
       this.renderData.textureCoords = new Float32Array( uvs );
