@@ -187,6 +187,34 @@ class InfinitePlane extends Primitive implements Renderable {
         pushUVs( us, vs );
         pushIndices( offset, xs.length, ys.length );
       }
+
+      // shell 2
+      {
+        let xs = this.subdivide( inner_tl.x + size, inner_tl.x + 2 * size, 6 );
+        let ys = this.subdivide( outer_tl.y, inner_tl.y, 6 );
+        let us = this.subdivide(  0,  1, 6 );
+        let vs = this.subdivide(  0,  1, 6 );
+
+        let offset = vertices.length / 3;
+
+        pushVertices( xs, ys );
+        pushUVs( us, vs );
+        pushIndices( offset, xs.length, ys.length );
+      }
+
+      // shell 3
+      {
+        let xs = this.subdivide( inner_tl.x + 2 * size, outer_br.x, 6 );
+        let ys = this.subdivide( outer_tl.y, inner_tl.y, 6 );
+        let us = this.subdivide(  0,  1, 6 );
+        let vs = this.subdivide(  0,  1, 6 );
+
+        let offset = vertices.length / 3;
+
+        pushVertices( xs, ys );
+        pushUVs( us, vs );
+        pushIndices( offset, xs.length, ys.length );
+      }
       
       // top mid
       /*
