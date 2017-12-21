@@ -7,7 +7,9 @@
 
 @rem build
 @pushd %SRC%
-@call tsc
+@call dir /b /s *.ts > src.txt
+@call tsc @src.txt --target ES5 --sourceMap --out ../dist/app.js
+@call rm src.txt
 @popd
 
 @rem copy web client files
