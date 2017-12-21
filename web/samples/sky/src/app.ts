@@ -130,7 +130,7 @@ function StartSky() {
 
     // ocean
     skyScene.addRenderable( new InfinitePlane( 20
-                                     , 3
+                                     , 4
                                      , new gml.Vec4( 0, 0, 0, 1 )
                                      , { x: gml.fromDegrees( 0 ), y: gml.fromDegrees( 0 ), z: gml.fromDegrees( 0 ) }
                                      , { u: 7, v: 7 }
