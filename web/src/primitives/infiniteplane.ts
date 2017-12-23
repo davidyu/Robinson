@@ -6,13 +6,14 @@ class InfinitePlane extends Primitive implements Renderable {
   material: Material;
   subdivs: Subdivisions;
   planesize: number;
+  layers: number;
 
-  constructor( size: number = 1, position: gml.Vec4 = gml.Vec4.origin, rotation: EulerAngleGroup = null, subdivisions: Subdivisions = { u: 0, v: 0 }, mat: Material = new BlinnPhongMaterial() ) {
+  constructor( size: number = 1, layers: number = 3, position: gml.Vec4 = gml.Vec4.origin, rotation: EulerAngleGroup = null, subdivisions: Subdivisions = { u: 0, v: 0 }, mat: Material = new BlinnPhongMaterial() ) {
     super();
     this.subdivs = subdivisions;
     this.transform = gml.Mat4.identity();
     this.planesize = 10000; // Not quite infinite :) but very large.
-    let shells = 1;          // Each tile is 64x64 verts. Each shell after the center is 2x the size of the previous shell
+    this.layers = layers;
 
     if ( rotation != null ) {
       let m = gml.Mat4.identity();
@@ -154,19 +155,18 @@ class InfinitePlane extends Primitive implements Renderable {
       // | 9 | 8 | 7 | 6 |
       // +---+---+---+---+
 
-      let maxLayers = 1;
-      for ( let layer = 0; layer < maxLayers; layer++ ) {
-        let lastSize = centerSize;
+      let lastSize = centerSize;
+      for ( let layer = 0; layer < this.layers; layer++ ) {
         let size = lastSize / 2;
         let outer_tl = inner_tl.add( -size,  size );
         let outer_br = inner_br.add(  size, -size );
 
         // shell 0
         {
-          let xs = this.subdivide( outer_tl.x, inner_tl.x, 6 );
-          let ys = this.subdivide( outer_tl.y, inner_tl.y, 6 );
-          let us = this.subdivide(  0,  1, 6 );
-          let vs = this.subdivide(  0,  1, 6 );
+          let xs = this.subdivide( outer_tl.x, inner_tl.x, 5 );
+          let ys = this.subdivide( outer_tl.y, inner_tl.y, 5 );
+          let us = this.subdivide(  0,  1, 5 );
+          let vs = this.subdivide(  0,  1, 5 );
 
           let offset = vertices.length / 3;
 
@@ -177,10 +177,10 @@ class InfinitePlane extends Primitive implements Renderable {
 
         // shell 1
         {
-          let xs = this.subdivide( inner_tl.x, inner_tl.x + size, 6 );
-          let ys = this.subdivide( outer_tl.y, inner_tl.y, 6 );
-          let us = this.subdivide(  0,  1, 6 );
-          let vs = this.subdivide(  0,  1, 6 );
+          let xs = this.subdivide( inner_tl.x, inner_tl.x + size, 5 );
+          let ys = this.subdivide( outer_tl.y, inner_tl.y, 5 );
+          let us = this.subdivide(  0,  1, 5 );
+          let vs = this.subdivide(  0,  1, 5 );
 
           let offset = vertices.length / 3;
 
@@ -191,10 +191,10 @@ class InfinitePlane extends Primitive implements Renderable {
 
         // shell 2
         {
-          let xs = this.subdivide( inner_tl.x + size, inner_tl.x + 2 * size, 6 );
-          let ys = this.subdivide( outer_tl.y, inner_tl.y, 6 );
-          let us = this.subdivide(  0,  1, 6 );
-          let vs = this.subdivide(  0,  1, 6 );
+          let xs = this.subdivide( inner_tl.x + size, inner_tl.x + 2 * size, 5 );
+          let ys = this.subdivide( outer_tl.y, inner_tl.y, 5 );
+          let us = this.subdivide(  0,  1, 5 );
+          let vs = this.subdivide(  0,  1, 5 );
 
           let offset = vertices.length / 3;
 
@@ -205,10 +205,10 @@ class InfinitePlane extends Primitive implements Renderable {
 
         // shell 3
         {
-          let xs = this.subdivide( inner_tl.x + 2 * size, outer_br.x, 6 );
-          let ys = this.subdivide( outer_tl.y, inner_tl.y, 6 );
-          let us = this.subdivide(  0,  1, 6 );
-          let vs = this.subdivide(  0,  1, 6 );
+          let xs = this.subdivide( inner_tl.x + 2 * size, outer_br.x, 5 );
+          let ys = this.subdivide( outer_tl.y, inner_tl.y, 5 );
+          let us = this.subdivide(  0,  1, 5 );
+          let vs = this.subdivide(  0,  1, 5 );
 
           let offset = vertices.length / 3;
 
@@ -219,10 +219,10 @@ class InfinitePlane extends Primitive implements Renderable {
 
         // shell 4
         {
-          let xs = this.subdivide( outer_br.x - size, outer_br.x, 6 );
-          let ys = this.subdivide( inner_tl.y, inner_tl.y - size, 6 );
-          let us = this.subdivide(  0,  1, 6 );
-          let vs = this.subdivide(  0,  1, 6 );
+          let xs = this.subdivide( outer_br.x - size, outer_br.x, 5 );
+          let ys = this.subdivide( inner_tl.y, inner_tl.y - size, 5 );
+          let us = this.subdivide(  0,  1, 5 );
+          let vs = this.subdivide(  0,  1, 5 );
 
           let offset = vertices.length / 3;
 
@@ -233,10 +233,10 @@ class InfinitePlane extends Primitive implements Renderable {
 
         // shell 5
         {
-          let xs = this.subdivide( outer_br.x - size, outer_br.x, 6 );
-          let ys = this.subdivide( inner_tl.y - size, inner_br.y, 6 );
-          let us = this.subdivide(  0,  1, 6 );
-          let vs = this.subdivide(  0,  1, 6 );
+          let xs = this.subdivide( outer_br.x - size, outer_br.x, 5 );
+          let ys = this.subdivide( inner_tl.y - size, inner_br.y, 5 );
+          let us = this.subdivide(  0,  1, 5 );
+          let vs = this.subdivide(  0,  1, 5 );
 
           let offset = vertices.length / 3;
 
@@ -245,12 +245,12 @@ class InfinitePlane extends Primitive implements Renderable {
           pushIndices( offset, xs.length, ys.length );
         }
 
-        // shell 6
+        // shell 5
         {
-          let xs = this.subdivide( outer_br.x - size, outer_br.x, 6 );
-          let ys = this.subdivide( inner_br.y, outer_br.y, 6 );
-          let us = this.subdivide(  0,  1, 6 );
-          let vs = this.subdivide(  0,  1, 6 );
+          let xs = this.subdivide( outer_br.x - size, outer_br.x, 5 );
+          let ys = this.subdivide( inner_br.y, outer_br.y, 5 );
+          let us = this.subdivide(  0,  1, 5 );
+          let vs = this.subdivide(  0,  1, 5 );
 
           let offset = vertices.length / 3;
 
@@ -261,10 +261,10 @@ class InfinitePlane extends Primitive implements Renderable {
 
         // shell 7
         {
-          let xs = this.subdivide( inner_tl.x + size, inner_tl.x + 2 * size, 6 );
-          let ys = this.subdivide( inner_br.y, outer_br.y, 6 );
-          let us = this.subdivide(  0,  1, 6 );
-          let vs = this.subdivide(  0,  1, 6 );
+          let xs = this.subdivide( inner_tl.x + size, inner_tl.x + 2 * size, 5 );
+          let ys = this.subdivide( inner_br.y, outer_br.y, 5 );
+          let us = this.subdivide(  0,  1, 5 );
+          let vs = this.subdivide(  0,  1, 5 );
 
           let offset = vertices.length / 3;
 
@@ -275,10 +275,10 @@ class InfinitePlane extends Primitive implements Renderable {
 
         // shell 8
         {
-          let xs = this.subdivide( inner_tl.x, inner_tl.x + size, 6 );
-          let ys = this.subdivide( inner_br.y, outer_br.y, 6 );
-          let us = this.subdivide(  0,  1, 6 );
-          let vs = this.subdivide(  0,  1, 6 );
+          let xs = this.subdivide( inner_tl.x, inner_tl.x + size, 5 );
+          let ys = this.subdivide( inner_br.y, outer_br.y, 5 );
+          let us = this.subdivide(  0,  1, 5 );
+          let vs = this.subdivide(  0,  1, 5 );
 
           let offset = vertices.length / 3;
 
@@ -289,10 +289,10 @@ class InfinitePlane extends Primitive implements Renderable {
 
         // shell 9
         {
-          let xs = this.subdivide( outer_tl.x, inner_tl.x, 6 );
-          let ys = this.subdivide( inner_br.y, outer_br.y, 6 );
-          let us = this.subdivide(  0,  1, 6 );
-          let vs = this.subdivide(  0,  1, 6 );
+          let xs = this.subdivide( outer_tl.x, inner_tl.x, 5 );
+          let ys = this.subdivide( inner_br.y, outer_br.y, 5 );
+          let us = this.subdivide(  0,  1, 5 );
+          let vs = this.subdivide(  0,  1, 5 );
 
           let offset = vertices.length / 3;
 
@@ -303,10 +303,10 @@ class InfinitePlane extends Primitive implements Renderable {
 
         // shell 10
         {
-          let xs = this.subdivide( outer_tl.x, inner_tl.x, 6 );
-          let ys = this.subdivide( inner_tl.y - size, inner_br.y, 6 );
-          let us = this.subdivide(  0,  1, 6 );
-          let vs = this.subdivide(  0,  1, 6 );
+          let xs = this.subdivide( outer_tl.x, inner_tl.x, 5 );
+          let ys = this.subdivide( inner_tl.y - size, inner_br.y, 5 );
+          let us = this.subdivide(  0,  1, 5 );
+          let vs = this.subdivide(  0,  1, 5 );
 
           let offset = vertices.length / 3;
 
@@ -317,10 +317,10 @@ class InfinitePlane extends Primitive implements Renderable {
 
         // shell 11
         {
-          let xs = this.subdivide( outer_tl.x, inner_tl.x, 6 );
-          let ys = this.subdivide( inner_tl.y, inner_tl.y - size, 6 );
-          let us = this.subdivide(  0,  1, 6 );
-          let vs = this.subdivide(  0,  1, 6 );
+          let xs = this.subdivide( outer_tl.x, inner_tl.x, 5 );
+          let ys = this.subdivide( inner_tl.y, inner_tl.y - size, 5 );
+          let us = this.subdivide(  0,  1, 5 );
+          let vs = this.subdivide(  0,  1, 5 );
 
           let offset = vertices.length / 3;
 
@@ -328,107 +328,12 @@ class InfinitePlane extends Primitive implements Renderable {
           pushUVs( us, vs );
           pushIndices( offset, xs.length, ys.length );
         }
+
+        lastSize *= 2;
+
+        inner_tl = outer_tl;
+        inner_br = outer_br;
       }
-
-      // top mid
-      /*
-      {
-        let xs = this.subdivide( -1,  1, 6 );
-        let ys = this.subdivide(  this.planesize / this.transform.scale.y,  1, 6 );
-        let us = this.subdivide(  0,  1, 6 );
-        let vs = this.subdivide(  0,  1, 6 );
-
-        let offset = vertices.length / 3;
-
-        pushVertices( xs, ys );
-        pushUVs( us, vs );
-        pushIndices( offset, xs.length, ys.length );
-      }
-
-      // top right
-      {
-        let xs = this.subdivide(  1,  this.planesize / this.transform.scale.x, 6 );
-        let ys = this.subdivide(  this.planesize / this.transform.scale.y,  1, 6 );
-        let us = this.subdivide(  0,  1, 6 );
-        let vs = this.subdivide(  0,  1, 6 );
-
-        let offset = vertices.length / 3;
-
-        pushVertices( xs, ys );
-        pushUVs( us, vs );
-        pushIndices( offset, xs.length, ys.length );
-      }
-
-      // bottom left
-      {
-        let xs = this.subdivide( -this.planesize / this.transform.scale.x, -1, 6 );
-        let ys = this.subdivide( -1, -this.planesize / this.transform.scale.y, 6 );
-        let us = this.subdivide(  0,  1, 6 );
-        let vs = this.subdivide(  0,  1, 6 );
-
-        let offset = vertices.length / 3;
-
-        pushVertices( xs, ys );
-        pushUVs( us, vs );
-        pushIndices( offset, xs.length, ys.length );
-      }
-
-      // bot mid
-      {
-        let xs = this.subdivide( -1,  1, 6 );
-        let ys = this.subdivide( -1, -this.planesize / this.transform.scale.y, 6 );
-        let us = this.subdivide(  0,  1, 6 );
-        let vs = this.subdivide(  0,  1, 6 );
-
-        let offset = vertices.length / 3;
-
-        pushVertices( xs, ys );
-        pushUVs( us, vs );
-        pushIndices( offset, xs.length, ys.length );
-      }
-
-      // bot right
-      {
-        let xs = this.subdivide(  1, this.planesize / this.transform.scale.x, 6 );
-        let ys = this.subdivide( -1, -this.planesize / this.transform.scale.y, 6 );
-        let us = this.subdivide(  0,  1, 6 );
-        let vs = this.subdivide(  0,  1, 6 );
-
-        let offset = vertices.length / 3;
-
-        pushVertices( xs, ys );
-        pushUVs( us, vs );
-        pushIndices( offset, xs.length, ys.length );
-      }
-
-      // mid left
-      {
-        let xs = this.subdivide( -this.planesize / this.transform.scale.x, -1, 6 );
-        let ys = this.subdivide(  1, -1, 6 );
-        let us = this.subdivide(  0,  1, 6 );
-        let vs = this.subdivide(  0,  1, 6 );
-
-        let offset = vertices.length / 3;
-
-        pushVertices( xs, ys );
-        pushUVs( us, vs );
-        pushIndices( offset, xs.length, ys.length );
-      }
-
-      // mid right
-      {
-        let xs = this.subdivide(  1, this.planesize / this.transform.scale.x, 6 );
-        let ys = this.subdivide(  1, -1, 6 );
-        let us = this.subdivide(  0,  1, 6 );
-        let vs = this.subdivide(  0,  1, 6 );
-
-        let offset = vertices.length / 3;
-
-        pushVertices( xs, ys );
-        pushUVs( us, vs );
-        pushIndices( offset, xs.length, ys.length );
-      }
-       */
 
       this.renderData.vertices = new Float32Array( vertices );
       this.renderData.textureCoords = new Float32Array( uvs );
