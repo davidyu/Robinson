@@ -6,7 +6,7 @@
     "readme": "n/a",
     "devDependencies" : {
         "colors": "1.x",
-        "gl":"2.x",
+        "gl":"3.x",
         "webgl-compile-shader":"2.x"
     }
 }

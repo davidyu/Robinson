@@ -1,5 +1,6 @@
 @set SRC=src
 @set DIST=dist
+@set TEST=test
 
 @if not exist %DIST% mkdir %DIST%
 @if not exist %DIST%\lib mkdir %DIST%\lib
@@ -12,12 +13,15 @@
 @call rm src.txt
 @popd
 
-@rem copy web client files
+@rem shaders test
+@xcopy /eiy %SRC%\renderer\shaders\* %DIST%\shaders > NUL
+@xcopy /eiy %TEST%\shaders\* %DIST%\test > NUL
+@xcopy /y   %TEST%\package.json %DIST%\test > NUL
+@xcopy /eiy %SRC%\renderer\shaders\* %DIST%\test > NUL
+@pushd %DIST%\test
+@call npm install
+@popd
 
-@call cp water.html %DIST%\index.html > nul
-@call cp %SRC%\lib\*.js %DIST%\lib\ > nul
-@call cp %SRC%\renderer\shaders\* %DIST%\shaders\ > nul
-
-@rem copy server files
-@call echo a | xcopy server\* %DIST%\ > nul
-@pushd %DIST% && npm install && @popd
+@pushd %DIST%\test
+@call node compileshader.js
+@popd

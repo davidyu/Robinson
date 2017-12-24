@@ -77,6 +77,45 @@ class InfinitePlane extends Primitive implements Renderable {
     return subdivided;
   }
 
+  private pushVertices( xs: number[], ys: number[], vertices: number[] ) {
+    for ( let i = 0; i < ys.length; i++ ) {
+      for ( let j = 0; j < xs.length; j++ ) {
+        vertices.push( xs[j] );
+        vertices.push( 0 );
+        vertices.push( ys[i] );
+      }
+    }
+  }
+
+  private pushUVs( us: number[], vs: number[], uvs: number[] ) {
+    for ( let i = 0; i < vs.length; i++ ) {
+      for ( let j = 0; j < us.length; j++ ) {
+        uvs.push( us[j] );
+        uvs.push( vs[i] );
+      }
+    }
+  }
+
+  // pushes indices for a subdivided quad
+  private pushIndices( offset: number, cols: number, rows: number, planeVertexIndices: number[] ) {
+    for ( let i = 0; i < rows - 1; i++ ) { // iterate over rows
+      for ( let j = 0; j < cols - 1; j++ ) { // iterate over cols
+        // *-*
+        //  \|
+        //   *
+        planeVertexIndices.push( offset + i * cols + j );             // top left
+        planeVertexIndices.push( offset + i * cols + j + 1 );         // top right
+        planeVertexIndices.push( offset + ( i + 1 ) * cols + j + 1 ); // bottom right
+        // *
+        // |\
+        // *-*
+        planeVertexIndices.push( offset + i * cols * 1 + j );         // top left
+        planeVertexIndices.push( offset + ( i + 1 ) * cols + j + 1 ); // bottom right
+        planeVertexIndices.push( offset + ( i + 1 ) * cols + j );     // bottom left
+      }
+    }
+  }
+
   // this should only be called by the renderer module
   public rebuildRenderData() {
     if ( this.renderData.dirty ) {
@@ -86,46 +125,6 @@ class InfinitePlane extends Primitive implements Renderable {
       let uvs = [];
       let planeVertexIndices = [];
 
-      // locally defined functions to reduce copy-paste
-      function pushVertices( xs: number[], ys: number[] ) {
-        for ( let i = 0; i < ys.length; i++ ) {
-          for ( let j = 0; j < xs.length; j++ ) {
-            vertices.push( xs[j] );
-            vertices.push( 0 );
-            vertices.push( ys[i] );
-          }
-        }
-      }
-
-      function pushUVs( us: number[], vs: number[] ) {
-        for ( let i = 0; i < vs.length; i++ ) {
-          for ( let j = 0; j < us.length; j++ ) {
-            uvs.push( us[j] );
-            uvs.push( vs[i] );
-          }
-        }
-      }
-
-      // pushes indices for a subdivided quad
-      function pushIndices( offset, cols, rows ) {
-        for ( let i = 0; i < rows - 1; i++ ) { // iterate over rows
-          for ( let j = 0; j < cols - 1; j++ ) { // iterate over cols
-            // *-*
-            //  \|
-            //   *
-            planeVertexIndices.push( offset + i * cols + j );             // top left
-            planeVertexIndices.push( offset + i * cols + j + 1 );         // top right
-            planeVertexIndices.push( offset + ( i + 1 ) * cols + j + 1 ); // bottom right
-            // *
-            // |\
-            // *-*
-            planeVertexIndices.push( offset + i * cols * 1 + j );         // top left
-            planeVertexIndices.push( offset + ( i + 1 ) * cols + j + 1 ); // bottom right
-            planeVertexIndices.push( offset + ( i + 1 ) * cols + j );     // bottom left
-          }
-        }
-      }
-
       let centerSize = 2;
       // center quad
       {
@@ -134,9 +133,9 @@ class InfinitePlane extends Primitive implements Renderable {
         let us = this.subdivide(  0,  1, this.subdivs.u );
         let vs = this.subdivide(  0,  1, this.subdivs.v );
 
-        pushVertices( xs, ys );
-        pushUVs( us, vs );
-        pushIndices( 0, xs.length, ys.length );
+        this.pushVertices( xs, ys, vertices );
+        this.pushUVs( us, vs, uvs );
+        this.pushIndices( 0, xs.length, ys.length, planeVertexIndices );
       }
 
       let inner_tl = new gml.Vec2( -1,  1 );
@@ -170,9 +169,9 @@ class InfinitePlane extends Primitive implements Renderable {
 
           let offset = vertices.length / 3;
 
-          pushVertices( xs, ys );
-          pushUVs( us, vs );
-          pushIndices( offset, xs.length, ys.length );
+          this.pushVertices( xs, ys, vertices );
+          this.pushUVs( us, vs, uvs );
+          this.pushIndices( offset, xs.length, ys.length, planeVertexIndices );
         }
 
         // shell 1
@@ -184,9 +183,9 @@ class InfinitePlane extends Primitive implements Renderable {
 
           let offset = vertices.length / 3;
 
-          pushVertices( xs, ys );
-          pushUVs( us, vs );
-          pushIndices( offset, xs.length, ys.length );
+          this.pushVertices( xs, ys, vertices );
+          this.pushUVs( us, vs, uvs );
+          this.pushIndices( offset, xs.length, ys.length, planeVertexIndices );
         }
 
         // shell 2
@@ -198,9 +197,9 @@ class InfinitePlane extends Primitive implements Renderable {
 
           let offset = vertices.length / 3;
 
-          pushVertices( xs, ys );
-          pushUVs( us, vs );
-          pushIndices( offset, xs.length, ys.length );
+          this.pushVertices( xs, ys, vertices );
+          this.pushUVs( us, vs, uvs );
+          this.pushIndices( offset, xs.length, ys.length, planeVertexIndices );
         }
 
         // shell 3
@@ -212,9 +211,9 @@ class InfinitePlane extends Primitive implements Renderable {
 
           let offset = vertices.length / 3;
 
-          pushVertices( xs, ys );
-          pushUVs( us, vs );
-          pushIndices( offset, xs.length, ys.length );
+          this.pushVertices( xs, ys, vertices );
+          this.pushUVs( us, vs, uvs );
+          this.pushIndices( offset, xs.length, ys.length, planeVertexIndices );
         }
 
         // shell 4
@@ -226,9 +225,9 @@ class InfinitePlane extends Primitive implements Renderable {
 
           let offset = vertices.length / 3;
 
-          pushVertices( xs, ys );
-          pushUVs( us, vs );
-          pushIndices( offset, xs.length, ys.length );
+          this.pushVertices( xs, ys, vertices );
+          this.pushUVs( us, vs, uvs );
+          this.pushIndices( offset, xs.length, ys.length, planeVertexIndices );
         }
 
         // shell 5
@@ -240,9 +239,9 @@ class InfinitePlane extends Primitive implements Renderable {
 
           let offset = vertices.length / 3;
 
-          pushVertices( xs, ys );
-          pushUVs( us, vs );
-          pushIndices( offset, xs.length, ys.length );
+          this.pushVertices( xs, ys, vertices );
+          this.pushUVs( us, vs, uvs );
+          this.pushIndices( offset, xs.length, ys.length, planeVertexIndices );
         }
 
         // shell 5
@@ -254,9 +253,9 @@ class InfinitePlane extends Primitive implements Renderable {
 
           let offset = vertices.length / 3;
 
-          pushVertices( xs, ys );
-          pushUVs( us, vs );
-          pushIndices( offset, xs.length, ys.length );
+          this.pushVertices( xs, ys, vertices );
+          this.pushUVs( us, vs, uvs );
+          this.pushIndices( offset, xs.length, ys.length, planeVertexIndices );
         }
 
         // shell 7
@@ -268,9 +267,9 @@ class InfinitePlane extends Primitive implements Renderable {
 
           let offset = vertices.length / 3;
 
-          pushVertices( xs, ys );
-          pushUVs( us, vs );
-          pushIndices( offset, xs.length, ys.length );
+          this.pushVertices( xs, ys, vertices );
+          this.pushUVs( us, vs, uvs );
+          this.pushIndices( offset, xs.length, ys.length, planeVertexIndices );
         }
 
         // shell 8
@@ -282,9 +281,9 @@ class InfinitePlane extends Primitive implements Renderable {
 
           let offset = vertices.length / 3;
 
-          pushVertices( xs, ys );
-          pushUVs( us, vs );
-          pushIndices( offset, xs.length, ys.length );
+          this.pushVertices( xs, ys, vertices );
+          this.pushUVs( us, vs, uvs );
+          this.pushIndices( offset, xs.length, ys.length, planeVertexIndices );
         }
 
         // shell 9
@@ -296,9 +295,9 @@ class InfinitePlane extends Primitive implements Renderable {
 
           let offset = vertices.length / 3;
 
-          pushVertices( xs, ys );
-          pushUVs( us, vs );
-          pushIndices( offset, xs.length, ys.length );
+          this.pushVertices( xs, ys, vertices );
+          this.pushUVs( us, vs, uvs );
+          this.pushIndices( offset, xs.length, ys.length, planeVertexIndices );
         }
 
         // shell 10
@@ -310,9 +309,9 @@ class InfinitePlane extends Primitive implements Renderable {
 
           let offset = vertices.length / 3;
 
-          pushVertices( xs, ys );
-          pushUVs( us, vs );
-          pushIndices( offset, xs.length, ys.length );
+          this.pushVertices( xs, ys, vertices );
+          this.pushUVs( us, vs, uvs );
+          this.pushIndices( offset, xs.length, ys.length, planeVertexIndices );
         }
 
         // shell 11
@@ -324,9 +323,9 @@ class InfinitePlane extends Primitive implements Renderable {
 
           let offset = vertices.length / 3;
 
-          pushVertices( xs, ys );
-          pushUVs( us, vs );
-          pushIndices( offset, xs.length, ys.length );
+          this.pushVertices( xs, ys, vertices );
+          this.pushUVs( us, vs, uvs );
+          this.pushIndices( offset, xs.length, ys.length, planeVertexIndices );
         }
 
         lastSize *= 2;
