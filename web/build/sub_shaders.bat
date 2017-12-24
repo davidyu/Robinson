@@ -1,5 +1,13 @@
 @if not exist %DIST%\test mkdir %DIST%\test
-xcopy %SRC%\renderer\shaders/* %DIST%\shaders
-xcopy %SRC%\test\* %DIST%\test\
-call pushd %DIST%\test && call npm install --python=C:\Python27 && popd
-call pushd %DIST% && call node test\compileshader.js && popd
+
+@xcopy /eiy %SRC%\renderer\shaders\* %DIST%\shaders > NUL
+@xcopy /eiy %TEST%\shaders\* %DIST%\test > NUL
+@xcopy /y   %TEST%\package.json %DIST%\test > NUL
+@xcopy /eiy %SRC%\renderer\shaders\* %DIST%\test > NUL
+@pushd %DIST%\test
+@call npm install
+@popd
+
+@pushd %DIST%\test
+@call node compileshader.js
+@popd
