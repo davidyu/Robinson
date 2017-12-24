@@ -1,1 +1,1 @@
-node dist/server.js
+node samples\server\dist\server.js
