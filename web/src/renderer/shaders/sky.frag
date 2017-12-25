@@ -4,7 +4,7 @@ uniform vec4 cPosition_World;
 uniform float uTime;
 varying vec3 vDirection;
 
-const   float sun_size = sqrt( 1.0 / 3.0 );  // radius of sun sphere
+const   vec3  sun_light_dir = normalize( vec3( 0.0, 1.0, 0.4 ) );
 const   float sun_flare_size = 0.5;
 
 const   float sky_saturation = 0.7;       // how blue should the sky be (if we look straight up)
@@ -45,7 +45,7 @@ float fbm( vec3 x ) {
 }
 
 vec3 sun( vec3 v ) {
-    float sun_body = clamp( dot( v, vec3( sun_size ) ), 0.0, 1.0 );
+    float sun_body = clamp( dot( v, sun_light_dir ), 0.0, 1.0 );
     return vec3( 1.6, 1.4, 1.0 ) * 0.47 * pow( sun_body, 350.0 )
          + vec3( 0.8, 0.9, 1.0 ) * 0.40 * pow( sun_body, ( 1.0 - sun_flare_size ) * 100.0 );
 }
@@ -69,8 +69,8 @@ vec4 clouds( vec3 v )
     acc.rgb /= acc.w + 0.0001;
     float alpha = smoothstep( 0.7, 1.0, acc.w );
 
-    acc.rgb -= 0.6 * vec3( 0.8, 0.75, 0.7 ) * alpha * pow( vec3( sun_size ), vec3( 13.0 ) );
-    acc.rgb += 0.2 * vec3( 1.3, 1.2, 1.0 ) * ( 1.0 - alpha ) * pow( vec3( sun_size ), vec3( 5.0 ) );
+    acc.rgb -= 0.6 * vec3( 0.8, 0.75, 0.7 ) * alpha * pow( normalize( vec3( 1.0 ) ), vec3( 13.0 ) );
+    acc.rgb += 0.2 * vec3( 1.3, 1.2, 1.0 ) * ( 1.0 - alpha ) * pow( normalize( vec3( 1.0 ) ), vec3( 5.0 ) );
 
     return acc;
 }
