@@ -129,7 +129,7 @@ function StartSky() {
     Scene.setActiveScene( skyScene );
 
     // ocean
-    skyScene.addRenderable( new InfinitePlane( 10
+    skyScene.addRenderable( new InfinitePlane( 16
                                      , 4
                                      , new gml.Vec4( 0, 0, 0, 1 )
                                      , { x: gml.fromDegrees( 0 ), y: gml.fromDegrees( 0 ), z: gml.fromDegrees( 0 ) }
