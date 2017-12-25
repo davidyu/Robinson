@@ -86,11 +86,9 @@ float height_detailed( vec2 p )
     float amp  = sea_amplitude;
     float choppiness = sea_choppiness;
 
-    p.x *= 0.75;
-
     const mat2 octave_matrix = mat2( 1.6, 1.2, -1.2, 1.6 );
     float d, height = 0.0;
-    for ( int i = 0; i < 5; i++ ) {
+    for ( int i = 0; i < 8; i++ ) {
         d = octave( ( p + uTime * sea_speed ) * freq, choppiness ), 
         d += octave( ( p - uTime * sea_speed ) * freq, choppiness ), 
         height += d * amp;
@@ -119,8 +117,10 @@ float get_specular( vec3 n, vec3 l, vec3 e, float s ) {
 }
 
 void main( void ) {
+    float dist = length( cPosition_World.xz - vPosition_World.xz );
     vec3 view = normalize( -( vPosition.xyz / vPosition.w ) );
-    vec3 normal = normalize( uNormalMVMatrix * get_normal( vPosition_World.xz * sea_scale, 0.01 ) );
+
+    vec3 normal = normalize( uNormalMVMatrix * get_normal( vPosition_World.xz * sea_scale, dist * 0.00007 ) );
 
     vec3 reflected = uInverseViewMatrix * ( -reflect( view, normal ) );
     vec4 ibl_specular = textureCube( environment, reflected ) * 0.9;
@@ -134,13 +134,12 @@ void main( void ) {
     
     vec4 color = mix( refracted, ibl_specular, fresnel );
 
-    float dist = length( cPosition_World.xz - vPosition_World.xz );
     float atten = max( 1.0 - dot( dist, dist ) * 0.0000015, 0.0 );
 
     // foam
     color += vec4( sea_water_color * ( height_detailed( vPosition_World.xz * sea_scale ) ) * 0.05 * atten, 1.0 );
 
-    color += vec4( get_specular( normal, lightdir, -view, 100.0 ) ) * 0.5;
+    color += vec4( get_specular( normal, lightdir, -view, 80.0 ) ) * 0.35;
 
     gl_FragColor = color;
 }

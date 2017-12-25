@@ -79,13 +79,11 @@ float height( vec2 p )
     float amp  = sea_amplitude;
     float choppiness = sea_choppiness;
 
-    p.x *= 0.75;
-
     const mat2 octave_matrix = mat2( 1.6, 1.2, -1.2, 1.6 );
     float d, height = 0.0;
     for ( int i = 0; i < 3; i++ ) {
-        d = octave( ( p + uTime * sea_speed ) * freq, choppiness ), 
-        // d += octave( ( p - uTime ) * freq, choppiness ), 
+        d  = octave( ( p + uTime * sea_speed ) * freq, choppiness ), 
+        d += octave( ( p - uTime * sea_speed ) * freq, choppiness ), 
         height += d * amp;
         p *= octave_matrix;
         freq *= 1.9;
@@ -94,39 +92,6 @@ float height( vec2 p )
     }
 
     return height;
-}
-
-float height_detailed( vec2 p )
-{
-    float freq = sea_frequency;
-    float amp  = sea_amplitude;
-    float choppiness = sea_choppiness;
-
-    p.x *= 0.75;
-
-    const mat2 octave_matrix = mat2( 1.6, 1.2, -1.2, 1.6 );
-    float d, height = 0.0;
-    for ( int i = 0; i < 5; i++ ) {
-        d = octave( ( p + uTime ) * freq, choppiness ), 
-        d += octave( ( p - uTime ) * freq, choppiness ), 
-        height += d * amp;
-        p *= octave_matrix;
-        freq *= 1.9;
-        amp *= 0.22;
-        choppiness = mix( choppiness, 1.0, 0.2 );
-    }
-
-    return height;
-}
-
-vec3 normal( vec2 p, float epsilon )
-{
-    vec3 n;
-    float original = height( p );
-    n.x = height( vec2( p.x + epsilon, p.y ) ) - original;
-    n.z = height( vec2( p.x, p.y + epsilon ) ) - original;
-    n.y = epsilon;
-    return normalize( n );
 }
 
 void main() {
@@ -136,7 +101,7 @@ void main() {
     vPosition = uMMatrix * vPosition;
 
     // apply water noise height offset
-    vPosition.y = 5.0 * height( vPosition.xz * sea_scale );
+    vPosition.y = 2.5 * height( vPosition.xz * sea_scale );
 
     // cache world position
     vPosition_World = vPosition;
