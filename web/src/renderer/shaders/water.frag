@@ -123,11 +123,11 @@ void main( void ) {
     vec3 normal = normalize( uNormalMVMatrix * get_normal( vPosition_World.xz * sea_scale, dist * 0.00007 ) );
 
     vec3 reflected = uInverseViewMatrix * ( -reflect( view, normal ) );
-    vec4 ibl_specular = textureCube( environment, reflected ) * 0.9;
+    vec4 ibl_specular = engamma( textureCube( environment, reflected ) * 0.9 );
     
     vec3 lightdir = normalize( uVMatrix * vec4( vec3( sun_size ), 0 ) ).xyz;
 
-    vec4 refracted = vec4( sea_base_color + diffuse( normal, lightdir, 80.0 ) * sea_water_color * 0.12, 1.0 ); 
+    vec4 refracted = engamma( vec4( sea_base_color + diffuse( normal, lightdir, 80.0 ) * sea_water_color * 0.12, 1.0 ) ); 
 
     float fresnel = 1.0 - max(dot(-normal,-view),0.0);
     fresnel = pow(fresnel,3.0);
@@ -137,9 +137,9 @@ void main( void ) {
     float atten = max( 1.0 - dot( dist, dist ) * 0.0000015, 0.0 );
 
     // foam
-    color += vec4( sea_water_color * ( height_detailed( vPosition_World.xz * sea_scale ) ) * 0.05 * atten, 1.0 );
+    color += engamma( vec4( sea_water_color * ( height_detailed( vPosition_World.xz * sea_scale ) ) * 0.05 * atten, 1.0 ) );
 
-    color += vec4( get_specular( normal, lightdir, -view, 80.0 ) ) * 0.35;
+    color += engamma( vec4( get_specular( normal, lightdir, -view, 80.0 ) ) * 0.35 );
 
-    gl_FragColor = color;
+    gl_FragColor = degamma( color );
 }
