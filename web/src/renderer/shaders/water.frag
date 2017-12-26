@@ -116,6 +116,41 @@ float get_specular( vec3 n, vec3 l, vec3 e, float s ) {
     return pow( max ( dot( reflect( e, n ), l ), 0.0 ), s ) * nrm;
 }
 
+float foam( vec3 pos )
+{
+    float freq = sea_frequency;
+    float amp  = sea_amplitude;
+    float choppiness = sea_choppiness;
+
+    vec2 p = pos.xz * sea_scale;
+    const mat2 octave_matrix = mat2( 1.6, 1.2, -1.2, 1.6 );
+    float d, height = 0.0;
+    
+    float amp_sum = 0.0;
+    for ( int i = 0; i < 5; i++ ) {
+        d = octave( ( p + uTime * sea_speed ) * freq, choppiness ), 
+        d += octave( ( p - uTime * sea_speed ) * freq, choppiness ), 
+        height += d * amp;
+        p *= octave_matrix;
+        freq *= 1.9;
+        amp_sum += amp;
+        amp *= 0.33;
+        choppiness = mix( choppiness, 1.0, 0.2 );
+    }
+        
+    amp_sum += amp;
+    float f = max( 0.0, height ) / ( 2.1 * amp_sum );
+    
+    for ( int i = 0; i < 5; i++ ) {
+        f -= noise( p * float( i ) * 10.0) * 0.01;
+    }
+
+
+    // return height / amp_sum;
+    // return max( 0.0, height ) / ( 2.0 * amp_sum );
+    return pow( smoothstep( 0.2, 1.0, f ), 9.0 );
+}
+
 void main( void ) {
     float dist = length( cPosition_World - vPosition_World );
     vec3 view = normalize( -( vPosition.xyz / vPosition.w ) );
@@ -136,10 +171,12 @@ void main( void ) {
 
     float atten = max( 1.0 - dot( dist, dist ) * 0.0000015, 0.0 );
 
-    // foam
     color += engamma( vec4( sea_water_color * ( height_detailed( vPosition_World.xz * sea_scale ) ) * 0.05 * atten, 1.0 ) );
 
     color += engamma( vec4( get_specular( normal, lightdir, -view, 100.0 ) ) * 0.35 );
+    
+    // actual foam
+    color = mix( color, vec4( 1.0, 1.0, 1.0, 1.0 ), 0.6 * foam( vPosition_World.xyz ) );
 
     gl_FragColor = degamma( color );
 }
