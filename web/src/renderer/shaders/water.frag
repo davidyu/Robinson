@@ -139,16 +139,29 @@ float foam( vec3 pos )
     }
         
     amp_sum += amp;
-    float f = max( 0.0, height ) / ( 2.1 * amp_sum );
+    float f = max( 0.0, height - 0.5 * amp_sum ) / ( amp_sum );
     
     for ( int i = 0; i < 5; i++ ) {
-        f -= noise( p * float( i ) * 10.0) * 0.01;
+        f -= noise( p * float( i ) * 10.0) * 0.04;
     }
+    
+    // SUPER SLOW FBM
+    // TOO MANY LOOPS
+    float v = 0.0;
+    float a = 0.5;
+    vec2 shift = vec2(100.0);
+    mat2 rot = mat2(cos(0.5), sin(0.5),
+                    -sin(0.5), cos(0.50));
+    p = pos.xz + uTime * sea_scale * sea_speed * 0.1;
+    for (int i = 0; i < 5; ++i) {
+        v += a * noise( p );
+        p = rot * p * 2.0 + shift;
+        a *= 0.5;
+    }
+    
+    f = f * ( ( v * v + 1.0 ) / 2.0 );
 
-
-    // return height / amp_sum;
-    // return max( 0.0, height ) / ( 2.0 * amp_sum );
-    return pow( smoothstep( 0.2, 1.0, f ), 9.0 );
+    return pow( f, 5.0 );
 }
 
 void main( void ) {
