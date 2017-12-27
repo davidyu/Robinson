@@ -5,6 +5,8 @@ uniform float uTime;
 
 varying vec4 vPosition;
 varying vec4 vPosition_World;
+varying vec3 vNormal_World;
+varying float vAmp;
 
 uniform highp mat4 uVMatrix;
 uniform highp mat3 uInverseViewMatrix;
@@ -116,6 +118,33 @@ float get_specular( vec3 n, vec3 l, vec3 e, float s ) {
     return pow( max ( dot( reflect( e, n ), l ), 0.0 ), s ) * nrm;
 }
 
+float foam( vec3 pos )
+{
+    float f = max( 0.0, vAmp ) * ( 1.0 - dot( vec3( 0.0, 1.0, 0.0 ), normalize( vNormal_World ) ) );
+    
+    vec2 p = pos.xz * sea_scale;
+    for ( int i = 0; i < 5; i++ ) {
+        f -= abs( noise( p * float( i ) * 10.0) ) * 0.01;
+    }
+    
+    float v = 0.0;
+    float a = 0.5;
+    vec2 shift = vec2(100.0);
+    // Rotate to reduce axial bias
+    mat2 rot = mat2(cos(0.5), sin(0.5),
+                    -sin(0.5), cos(0.50));
+    p = pos.xz + uTime * sea_scale * sea_speed * 0.1;
+    for (int i = 0; i < 5; ++i) {
+        v += a * abs( noise( p ) );
+        p = rot * p * 2.0 + shift;
+        a *= 0.5;
+    }
+    
+    f = f * v;
+
+    return pow( f, 2.0 );
+}
+
 void main( void ) {
     float dist = length( cPosition_World - vPosition_World );
     vec3 view = normalize( -( vPosition.xyz / vPosition.w ) );
@@ -140,5 +169,8 @@ void main( void ) {
 
     color += engamma( vec4( get_specular( normal, lightdir, -view, 100.0 ) ) * 0.35 );
     
+    // actual foam
+    color = mix( color, vec4( 1.0, 1.0, 1.0, 1.0 ), 0.6 * foam( vPosition_World.xyz ) );
+
     gl_FragColor = degamma( color );
 }

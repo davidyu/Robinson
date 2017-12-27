@@ -9,10 +9,13 @@ uniform highp mat3 uInverseViewMatrix;
 uniform highp mat3 uNormalMVMatrix;    // inverse model view matrix
 
 uniform mediump float uTime;
+uniform mediump vec4 cPosition_World;
 
 varying mediump vec3 vDirection;
 varying mediump vec4 vPosition;
 varying mediump vec4 vPosition_World;
+varying mediump vec3 vNormal_World;
+varying mediump float vAmp;
 
 const float sea_speed = 2.0;
 const float sea_choppiness = 4.0;
@@ -94,6 +97,16 @@ float height( vec2 p )
     return height;
 }
 
+vec3 get_normal( vec2 p, float epsilon )
+{
+    vec3 n;
+    float original = 2.5 * -height( p );
+    n.x = 2.5 * ( -height( vec2( p.x + epsilon, p.y ) ) ) - original;
+    n.z = 2.5 * ( -height( vec2( p.x, p.y + epsilon ) ) ) - original;
+    n.y = epsilon;
+    return normalize( n );
+}
+
 void main() {
     vPosition = vec4( aVertexPosition, 1.0 );
 
@@ -101,10 +114,17 @@ void main() {
     vPosition = uMMatrix * vPosition;
 
     // apply water noise height offset
-    vPosition.y = 2.5 * height( vPosition.xz * sea_scale );
+    float h = height( vPosition.xz * sea_scale );
+    vPosition.y = 2.5 * h;
 
     // cache world position
     vPosition_World = vPosition;
+
+    float dist = length( cPosition_World - vPosition_World );
+    vNormal_World = get_normal( vPosition_World.xz * sea_scale, dist * 0.001 );
+
+    float amp_sum = sea_amplitude + sea_amplitude * 0.22 + sea_amplitude * 0.22 * 0.22;
+    vAmp = ( h - 0.5 * amp_sum ) / amp_sum; // not 100% correct, getting values less than 0 sometimes
 
     // then world to eye
     vPosition = uVMatrix * vPosition;
