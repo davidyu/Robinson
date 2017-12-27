@@ -6,6 +6,7 @@ struct Material {
 
 uniform Material mat;
 
+varying vec4 vPosition; // unused
 varying vec2 vTexCoord;
 
 void main( void ) {
