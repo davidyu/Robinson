@@ -1,11 +1,8 @@
-precision mediump float;
-
 uniform vec4 cPosition_World;
 uniform float uTime;
 
 varying vec4 vPosition;
 varying vec4 vPosition_World;
-varying vec3 vNormal_World;
 varying float vAmp;
 
 uniform highp mat4 uVMatrix;
@@ -118,31 +115,57 @@ float get_specular( vec3 n, vec3 l, vec3 e, float s ) {
     return pow( max ( dot( reflect( e, n ), l ), 0.0 ), s ) * nrm;
 }
 
+float foam_detail( vec2 p )
+{
+    // use the same noise layering technique we've been using
+    // except modify parameters slightly to add detail to foam
+    // technique inspired by "Buoy" by TekF on ShaderToy
+    // source: https://www.shadertoy.com/view/XdsGDB 
+    p *= exp2( 2.5 );
+    p.y -= uTime * 0.5;
+    p.x += uTime * 0.1;
+    
+    float d = 0.0;
+    float freq = sea_frequency * 1.7;
+    float amp  = sea_amplitude * 0.25;
+    float choppiness = sea_choppiness;
+    float height = 0.0;
+    
+    const mat2 octave_matrix = mat2( 1.6, 1.2, -1.2, 1.6 );
+    for ( int i = 0; i < 5; i++ ) {
+        // warp input domain
+        p = p.xy + p.yx * vec2( -1,1 ) / sqrt( 2.0 );
+        d  = octave( ( p + uTime * sea_speed ) * freq, choppiness ), 
+        d += octave( ( p - uTime * sea_speed ) * freq, choppiness ), 
+        height += d * amp;
+        p *= octave_matrix;
+        freq *= 2.9;
+        amp *= 0.22;
+        choppiness = mix( choppiness, 1.0, 0.2 );
+    }
+
+    return height;
+}
+
 float foam( vec3 pos )
 {
-    float f = max( 0.0, vAmp ) * ( 1.0 - dot( vec3( 0.0, 1.0, 0.0 ), normalize( vNormal_World ) ) );
-    
-    vec2 p = pos.xz * sea_scale;
-    for ( int i = 0; i < 5; i++ ) {
-        f -= abs( noise( p * float( i ) * 10.0) ) * 0.01;
-    }
-    
-    float v = 0.0;
-    float a = 0.5;
-    vec2 shift = vec2(100.0);
-    // Rotate to reduce axial bias
-    mat2 rot = mat2(cos(0.5), sin(0.5),
-                    -sin(0.5), cos(0.50));
-    p = pos.xz + uTime * sea_scale * sea_speed * 0.1;
-    for (int i = 0; i < 5; ++i) {
-        v += a * abs( noise( p ) );
-        p = rot * p * 2.0 + shift;
-        a *= 0.5;
-    }
-    
-    f = f * v;
+    // foaminess is modulated by height
+    float base_foaminess = vPosition_World.y / 2.5;
+    // base_foaminess = height_detail( pos.xz * sea_scale ); -- slightly more detail, but more expensive
 
-    return pow( f, 2.0 );
+    float detail = foam_detail( pos.xz * sea_scale );
+   
+    // poke some holes in foam to simulate appearance of bubbles
+    // first term is large bubbles (to reduce noticeable artifacting at close range, we reduce large bubble alpha)
+    // second term is tiny bubbles (no noticeable artifacting unless at a particular distance, but that's a sampling artifact)
+    float fizziness = clamp( abs( noise( pos.xz * sea_scale * 25.0 ) ) * 0.04 + abs( noise( pos.xz * sea_scale * 380.0 ) ) * 0.2, 0.0, 1.0 );
+
+    // the smoothstep is actually quite important in producing the end result. We purposefully (artistically :) pick
+    // a range in the produced noise that looks reasonably passable as foam
+    float foam = smoothstep( 0.9, 2.1, base_foaminess + detail ) - fizziness;
+    
+    // eliminate negative values
+    return max( foam, 0.0 );
 }
 
 void main( void ) {
@@ -170,7 +193,7 @@ void main( void ) {
     color += engamma( vec4( get_specular( normal, lightdir, -view, 100.0 ) ) * 0.35 );
     
     // actual foam
-    color = mix( color, vec4( 1.0, 1.0, 1.0, 1.0 ), 0.6 * foam( vPosition_World.xyz ) );
+    color = mix( color, vec4( 1.0, 1.0, 1.0, 1.0 ), foam( vPosition_World.xyz ) );
 
     gl_FragColor = degamma( color );
 }

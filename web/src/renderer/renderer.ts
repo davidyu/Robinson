@@ -2,7 +2,6 @@ enum SHADERTYPE {
   SIMPLE_VERTEX,
   LAMBERT_FRAGMENT,
   BLINN_PHONG_FRAGMENT,
-  UNLIT_FRAG,
   DEBUG_VERTEX,
   DEBUG_FRAGMENT,
   OREN_NAYAR_FRAGMENT,
@@ -22,7 +21,6 @@ enum SHADERTYPE {
 
 enum SHADER_PROGRAM {
   DEBUG,
-  UNLIT,
   LAMBERT,
   OREN_NAYAR,
   BLINN_PHONG,
@@ -73,7 +71,6 @@ class ShaderRepository {
   loadShaders() {
     this.asyncLoadShader( "basic.vert"                , SHADERTYPE.SIMPLE_VERTEX                 , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "debug.vert"                , SHADERTYPE.DEBUG_VERTEX                  , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "unlit.frag"                , SHADERTYPE.UNLIT_FRAG                    , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "lambert.frag"              , SHADERTYPE.LAMBERT_FRAGMENT              , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "blinn-phong.frag"          , SHADERTYPE.BLINN_PHONG_FRAGMENT          , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "debug.frag"                , SHADERTYPE.DEBUG_FRAGMENT                , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
@@ -379,18 +376,6 @@ class Renderer {
     this.programData[ SHADER_PROGRAM.CUBE_SH ] = new ShaderProgramData();
     this.programData[ SHADER_PROGRAM.CUBE_SH ].program = cubeMapSHProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.CUBE_SH );
-
-    let unlitProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.PASSTHROUGH_VERT ].source
-                                                , sr.files[ SHADERTYPE.UNLIT_FRAG ].source );
-
-    if ( unlitProgram == null ) {
-      alert( "Unlit shader compilation failed. Please check the log for details." );
-      success = false;
-    }
-
-    this.programData[ SHADER_PROGRAM.UNLIT ] = new ShaderProgramData();
-    this.programData[ SHADER_PROGRAM.UNLIT ].program = unlitProgram;
-    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.UNLIT );
 
     {
       /*
@@ -742,7 +727,7 @@ class Renderer {
   }
 
   renderFullScreenTexture( gl: WebGLRenderingContext, texture: WebGLTexture ) {
-    this.useProgram( gl, SHADER_PROGRAM.UNLIT );
+    // this.useProgram( gl, SHADER_PROGRAM.UNLIT );
 
     let fullscreen = new Quad();
     fullscreen.rebuildRenderData();

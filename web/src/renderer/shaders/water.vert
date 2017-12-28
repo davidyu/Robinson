@@ -14,7 +14,6 @@ uniform mediump vec4 cPosition_World;
 varying mediump vec3 vDirection;
 varying mediump vec4 vPosition;
 varying mediump vec4 vPosition_World;
-varying mediump vec3 vNormal_World;
 varying mediump float vAmp;
 
 const float sea_speed = 2.0;
@@ -67,15 +66,17 @@ float noise( in vec2 p ) {
                 u.y);
 }
 
+// @return: float in [0, 1]
 float octave( vec2 uv, float choppiness )
 {
     uv += noise( uv );
-    vec2 wave  = 1.0 - abs( sin( uv ) );
-    vec2 wave2 = abs( cos( uv ) );
-    wave = mix( wave, wave2, wave ); // ????????????????????
+    vec2 wave  = 1.0 - abs( sin( uv ) ); // 0.0 to 1.0
+    vec2 wave2 = abs( cos( uv ) );       // 0.0 to 1.0
+    wave = mix( wave, wave2, wave );     // 0.0 to 1.0
     return pow( 1.0 - pow( wave.x * wave.y, 0.65 ), choppiness );
 }
 
+// @return: float in [0, 2 * amp * iters]
 float height( vec2 p )
 {
     float freq = sea_frequency;
@@ -84,7 +85,8 @@ float height( vec2 p )
 
     const mat2 octave_matrix = mat2( 1.6, 1.2, -1.2, 1.6 );
     float d, height = 0.0;
-    for ( int i = 0; i < 3; i++ ) {
+    const int ITER = 3; // coarser iterations for wave height
+    for ( int i = 0; i < ITER; i++ ) {
         d  = octave( ( p + uTime * sea_speed ) * freq, choppiness ), 
         d += octave( ( p - uTime * sea_speed ) * freq, choppiness ), 
         height += d * amp;
@@ -95,16 +97,6 @@ float height( vec2 p )
     }
 
     return height;
-}
-
-vec3 get_normal( vec2 p, float epsilon )
-{
-    vec3 n;
-    float original = 2.5 * -height( p );
-    n.x = 2.5 * ( -height( vec2( p.x + epsilon, p.y ) ) ) - original;
-    n.z = 2.5 * ( -height( vec2( p.x, p.y + epsilon ) ) ) - original;
-    n.y = epsilon;
-    return normalize( n );
 }
 
 void main() {
@@ -119,12 +111,6 @@ void main() {
 
     // cache world position
     vPosition_World = vPosition;
-
-    float dist = length( cPosition_World - vPosition_World );
-    vNormal_World = get_normal( vPosition_World.xz * sea_scale, dist * 0.001 );
-
-    float amp_sum = sea_amplitude + sea_amplitude * 0.22 + sea_amplitude * 0.22 * 0.22;
-    vAmp = ( h - 0.5 * amp_sum ) / amp_sum; // not 100% correct, getting values less than 0 sometimes
 
     // then world to eye
     vPosition = uVMatrix * vPosition;
