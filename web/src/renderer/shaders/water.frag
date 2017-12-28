@@ -100,10 +100,10 @@ float height_detailed( vec2 p )
     return height;
 }
 
-vec3 get_normal( vec2 p, float epsilon )
+vec3 get_normal( vec2 p, float detailed_height, float epsilon )
 {
     vec3 n;
-    float original = -height_detailed( p );
+    float original = -detailed_height;
     n.x = -height_detailed( vec2( p.x + epsilon, p.y ) ) - original;
     n.z = -height_detailed( vec2( p.x, p.y + epsilon ) ) - original;
     n.y = epsilon;
@@ -147,18 +147,17 @@ float foam_detail( vec2 p )
     return height;
 }
 
-float foam( vec3 pos )
+float foam( vec2 pos, float detailed_height )
 {
     // foaminess is modulated by height
-    float base_foaminess = vPosition_World.y / 2.5;
-    // base_foaminess = height_detail( pos.xz * sea_scale ); -- slightly more detail, but more expensive
+    float base_foaminess = detailed_height;
 
-    float detail = foam_detail( pos.xz * sea_scale );
+    float detail = foam_detail( pos );
    
     // poke some holes in foam to simulate appearance of bubbles
     // first term is large bubbles (to reduce noticeable artifacting at close range, we reduce large bubble alpha)
     // second term is tiny bubbles (no noticeable artifacting unless at a particular distance, but that's a sampling artifact)
-    float fizziness = clamp( abs( noise( pos.xz * sea_scale * 25.0 ) ) * 0.04 + abs( noise( pos.xz * sea_scale * 380.0 ) ) * 0.2, 0.0, 1.0 );
+    float fizziness = clamp( abs( noise( pos * 25.0 ) ) * 0.04 + abs( noise( pos * 380.0 ) ) * 0.2, 0.0, 1.0 );
 
     // the smoothstep is actually quite important in producing the end result. We purposefully (artistically :) pick
     // a range in the produced noise that looks reasonably passable as foam
@@ -169,10 +168,12 @@ float foam( vec3 pos )
 }
 
 void main( void ) {
+    float cached_height = height_detailed( vPosition_World.xz * sea_scale );
+
     float dist = length( cPosition_World - vPosition_World );
     vec3 view = normalize( -( vPosition.xyz / vPosition.w ) );
 
-    vec3 normal = normalize( uNormalMVMatrix * get_normal( vPosition_World.xz * sea_scale, dist * 0.001 ) );
+    vec3 normal = normalize( uNormalMVMatrix * get_normal( vPosition_World.xz * sea_scale, cached_height, dist * 0.001 ) );
 
     vec3 reflected = uInverseViewMatrix * ( -reflect( view, normal ) );
     vec4 ibl_specular = engamma( textureCube( environment, reflected ) * 0.9 );
@@ -188,12 +189,11 @@ void main( void ) {
 
     float atten = max( 1.0 - dot( dist, dist ) * 0.0000015, 0.0 );
 
-    color += engamma( vec4( sea_water_color * ( height_detailed( vPosition_World.xz * sea_scale ) ) * 0.05 * atten, 1.0 ) );
+    color += engamma( vec4( sea_water_color * cached_height * 0.05 * atten, 1.0 ) );
 
     color += engamma( vec4( get_specular( normal, lightdir, -view, 100.0 ) ) * 0.35 );
     
-    // actual foam
-    color = mix( color, vec4( 1.0, 1.0, 1.0, 1.0 ), foam( vPosition_World.xyz ) );
+    color = mix( color, vec4( 1.0, 1.0, 1.0, 1.0 ), foam( vPosition_World.xz * sea_scale, cached_height ) );
 
     gl_FragColor = degamma( color );
 }
