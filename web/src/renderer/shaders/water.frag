@@ -161,7 +161,8 @@ float foam( vec2 pos, float detailed_height )
 
     // the smoothstep is actually quite important in producing the end result. We purposefully (artistically :) pick
     // a range in the produced noise that looks reasonably passable as foam
-    float foam = smoothstep( 0.9, 2.1, base_foaminess + detail ) - fizziness;
+    // modulate fizziness by wave height (so we don't see too much foam bubbles on the edge)
+    float foam = smoothstep( 0.9, 2.1, base_foaminess + detail ) - smoothstep( 0.5, 1.6, base_foaminess ) * fizziness;
     
     // eliminate negative values
     return max( foam, 0.0 );
