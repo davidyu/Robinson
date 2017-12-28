@@ -19,7 +19,6 @@ var sources = [
   new ProgramSource( 'water.vert' , 'water.frag' ),
   new ProgramSource( 'screenspacequad.vert' , 'water_screenspace.frag' ),
   new ProgramSource( 'passthrough.vert' , 'cube-sh.frag' ),
-  new ProgramSource( 'passthrough.vert' , 'unlit.frag' )
 ];
 
 var logs = sources.map( function( source ) {
