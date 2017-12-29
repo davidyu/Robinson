@@ -13,7 +13,7 @@ const   float sky_horizon_offset = -0.3;  // between -1 and 1, moves horizon dow
 const   float cloudiness = 0.4;
 const   float cloud_speed = 1.0;
 
-const   vec3  cloud_base_color = vec3( 0.3, 0.52, 0.7 );
+const   vec3  cloud_base_color = vec3( 0.2, 0.3, 0.5 );
 
 // noise functions by Inigo Quilez
 float hash(float n) { return fract(sin(n) * 1e4); }
@@ -196,9 +196,9 @@ float fbm( vec3 x ) {
 	vec3 shift = vec3( 100 );
     const int NUM_OCTAVES = 5;
 	for (int i = 0; i < NUM_OCTAVES; ++i) {
-        v += 0.75 * a * noise( x );
+        v += mix( 0.45, 0.7, cloudiness ) * a * noise( x );
         // modulate with Worley noise to produce billowy shapes
-        v += 0.50 * a * ( 1.0 - worley( x * 2.5, 1.0 ) );
+        v += mix( 0.3, 0.5, cloudiness ) * a * ( 1.0 - worley( x * 1.0, 1.0 ) );
         x = x * 2.0 + shift;
 		a *= 0.5;
 	}
@@ -218,9 +218,9 @@ vec4 clouds( vec3 v )
 
     // early exit if we're beneath a certain threshold
     // this doesn't seem to save any frames, though
-    // if ( dot( vec3( 0.0, 1.0, 0.0 ), v ) < 0.0 ) return acc;
+    if ( dot( vec3( 0.0, 1.0, 0.0 ), v ) < 0.0 ) return acc;
 
-    const int layers = int( float( 60 ) * cloudiness );
+    const int layers = 50;
     for ( int i = 0; i < layers; i++ ) {
         float height = ( float( i ) * 12.0 + 200.0 - cPosition_World.y ) / v.y;
         vec3 cloudPos = cPosition_World.xyz + height*v + vec3( 831.0, 321.0 + float( i ) * 0.15 - 0.2*ofs.x, 1330.0 + 0.3*ofs.y );
