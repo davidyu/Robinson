@@ -224,7 +224,7 @@ vec4 clouds( vec3 v )
     for ( int i = 0; i < layers; i++ ) {
         float height = ( float( i ) * 12.0 + 200.0 - cPosition_World.y ) / v.y;
         vec3 cloudPos = cPosition_World.xyz + height*v + vec3( 831.0, 321.0 + float( i ) * 0.15 - 0.2*ofs.x, 1330.0 + 0.3*ofs.y );
-        float density = cloudiness * smoothstep( 0.5, 1.0, fbm( cloudPos * 0.0015 ) );
+        float density = cloudiness * smoothstep( 0.4, 1.0, fbm( cloudPos * 0.0015 ) );
         vec3  color = mix( vec3( 1.1, 1.05, 1.0 ), cloud_base_color, density );
 
         density = ( 1.0 - acc.w ) * density;
