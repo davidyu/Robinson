@@ -15,6 +15,8 @@ const   float cloud_speed = 1.0;
 
 const   vec3  cloud_base_color = vec3( 0.2, 0.3, 0.5 );
 
+#define PI 3.14159
+
 // noise functions by Inigo Quilez
 float hash(float n) { return fract(sin(n) * 1e4); }
 
@@ -36,7 +38,6 @@ float noise(vec3 x) {
 // Worley noise implementation source:
 // https://github.com/Erkaman/glsl-worley
 // modified a touch; we only care about F1, so just return that in our 3D worley impl
-
 vec3 permute( vec3 x ) {
     return mod( ( 34.0 * x + 1.0 ) * x, 289.0 );
 }
@@ -191,16 +192,16 @@ float worley(vec3 P, float jitter) {
 }
 
 float fbm( vec3 x ) {
-	float v = 0.0;
-	float a = 0.5;
-	vec3 shift = vec3( 100 );
+    float v = 0.0;
+    float a = 0.5;
+    vec3 shift = vec3( 100 );
     const int NUM_OCTAVES = 5;
-	for (int i = 0; i < NUM_OCTAVES; ++i) {
+    for (int i = 0; i < NUM_OCTAVES; ++i) {
         v += mix( 0.45, 0.7, cloudiness ) * a * noise( x );
         // modulate with Worley noise to produce billowy shapes
         v += mix( 0.3, 0.5, cloudiness ) * a * ( 1.0 - worley( x * 1.0, 1.0 ) );
         x = x * 2.0 + shift;
-		a *= 0.5;
+        a *= 0.5;
 	}
 	return v;
 }
@@ -211,10 +212,27 @@ vec3 sun( vec3 v ) {
          + vec3( 0.8, 0.9, 1.0 ) * 0.40 * pow( sun_body, ( 1.0 - sun_flare_size ) * 100.0 );
 }
 
+/*
+ * Henyey-Greenstein phase function for scattering
+ *
+ * q: the cosine (dot product) between incident (light to cloud pos) and scattered (cloud to eye pos) ray
+ *
+ */ 
+float hg( float q )
+{
+    float g = 0.5;
+    float t1 = 1.0 / ( 4.0 * PI );
+    float gsq = g * g;
+    float num = 1.0 - gsq;
+    float denom = pow( ( 1.0 + gsq - 2.0 * g * q ), 1.5 );
+
+    return t1 * ( num / denom );
+}
+
 vec4 clouds( vec3 v )
 {
     vec2 ofs = vec2( uTime * cloud_speed * 80.0, uTime * cloud_speed * 60.0 );
-    vec4 acc = vec4( 0, 0, 0, 0 );
+    vec4 acc = vec4( 0, 0, 0, 0 ); // this is the final color value we return
 
     // early exit if we're beneath a certain threshold
     // this doesn't seem to save any frames, though
@@ -225,14 +243,31 @@ vec4 clouds( vec3 v )
         float height = ( float( i ) * 12.0 + 200.0 - cPosition_World.y ) / v.y;
         vec3 cloudPos = cPosition_World.xyz + height*v + vec3( 831.0, 321.0 + float( i ) * 0.15 - 0.2*ofs.x, 1330.0 + 0.3*ofs.y );
         float density = cloudiness * smoothstep( 0.4, 1.0, fbm( cloudPos * 0.0015 ) );
-        vec3  color = mix( vec3( 1.1, 1.05, 1.0 ), cloud_base_color, density );
+        /*
+         * Beer's law: Energy = e^(-density)
+         * Powdered sugar scattering approximation: Energy = 1.0 - e^-(2.0 * density)
+         */
 
-        density = ( 1.0 - acc.w ) * density;
-        acc += vec4( color * density, density );
+        float T = exp( -density ) * ( 1.0 - exp( -2.0 * density ) ) * hg( dot( normalize( cloudPos - cPosition_World.xyz ), sun_light_dir ) );
+
+        vec3 light = mix( vec3( 1.0, 1.0, 1.0 ), cloud_base_color, T );
+        T = ( 1.0 - acc.a ) * T;
+        acc += vec4( light * T, T );
     }
 
-    acc.rgb /= acc.w + 0.0001;
-    float alpha = smoothstep( 0.7, 1.0, acc.w );
+    acc.rgb /= acc.a + 0.0001;
+
+    // everything from here on out doesn't contribute much to the end result
+    float alpha = smoothstep( 0.7, 1.0, acc.a );
+
+    /*
+     * Beer's law: transmittance = e^(-thickness)
+     *
+     * transmittance is the resulting alpha
+     * thickness is the density
+     */ 
+
+    float T = exp( -alpha );
 
     acc.rgb -= 0.6 * vec3( 0.8, 0.75, 0.7 ) * alpha * pow( normalize( vec3( 1.0 ) ), vec3( 13.0 ) );
     acc.rgb += 0.2 * vec3( 1.3, 1.2, 1.0 ) * ( 1.0 - alpha ) * pow( normalize( vec3( 1.0 ) ), vec3( 5.0 ) );
