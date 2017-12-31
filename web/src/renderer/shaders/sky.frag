@@ -193,7 +193,7 @@ float worley(vec3 P, float jitter) {
 	return sqrt( d11.x );
 }
 
-float sample( vec3 x ) {
+float sample_cloud( vec3 x ) {
     float v = 0.0;
     float a = 0.5;
     vec3 shift = vec3( 100 );
@@ -246,7 +246,7 @@ vec4 clouds( vec3 v )
     for ( int i = 0; i < samples; i++ ) {
         float d = ( float( i ) * 12.0 + 200.0 - cPosition_World.y ) / v.y;
         vec3 cloudPos = cloud_scale * ( cPosition_World.xyz + d * v + ofs );
-        float cloud_sample = cloudiness * sample( cloudPos );
+        float cloud_sample = cloudiness * sample_cloud( cloudPos );
 
         vec3 cloud_color = mix( vec3( 1.0, 1.0, 1.0 ), cloud_base_color, cloud_sample );
 
