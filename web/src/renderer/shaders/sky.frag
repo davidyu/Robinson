@@ -12,8 +12,10 @@ const   float sky_horizon_offset = -0.3;  // between -1 and 1, moves horizon dow
 
 const   float cloudiness = 0.4;
 const   float cloud_speed = 1.0;
+const   float cloud_scale = 0.0015;
 
-const   vec3  cloud_base_color = vec3( 0.2, 0.3, 0.5 );
+const   vec3  cloud_base_color = vec3( 0.3, 0.4, 0.5 );
+const   vec3  cloud_top_color  = vec3( 1.0 );
 
 #define PI 3.14159
 
@@ -191,19 +193,21 @@ float worley(vec3 P, float jitter) {
 	return sqrt( d11.x );
 }
 
-float fbm( vec3 x ) {
+float sample( vec3 x ) {
     float v = 0.0;
     float a = 0.5;
     vec3 shift = vec3( 100 );
-    const int NUM_OCTAVES = 5;
+    const int NUM_OCTAVES = 4;
     for (int i = 0; i < NUM_OCTAVES; ++i) {
         v += mix( 0.45, 0.7, cloudiness ) * a * noise( x );
         // modulate with Worley noise to produce billowy shapes
         v += mix( 0.3, 0.5, cloudiness ) * a * ( 1.0 - worley( x * 1.0, 1.0 ) );
-        x = x * 2.0 + shift;
+        x = x * 2.3 + shift;
         a *= 0.5;
 	}
-	return v;
+
+    // smoothstep parameter carefully tuned to look cloudlike
+    return smoothstep( 0.4, 0.8, v );
 }
 
 vec3 sun( vec3 v ) {
@@ -231,46 +235,36 @@ float hg( float q )
 
 vec4 clouds( vec3 v )
 {
-    vec2 ofs = vec2( uTime * cloud_speed * 80.0, uTime * cloud_speed * 60.0 );
+    vec3 ofs = vec3( uTime * cloud_speed * 30.0, uTime * cloud_speed * 20.0, uTime * cloud_speed * 40.0 );
     vec4 acc = vec4( 0, 0, 0, 0 ); // this is the final color value we return
 
     // early exit if we're beneath a certain threshold
     // this doesn't seem to save any frames, though
     if ( dot( vec3( 0.0, 1.0, 0.0 ), v ) < 0.0 ) return acc;
 
-    const int layers = 50;
-    for ( int i = 0; i < layers; i++ ) {
-        float height = ( float( i ) * 12.0 + 200.0 - cPosition_World.y ) / v.y;
-        vec3 cloudPos = cPosition_World.xyz + height*v + vec3( 831.0, 321.0 + float( i ) * 0.15 - 0.2*ofs.x, 1330.0 + 0.3*ofs.y );
-        float density = cloudiness * smoothstep( 0.4, 1.0, fbm( cloudPos * 0.0015 ) );
+    const int samples = 32;
+    for ( int i = 0; i < samples; i++ ) {
+        float d = ( float( i ) * 12.0 + 200.0 - cPosition_World.y ) / v.y;
+        vec3 cloudPos = cloud_scale * ( cPosition_World.xyz + d * v + ofs );
+        float cloud_sample = cloudiness * sample( cloudPos );
+
+        vec3 cloud_color = mix( vec3( 1.0, 1.0, 1.0 ), cloud_base_color, cloud_sample );
+
         /*
+         * Pseudo-physically-based light scattering
          * Beer's law: Energy = e^(-density)
          * Powdered sugar scattering approximation: Energy = 1.0 - e^-(2.0 * density)
          */
 
-        float T = exp( -density ) * ( 1.0 - exp( -2.0 * density ) ) * hg( dot( normalize( cloudPos - cPosition_World.xyz ), sun_light_dir ) );
+        float density = cloud_sample * 20.0; // density is fudged
+        float T = 1.3 * exp( -density ) * ( 1.0 - exp( -2.0 * density ) ) * hg( dot( v, sun_light_dir ) );
+        vec3 light_term = vec3( 1.0 ) * T;
 
-        vec3 light = mix( vec3( 1.0, 1.0, 1.0 ), cloud_base_color, T );
-        T = ( 1.0 - acc.a ) * T;
-        acc += vec4( light * T, T );
+        float alpha = ( 1.0 - acc.a ) * cloud_sample;
+        acc += vec4( ( cloud_color + light_term ) * alpha, alpha );
     }
 
     acc.rgb /= acc.a + 0.0001;
-
-    // everything from here on out doesn't contribute much to the end result
-    float alpha = smoothstep( 0.7, 1.0, acc.a );
-
-    /*
-     * Beer's law: transmittance = e^(-thickness)
-     *
-     * transmittance is the resulting alpha
-     * thickness is the density
-     */ 
-
-    float T = exp( -alpha );
-
-    acc.rgb -= 0.6 * vec3( 0.8, 0.75, 0.7 ) * alpha * pow( normalize( vec3( 1.0 ) ), vec3( 13.0 ) );
-    acc.rgb += 0.2 * vec3( 1.3, 1.2, 1.0 ) * ( 1.0 - alpha ) * pow( normalize( vec3( 1.0 ) ), vec3( 5.0 ) );
 
     return acc;
 }
@@ -293,9 +287,6 @@ void main() {
     vec3 sky = vec3( pow( 1.0 - blueness, 2.0 )         // less red as we move up, quadratic
                    , 1.0 - blueness                     // less green as we move up, linear
                    , 0.6 + ( 1.0 - blueness ) * 0.4 );  // blue depends on how far up we are
-
-    // for everything else, for now, we only care about everything at eye level and above
-    eye.y = clamp( eye.y, 0.0, 1.0 );
 
     sky += sun( eye );
     vec4 cl = clouds( eye );
