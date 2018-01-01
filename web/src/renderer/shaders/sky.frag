@@ -18,31 +18,38 @@ const   vec3  cloud_base_color = vec3( 0.3, 0.4, 0.5 );
 const   vec3  cloud_top_color  = vec3( 1.0 );
 
 #define PI 3.14159
+// Permutation polynomial (ring size 289 = 17*17)
+// This is the lattice period defined in the original noise implementation, generally a square
+#define NOISE_PERIOD 289.0
+#define NOISE_1_DIV_PERIOD ( 1.0 / NOISE_PERIOD )
+// not sure what the requirements of this number is
+#define NOISE_SCALE 34.0
 
 // Simplex noise implementation source:
 // https://github.com/ashima/webgl-noise
-vec3 mod289(vec3 x) {
-  return x - floor(x * (1.0 / 289.0)) * 289.0;
+vec3 mod_noise( vec3 x ) {
+    return x - floor( x * NOISE_1_DIV_PERIOD ) * NOISE_PERIOD;
 }
 
-vec4 mod289(vec4 x) {
-  return x - floor(x * (1.0 / 289.0)) * 289.0;
+vec3 permute( vec3 x ) {
+    return mod_noise( ( NOISE_SCALE * x + 1.0 ) * x );
 }
 
-vec4 permute(vec4 x) {
-     return mod289(((x*34.0)+1.0)*x);
+vec4 mod_noise( vec4 x ) {
+    return x - floor( x * NOISE_1_DIV_PERIOD ) * NOISE_PERIOD;
 }
 
-vec4 taylorInvSqrt(vec4 r)
+vec4 permute( vec4 x ) {
+     return mod_noise( ( NOISE_SCALE * x + 1.0 ) * x );
+}
+
+vec4 taylorInvSqrt( vec4 r )
 {
-  return 1.79284291400159 - 0.85373472095314 * r;
+    return 1.79284291400159 - 0.85373472095314 * r;
 }
 
 float snoise(vec3 v)
 {
-// tile over a period of 32
-	v = mod( v, vec3( 32.0 ) );
-	
   const vec2  C = vec2(1.0/6.0, 1.0/3.0) ;
   const vec4  D = vec4(0.0, 0.5, 1.0, 2.0);
 
@@ -65,7 +72,7 @@ float snoise(vec3 v)
   vec3 x3 = x0 - D.yyy;      // -1.0+3.0*C.x = -0.5 = -D.y
 
 // Permutations
-  i = mod289(i); 
+  i = mod_noise(i); 
   vec4 p = permute( permute( permute( 
              i.z + vec4(0.0, i1.z, i2.z, 1.0 ))
            + i.y + vec4(0.0, i1.y, i2.y, 1.0 )) 
@@ -119,10 +126,6 @@ float snoise(vec3 v)
 // Worley noise implementation source:
 // https://github.com/Erkaman/glsl-worley
 // modified a touch; we only care about F1, so just return that in our 3D worley impl
-vec3 permute( vec3 x ) {
-    return mod( ( 34.0 * x + 1.0 ) * x, 289.0 );
-}
-
 vec3 dist( vec3 x, vec3 y, vec3 z ) {
     return ( x * x + y * y + z * z );
 }
