@@ -70,11 +70,8 @@ class NoiseApp {
   public fixedUpdate( delta: number ) {
     scene.time += 1.0/30.0;
 
-    if ( this.dirty ) {
-      this.renderer.update();
-      this.renderer.render();
-      this.dirty = false;
-    }
+    this.renderer.update();
+    this.renderer.render();
   }
 }
 
