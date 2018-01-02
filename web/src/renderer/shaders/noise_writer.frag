@@ -1,7 +1,7 @@
 precision mediump float;
 
 uniform float layer_z;
-varying mediump vec4 vPosition;
+varying vec3 vPosition;
 
 // Permutation polynomial (ring size 289 = 17*17)
 // This is the lattice period defined in the original noise implementation, generally a square
@@ -109,6 +109,6 @@ float snoise(vec3 v)
 }
 
 void main() {
-    snoise( NOISE_PERIOD * vPosition.x, NOISE_PERIOD * vPosition.y, NOISE_PERIOD * layer_z );
-    gl_FragColor = vec4( sky.r, sky.g, sky.b, 1.0 );
+    float color = snoise( vec3( NOISE_PERIOD * vPosition.x, NOISE_PERIOD * vPosition.y, NOISE_PERIOD * layer_z ) );
+    gl_FragColor = vec4( vec3( color ), 1.0 );
 }

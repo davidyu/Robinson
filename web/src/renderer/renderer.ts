@@ -17,6 +17,7 @@ enum SHADERTYPE {
   SS_QUAD_VERT,
   WATER_FRAG,
   WATER_SS_FRAG,
+  NOISE_WRITER_FRAG,
 };
 
 enum SHADER_PROGRAM {
@@ -30,7 +31,8 @@ enum SHADER_PROGRAM {
   WATER,
   WATER_SS,
   SHADOWMAP,
-  CUBE_SH
+  CUBE_SH,
+  NOISE_WRITER,
 };
 
 enum PASS {
@@ -87,6 +89,7 @@ class ShaderRepository {
     this.asyncLoadShader( "water.frag"                , SHADERTYPE.WATER_FRAG                    , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "screenspacequad.vert"      , SHADERTYPE.SS_QUAD_VERT                  , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "water_screenspace.frag"    , SHADERTYPE.WATER_SS_FRAG                 , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "noise_writer.frag"         , SHADERTYPE.NOISE_WRITER_FRAG             , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
   }
 
   asyncLoadShader( name: string, stype: SHADERTYPE, loaded: ( stype: SHADERTYPE, contents: string ) => void ) {
@@ -363,6 +366,18 @@ class Renderer {
     this.programData[ SHADER_PROGRAM.WATER_SS ] = new ShaderProgramData();
     this.programData[ SHADER_PROGRAM.WATER_SS ].program = waterSSProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.WATER_SS );
+
+    let noiseWriterProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SS_QUAD_VERT ].source
+                                                      , sr.files[ SHADERTYPE.NOISE_WRITER_FRAG ].source );
+
+    if ( noiseWriterProgram == null ) {
+      alert( "Noise writer compilation failed. Please check the log for details." );
+      success = false;
+    }
+
+    this.programData[ SHADER_PROGRAM.NOISE_WRITER ] = new ShaderProgramData();
+    this.programData[ SHADER_PROGRAM.NOISE_WRITER ].program = noiseWriterProgram;
+    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.NOISE_WRITER );
 
 
     let cubeMapSHProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.PASSTHROUGH_VERT ].source
