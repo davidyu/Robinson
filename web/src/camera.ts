@@ -7,22 +7,22 @@ class Camera {
   }
 
   public get pos(): gml.Vec4 {
-    return this.matrix.row( 3 );
+    return this.matrix.column( 3 ).negate();
   }
 
   public set pos( val: gml.Vec4 ) {
-    this.matrix.setColumn( 3, val );
+    this.matrix.setColumn( 3, val.negate().normalized );
   }
 
   public get aim(): gml.Vec4 {
-    return this.matrix.row( 2 );
+    return this.matrix.column( 2 );
   }
 
   public get up(): gml.Vec4 {
-    return this.matrix.row( 1 );
+    return this.matrix.column( 1 );
   }
 
   public get right(): gml.Vec4 {
-    return this.matrix.row( 0 );
+    return this.matrix.column( 0 );
   }
 }
