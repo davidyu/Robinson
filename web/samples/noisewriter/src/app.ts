@@ -19,8 +19,8 @@ class NoiseApp {
     this.renderer = new Renderer( params.vp, shaderRepo );
     let pos    = new gml.Vec4( 0, 0, 1000, 1 )
     let aim    = new gml.Vec4( 0, 0, -1, 0 );
-    let up     = new gml.Vec4( 0, 1,  0, 0 );
-    let right  = new gml.Vec4( 1, 0,  0, 0 );
+    let up     = gml.Vec4.up;
+    let right  = gml.Vec4.right;
     this.camera = new Camera( pos, aim, up, right );
     this.renderer.setCamera( this.camera );
     this.dirty = true;
@@ -72,6 +72,7 @@ class NoiseApp {
 
     if ( this.dirty ) {
       this.renderer.update();
+      this.renderer.render();
       this.dirty = false;
     }
   }

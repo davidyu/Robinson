@@ -623,6 +623,10 @@ class Renderer {
           let shaderVariables = this.programData[ this.currentProgram ].uniforms
           gl.uniform1f( shaderVariables.uTime, scene.time );
         }
+      } else if ( p.material instanceof NoiseMaterial ) {
+        this.useProgram( gl, SHADER_PROGRAM.NOISE_WRITER );
+        let shaderVariables = this.programData[ this.currentProgram ].uniforms
+        gl.uniform1f( shaderVariables.uTime, scene.time );
       }
 
       let shaderVariables = this.programData[ this.currentProgram ].uniforms;
