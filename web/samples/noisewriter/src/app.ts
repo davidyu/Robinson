@@ -66,7 +66,7 @@ class NoiseApp {
         this.lastMousePos.y = ev.clientY;
         this.dirty = true;
         ev.preventDefault();
-        this.noiseMat.layer = this.lastMousePos.x % 20.0;
+        this.noiseMat.layer = ( this.lastMousePos.x % 320.0 ) / 320.0;
         return false;
       }
     }, false );
