@@ -179,6 +179,7 @@ class ShaderUniforms {
   uTime: WebGLUniformLocation;
   uMaterial: ShaderMaterialProperties;
   uLights: ShaderLightProperties[];
+  uNoiseLayer: WebGLUniformLocation;
 
   constructor() {}
 }
@@ -451,6 +452,7 @@ class Renderer {
     uniforms.uIrradianceMap = gl.getUniformLocation( program, "irradiance" );
     uniforms.uEnvironmentMipMaps = gl.getUniformLocation( program, "environmentMipMaps" );
     uniforms.uTime = gl.getUniformLocation( program, "uTime" );
+    uniforms.uNoiseLayer = gl.getUniformLocation( program, "uNoiseLayer" );
 
     uniforms.uMaterial = new ShaderMaterialProperties();
     uniforms.uMaterial.ambient = gl.getUniformLocation( program, "mat.ambient" );
@@ -623,7 +625,7 @@ class Renderer {
       } else if ( p.material instanceof NoiseMaterial ) {
         this.useProgram( gl, SHADER_PROGRAM.NOISE_WRITER );
         let shaderVariables = this.programData[ this.currentProgram ].uniforms
-        gl.uniform1f( shaderVariables.uTime, scene.time );
+        gl.uniform1f( shaderVariables.uNoiseLayer, ( <NoiseMaterial> p.material ).layer );
       }
 
       let shaderVariables = this.programData[ this.currentProgram ].uniforms;

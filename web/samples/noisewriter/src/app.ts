@@ -10,6 +10,9 @@ class NoiseApp {
   camera: Camera;
   dirty: boolean;
 
+  // material
+  noiseMat: NoiseMaterial;
+
   // ui
   dragging: boolean;
   dragStart: gml.Vec2;
@@ -26,6 +29,7 @@ class NoiseApp {
     this.dirty = true;
     this.dragStart = new gml.Vec2( 0, 0 );
     this.lastMousePos = new gml.Vec2( 0, 0 );
+    this.noiseMat = new NoiseMaterial()
 
     setInterval( () => { this.fixedUpdate( 1.0 / 30 ); }, 1000/30 );
 
@@ -62,6 +66,7 @@ class NoiseApp {
         this.lastMousePos.y = ev.clientY;
         this.dirty = true;
         ev.preventDefault();
+        this.noiseMat.layer = this.lastMousePos.x % 20.0;
         return false;
       }
     }, false );
@@ -83,15 +88,16 @@ function StartNoiseWriter() {
       vp : <HTMLCanvasElement> document.getElementById( "big-viewport" ),
     };
 
-    shaderRepo = new ShaderRepository( ( repo ) => { app = new NoiseApp( params, repo ); } );
+    shaderRepo = new ShaderRepository( ( repo ) => {
+      app = new NoiseApp( params, repo );
+      scene = new Scene( null, null );
+      Scene.setActiveScene( scene );
 
-    scene = new Scene( null, null );
-    Scene.setActiveScene( scene );
-
-    // ocean
-    scene.addRenderable( new Quad( 1
-                                 , gml.Vec4.origin
-                                 , { x: gml.fromDegrees( 0 ), y: gml.fromDegrees( 0 ), z: gml.fromDegrees( 0 ) }
-                                 , new NoiseMaterial() ) );
+      // ocean
+      scene.addRenderable( new Quad( 1
+                                   , gml.Vec4.origin
+                                   , { x: gml.fromDegrees( 0 ), y: gml.fromDegrees( 0 ), z: gml.fromDegrees( 0 ) }
+                                   , app.noiseMat ) );
+    } );
   }
 }

@@ -1,6 +1,6 @@
 precision mediump float;
 
-uniform float layer_z;
+uniform float uNoiseLayer;
 varying vec3 vPosition;
 
 // Permutation polynomial (ring size 289 = 17*17)
@@ -109,6 +109,6 @@ float snoise(vec3 v)
 }
 
 void main() {
-    float color = snoise( vec3( NOISE_PERIOD * vPosition.x, NOISE_PERIOD * vPosition.y, NOISE_PERIOD * layer_z ) );
+    float color = snoise( vec3( NOISE_PERIOD * vPosition.x, NOISE_PERIOD * vPosition.y, NOISE_PERIOD * uNoiseLayer ) );
     gl_FragColor = vec4( vec3( color ), 1.0 );
 }
