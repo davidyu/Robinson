@@ -57,9 +57,6 @@ class CubeMap {
     this.dynamic = false;
   }
 
-  generateCubeMapFromShader( gl: WebGLRenderingContext ) {
-  }
-
   generateCubeMapFromSources( gl: WebGLRenderingContext ) {
     this.cubeMapTexture = gl.createTexture();
     gl.bindTexture( gl.TEXTURE_CUBE_MAP, this.cubeMapTexture );
@@ -125,6 +122,160 @@ class Scene {
 
   public addLight( light: Light ) {
     this.lights.push( light );
+  }
+
+  public generateEnvironmentMapFromShader( renderer  : Renderer
+                                         , gl        : WebGLRenderingContext
+                                         , shader    : WebGLProgram
+                                         , variables : ShaderUniforms )
+  {
+    let renderTargetFramebuffer = gl.createFramebuffer();
+    gl.bindFramebuffer( gl.FRAMEBUFFER, renderTargetFramebuffer );
+
+    let size = 256; // this is the pixel size of each side of the cube map
+
+    // 
+    // RENDER TO TEXTURE
+    let depthBuffer = gl.createRenderbuffer();   // renderbuffer for depth buffer in framebuffer
+    gl.bindRenderbuffer( gl.RENDERBUFFER, depthBuffer ); // so we can create storage for the depthBuffer
+    gl.renderbufferStorage( gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, size, size );
+    gl.framebufferRenderbuffer( gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer );
+
+    // this is the texture we'll render each face of the cube map into
+    // as we render each face of the cubemap into it, we'll bind it to the actual cubemap
+    let cubeMapRenderTarget = null;
+
+    if ( this.environmentMap == null || this.environmentMap.cubeMapTexture == null ) {
+      cubeMapRenderTarget = gl.createTexture();
+      gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapRenderTarget );
+      gl.texImage2D( gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
+      gl.texImage2D( gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
+      gl.texImage2D( gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
+      gl.texImage2D( gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
+      gl.texImage2D( gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
+      gl.texImage2D( gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
+      gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR );
+      gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+      gl.bindTexture( gl.TEXTURE_CUBE_MAP, null );
+    } else {
+      cubeMapRenderTarget = this.environmentMap.cubeMapTexture;
+    }
+
+    let cameraPos = gml.Vec4.origin;
+    
+    // draw +x view
+    gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X, cubeMapRenderTarget, 0 );
+    gl.viewport( 0, 0, size, size );
+    gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+
+    let perspective = gml.makePerspective( gml.fromDegrees( 90 ), 1, 0.1, 100.0 );
+
+    let rightView = new gml.Mat4( 0, 0,-1, 0
+                                , 0,-1, 0, 0
+                                ,-1, 0, 0, 0
+                                , 0, 0, 0, 1 );
+    this.renderFace( renderer, gl, shader, variables, cubeMapRenderTarget, rightView, size, size, perspective, cameraPos );
+
+    // draw -x view
+    gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_NEGATIVE_X, cubeMapRenderTarget, 0 );
+    gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+    let leftView = new gml.Mat4( 0, 0, 1, 0
+                               , 0,-1, 0, 0
+                               , 1, 0, 0, 0
+                               , 0, 0, 0, 1 );
+    this.renderFace( renderer, gl, shader, variables, cubeMapRenderTarget, leftView, size, size, perspective, cameraPos );
+
+    // draw +y view
+    gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, cubeMapRenderTarget, 0 );
+    gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+    let upView = new gml.Mat4( 1, 0, 0, 0
+                             , 0, 0, 1, 0
+                             , 0,-1, 0, 0
+                             , 0, 0, 0, 1 );
+    this.renderFace( renderer, gl, shader, variables, cubeMapRenderTarget, upView, size, size, perspective, cameraPos );
+
+    // draw -y view
+    gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, cubeMapRenderTarget, 0 );
+    gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+    let downView = new gml.Mat4( 1, 0, 0, 0
+                               , 0, 0,-1, 0
+                               , 0, 1, 0, 0
+                               , 0, 0, 0, 1 );
+    this.renderFace( renderer, gl, shader, variables, cubeMapRenderTarget, downView, size, size, perspective, cameraPos );
+
+    // draw +z view
+    gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_Z, cubeMapRenderTarget, 0 );
+    gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+    let frontView = new gml.Mat4( 1, 0, 0, 0
+                                , 0,-1, 0, 0
+                                , 0, 0,-1, 0
+                                , 0, 0, 0, 1 );
+    this.renderFace( renderer, gl, shader, variables, cubeMapRenderTarget, frontView, size, size, perspective, cameraPos );
+
+    // draw -z view
+    gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, cubeMapRenderTarget, 0 );
+    gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+    let backView = new gml.Mat4(-1, 0, 0, 0
+                               , 0,-1, 0, 0
+                               , 0, 0, 1, 0
+                               , 0, 0, 0, 1 );
+    this.renderFace( renderer, gl, shader, variables, cubeMapRenderTarget, backView, size, size, perspective, cameraPos );
+
+    gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapRenderTarget );
+    gl.generateMipmap( gl.TEXTURE_CUBE_MAP );
+
+    if ( this.environmentMap == null ) {
+      this.environmentMap = new CubeMap( cubeMapRenderTarget );
+    } else {
+      this.environmentMap.cubeMapTexture = cubeMapRenderTarget;
+      this.environmentMap.dynamic = true;
+    }
+
+    gl.bindTexture( gl.TEXTURE_CUBE_MAP, null );
+  }
+
+  renderFace( renderer       : Renderer
+            , gl             : WebGLRenderingContext
+            , shader         : WebGLProgram
+            , variables      : ShaderUniforms
+            , cubeMapRT      : WebGLTexture
+            , modelView      : gml.Mat4
+            , viewportW      : number
+            , viewportH      : number
+            , perspective    : gml.Mat4
+            , cameraPos      : gml.Vec4 )
+  {
+    renderer.useProgram( gl, SHADER_PROGRAM.SKY );
+
+    let fullscreen = new Quad();
+    fullscreen.rebuildRenderData();
+
+    let inverseProjectionMatrix = perspective.invert();
+    gl.uniformMatrix4fv( variables.uInverseProjection, false, inverseProjectionMatrix.m );
+
+    let inverseViewMatrix = modelView.invert().mat3;
+    gl.uniformMatrix3fv( variables.uInverseView, false, inverseViewMatrix.m );
+
+    gl.uniform4fv( variables.uCameraPos, cameraPos.v );
+
+    gl.uniform1f( variables.uTime, this.time );
+
+    gl.bindBuffer( gl.ARRAY_BUFFER, renderer.vertexBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.vertices, gl.STATIC_DRAW );
+
+    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, renderer.indexBuffer );
+    gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
+
+    gl.bindBuffer( gl.ARRAY_BUFFER, renderer.vertexBuffer );
+    gl.vertexAttribPointer( variables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
+
+    gl.uniform1i( variables.uEnvMap, 0 );
+    gl.activeTexture( gl.TEXTURE0 );
+    gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapRT );
+
+    gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_INT, 0 );
   }
 
   static setActiveScene( scene: Scene ) {
