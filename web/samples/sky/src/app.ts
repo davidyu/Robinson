@@ -125,7 +125,7 @@ function StartSky() {
 
     shaderRepo = new ShaderRepository( ( repo ) => { app = new SkyApp( params, repo ); } );
 
-    skyScene = new Scene( null, null, true );
+    skyScene = new Scene( null, null, true, true );
     Scene.setActiveScene( skyScene );
 
     // ocean

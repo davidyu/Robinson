@@ -524,12 +524,12 @@ class Renderer {
     }
   }
 
-  renderSceneEnvironment( gl: WebGLRenderingContext, scene: Scene, mvStack: gml.Mat4[], viewportW, viewportH, perspective: gml.Mat4 = null, renderToCubeMap: boolean = false ) {
+  renderSceneEnvironment( gl: WebGLRenderingContext, scene: Scene, mvStack: gml.Mat4[], viewportW, viewportH, perspective: gml.Mat4 = null ) {
     if ( perspective == null ) {
       perspective = gml.makePerspective( gml.fromDegrees( 45 ), viewportW / viewportH, 0.1, 100.0 );
     }
 
-    if ( scene.environmentMap != null && !renderToCubeMap ) {
+    if ( scene.environmentMap != null ) {
       this.useProgram( gl, SHADER_PROGRAM.SKYBOX );
     } else {
       this.useProgram( gl, SHADER_PROGRAM.SKY );
@@ -820,115 +820,8 @@ class Renderer {
 
         // 
         // GENERATE ENVIRONMENT MAP, IF NECESSARY
-        if ( scene.environmentMap == null || scene.environmentMap.dynamic ) {
+        if ( scene.environmentMap != null && scene.environmentMap.dynamic ) {
           scene.generateEnvironmentMapFromShader( this, gl, this.programData[ SHADER_PROGRAM.SKY ].program, this.programData[ SHADER_PROGRAM.SKY ].uniforms );
-          /*
-          let renderTargetFramebuffer = gl.createFramebuffer();
-          gl.bindFramebuffer( gl.FRAMEBUFFER, renderTargetFramebuffer );
-
-          let size = 256; // this is the pixel size of each side of the cube map
-
-          // 
-          // RENDER TO TEXTURE
-          let depthBuffer = gl.createRenderbuffer();   // renderbuffer for depth buffer in framebuffer
-          gl.bindRenderbuffer( gl.RENDERBUFFER, depthBuffer ); // so we can create storage for the depthBuffer
-          gl.renderbufferStorage( gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, size, size );
-          gl.framebufferRenderbuffer( gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer );
-
-          // this is the texture we'll render each face of the cube map into
-          // as we render each face of the cubemap into it, we'll bind it to the actual cubemap
-          let cubeMapRenderTarget = null;
-
-          if ( scene.environmentMap == null ) {
-            cubeMapRenderTarget = gl.createTexture();
-            gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapRenderTarget );
-            gl.texImage2D( gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
-            gl.texImage2D( gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
-            gl.texImage2D( gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
-            gl.texImage2D( gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
-            gl.texImage2D( gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
-            gl.texImage2D( gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGB, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, null );
-            gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR );
-            gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
-            gl.bindTexture( gl.TEXTURE_CUBE_MAP, null );
-          } else {
-            cubeMapRenderTarget = scene.environmentMap.cubeMapTexture;
-          }
-          
-          // draw +x view
-          gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X, cubeMapRenderTarget, 0 );
-          gl.viewport( 0, 0, size, size );
-          gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
-          var mvStack: gml.Mat4[] = [];
-
-          let perspective = gml.makePerspective( gml.fromDegrees( 90 ), 1, 0.1, 100.0 );
-
-          mvStack.push( new gml.Mat4( 0, 0,-1, 0
-                                    , 0,-1, 0, 0
-                                    ,-1, 0, 0, 0
-                                    , 0, 0, 0, 1 ) );
-          this.renderSceneEnvironment( gl, scene, mvStack, size, size, perspective, true );
-
-          // draw -x view
-          gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_NEGATIVE_X, cubeMapRenderTarget, 0 );
-          gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
-          var mvStack: gml.Mat4[] = [];
-          mvStack.push( new gml.Mat4( 0, 0, 1, 0
-                                    , 0,-1, 0, 0
-                                    , 1, 0, 0, 0
-                                    , 0, 0, 0, 1 ) );
-          this.renderSceneEnvironment( gl, scene, mvStack, size, size, perspective, true );
-
-          // draw +y view
-          gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, cubeMapRenderTarget, 0 );
-          gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
-          var mvStack: gml.Mat4[] = [];
-          mvStack.push( new gml.Mat4( 1, 0, 0, 0
-                                    , 0, 0, 1, 0
-                                    , 0,-1, 0, 0
-                                    , 0, 0, 0, 1 ) );
-          this.renderSceneEnvironment( gl, scene, mvStack, size, size, perspective, true );
-
-          // draw -y view
-          gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, cubeMapRenderTarget, 0 );
-          gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
-          var mvStack: gml.Mat4[] = [];
-          mvStack.push( new gml.Mat4( 1, 0, 0, 0
-                                    , 0, 0,-1, 0
-                                    , 0, 1, 0, 0
-                                    , 0, 0, 0, 1 ) );
-          this.renderSceneEnvironment( gl, scene, mvStack, size, size, perspective, true );
-
-          // draw +z view
-          gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_Z, cubeMapRenderTarget, 0 );
-          gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
-          var mvStack: gml.Mat4[] = [];
-          mvStack.push( new gml.Mat4( 1, 0, 0, 0
-                                    , 0,-1, 0, 0
-                                    , 0, 0,-1, 0
-                                    , 0, 0, 0, 1 ) );
-          this.renderSceneEnvironment( gl, scene, mvStack, size, size, perspective, true );
-
-          // draw -z view
-          gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, cubeMapRenderTarget, 0 );
-          gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
-          var mvStack: gml.Mat4[] = [];
-          mvStack.push( new gml.Mat4(-1, 0, 0, 0
-                                    , 0,-1, 0, 0
-                                    , 0, 0, 1, 0
-                                    , 0, 0, 0, 1 ) );
-          this.renderSceneEnvironment( gl, scene, mvStack, size, size, perspective, true );
-
-          gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapRenderTarget );
-          gl.generateMipmap( gl.TEXTURE_CUBE_MAP );
-
-          scene.environmentMap = new CubeMap( cubeMapRenderTarget );  
-          scene.environmentMap.dynamic = true;
-
-          gl.bindTexture( gl.TEXTURE_CUBE_MAP, null );
-           */
         }
 
         //
@@ -952,7 +845,9 @@ class Renderer {
         gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
         // draw environment map
-        this.renderSceneEnvironment( gl, scene, mvStack, this.viewportW, this.viewportH );
+        if ( scene.hasEnvironment ) {
+          this.renderSceneEnvironment( gl, scene, mvStack, this.viewportW, this.viewportH );
+        }
 
         // draw scene
         gl.clear( gl.DEPTH_BUFFER_BIT );

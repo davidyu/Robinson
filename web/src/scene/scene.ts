@@ -110,9 +110,10 @@ class Scene {
   environmentMap : CubeMap;
   irradianceMap  : CubeMap;
 
+  hasEnvironment    : boolean;
   dynamicEnvironment: boolean;
 
-  constructor( environmentMap: CubeMap, irradianceMap: CubeMap, dynamicEnvironment: boolean ) {
+  constructor( environmentMap: CubeMap, irradianceMap: CubeMap, hasEnvironment: boolean = false, dynamicEnvironment: boolean = false ) {
     this.renderables = [];
     this.lights = [];
     this.environmentMap = environmentMap;

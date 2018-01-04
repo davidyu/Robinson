@@ -90,7 +90,7 @@ function StartNoiseWriter() {
 
     shaderRepo = new ShaderRepository( ( repo ) => {
       app = new NoiseApp( params, repo );
-      scene = new Scene( null, null );
+      scene = new Scene( null, null, false, false );
       Scene.setActiveScene( scene );
 
       // ocean
