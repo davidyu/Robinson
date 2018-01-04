@@ -119,6 +119,7 @@ class Scene {
     this.environmentMap = environmentMap;
     this.irradianceMap = irradianceMap;
     this.time = 0;
+    this.hasEnvironment = hasEnvironment;
     this.dynamicEnvironment = dynamicEnvironment;
   }
 

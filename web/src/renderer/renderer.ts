@@ -815,17 +815,24 @@ class Renderer {
         // SET UP ENVIRONMENT MAP
         let cubeMapTexture = null;
         if ( scene.environmentMap != null && scene.environmentMap.loaded && scene.environmentMap.cubeMapTexture == null ) {
-          scene.environmentMap.generateCubeMapFromSources( gl );
         }
 
         // 
         // GENERATE ENVIRONMENT MAP, IF NECESSARY
-        if ( scene.environmentMap != null && scene.environmentMap.dynamic ) {
-          scene.generateEnvironmentMapFromShader( this, gl, this.programData[ SHADER_PROGRAM.SKY ].program, this.programData[ SHADER_PROGRAM.SKY ].uniforms );
+        if ( scene.hasEnvironment && scene.dynamicEnvironment ) {
+          if ( scene.dynamicEnvironment ) {
+            // render using specified shader
+            // TODO: actually pass in shader into scene
+            scene.generateEnvironmentMapFromShader( this, gl, this.programData[ SHADER_PROGRAM.SKY ].program, this.programData[ SHADER_PROGRAM.SKY ].uniforms );
+          } else if ( scene.environmentMap.loaded && scene.environmentMap.cubeMapTexture == null ) {
+            // generate static cube map from face images - we only do this once
+            scene.environmentMap.generateCubeMapFromSources( gl );
+          }
         }
 
         //
         // SET UP IRRADIANCE MAP
+        // TODO implement
         let irradianceTexture = null;
         if ( scene.irradianceMap != null && scene.irradianceMap.loaded && scene.irradianceMap.cubeMapTexture == null ) {
           scene.irradianceMap.generateCubeMapFromSources( gl );
