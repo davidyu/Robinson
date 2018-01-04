@@ -19,8 +19,8 @@ class CubeMap {
   // resulting texture
   cubeMapTexture: WebGLTexture;
 
-  constructor( gl: WebGLTexture );
-  constructor( px: string, nx: string, py: string, ny: string, pz: string, nz: string, finishedLoading: () => void );
+  constructor( gl: WebGLTexture, dynamic: boolean = false );
+  constructor( px: string, nx: string, py: string, ny: string, pz: string, nz: string, finishedLoading: () => void, dynamic: boolean = false );
 
   constructor( ...args: any[] ) {
     if ( args.length == 1 ) {
@@ -54,7 +54,7 @@ class CubeMap {
       this.asyncLoadFace( pz, CUBEMAPTYPE.POS_Z, finishedLoading );
       this.asyncLoadFace( nz, CUBEMAPTYPE.NEG_Z, finishedLoading );
     }
-    this.dynamic = false;
+    this.dynamic = dynamic;
   }
 
   generateCubeMapFromSources( gl: WebGLRenderingContext ) {
@@ -227,7 +227,7 @@ class Scene {
     gl.generateMipmap( gl.TEXTURE_CUBE_MAP );
 
     if ( this.environmentMap == null ) {
-      this.environmentMap = new CubeMap( cubeMapRenderTarget );
+      this.environmentMap = new CubeMap( cubeMapRenderTarget, true );
     } else {
       this.environmentMap.cubeMapTexture = cubeMapRenderTarget;
       this.environmentMap.dynamic = true;

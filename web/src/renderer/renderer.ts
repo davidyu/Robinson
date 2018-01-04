@@ -928,7 +928,7 @@ class Renderer {
           scene.environmentMap.dynamic = true;
 
           gl.bindTexture( gl.TEXTURE_CUBE_MAP, null );
-          */
+           */
         }
 
         //
