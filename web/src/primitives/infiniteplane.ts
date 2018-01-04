@@ -117,7 +117,7 @@ class InfinitePlane extends Primitive implements Renderable {
   }
 
   // this should only be called by the renderer module
-  public rebuildRenderData() {
+  public rebuildRenderData( gl: WebGLRenderingContext ) {
     if ( this.renderData.dirty ) {
       this.renderData.dirty = false;
 
@@ -347,10 +347,9 @@ class InfinitePlane extends Primitive implements Renderable {
       }
 
       this.renderData.normals = new Float32Array( vertexNormals );
-
-      console.log( planeVertexIndices );
-
       this.renderData.indices = new Uint32Array( planeVertexIndices );
+
+      this.renderData.rebuildBufferObjects( gl );
     }
   }
 }

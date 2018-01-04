@@ -50,7 +50,7 @@ class Quad extends Primitive implements Renderable {
   }
 
   // this should only be called by the renderer module
-  public rebuildRenderData() {
+  public rebuildRenderData( gl: WebGLRenderingContext ) {
     if ( this.renderData.dirty ) {
       this.renderData.dirty = false;
       var vertices = [
@@ -87,6 +87,8 @@ class Quad extends Primitive implements Renderable {
       ];
 
       this.renderData.indices = new Uint32Array( quadVertexIndices );
+
+      this.renderData.rebuildBufferObjects( gl );
     }
   }
 }

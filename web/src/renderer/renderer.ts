@@ -413,6 +413,10 @@ class Renderer {
     }
 
     this.vertexBuffer = gl.createBuffer();
+
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, null, gl.STATIC_DRAW ); // allocate the buffer
+
     this.vertexNormalBuffer = gl.createBuffer();
     this.vertexColorBuffer = gl.createBuffer();
     this.vertexTexCoordBuffer = gl.createBuffer();
@@ -513,12 +517,13 @@ class Renderer {
     return null;
   }
 
-  update() {
-    var scene = Scene.getActiveScene();
+  update() { 
+    let gl = this.context;
+    let scene = Scene.getActiveScene();
     if ( scene ) {
       scene.renderables.forEach( p => {
         if ( p.renderData.dirty ) {
-          p.rebuildRenderData();
+          p.rebuildRenderData( gl );
         }
       } );
     }
@@ -538,7 +543,7 @@ class Renderer {
     let shaderVariables = this.programData[ this.currentProgram ].uniforms;
 
     let fullscreen = new Quad();
-    fullscreen.rebuildRenderData();
+    fullscreen.rebuildRenderData( gl );
 
     let inverseProjectionMatrix = perspective.invert();
     gl.uniformMatrix4fv( shaderVariables.uInverseProjection, false, inverseProjectionMatrix.m );
@@ -658,8 +663,7 @@ class Renderer {
       let inverseViewMatrix = mvStack[ mvStack.length - 1 ].invert().mat3;
       gl.uniformMatrix3fv( shaderVariables.uInverseView, false, inverseViewMatrix.m );
 
-      gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
-      gl.bufferData( gl.ARRAY_BUFFER, p.renderData.vertices, gl.STATIC_DRAW );
+      gl.bindBuffer( gl.ARRAY_BUFFER, p.renderData.vertexBuffer );
       gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
       if ( shaderVariables.aVertexTexCoord >= 0 ) {
@@ -668,15 +672,12 @@ class Renderer {
         gl.vertexAttribPointer( shaderVariables.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
       }
 
-      gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
-      gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, p.renderData.indices, gl.STATIC_DRAW );
-      gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexNormalBuffer );
-      gl.bufferData( gl.ARRAY_BUFFER, p.renderData.normals, gl.STATIC_DRAW );
-
-      if ( shaderVariables.aVertexNormal != -1 ) {
-        // look into why this is -1!!!!!!!!
+      gl.bindBuffer( gl.ARRAY_BUFFER, p.renderData.vertexNormalBuffer );
+      if ( shaderVariables.aVertexNormal >= 0 ) {
         gl.vertexAttribPointer( shaderVariables.aVertexNormal, 3, gl.FLOAT, false, 0, 0 );
       }
+
+      gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, p.renderData.indexBuffer );
 
       if ( scene.environmentMap != null ) {
         gl.uniform1i( shaderVariables.uEnvMap, 0 ); // tells shader to refer to texture slot 1 for the uEnvMap uniform
@@ -722,7 +723,7 @@ class Renderer {
     this.useProgram( gl, SHADER_PROGRAM.CUBE_SH );
 
     let fullscreen = new Quad();
-    fullscreen.rebuildRenderData();
+    fullscreen.rebuildRenderData( gl );
 
     let shaderVariables = this.programData[ this.currentProgram ].uniforms;
 
@@ -754,7 +755,7 @@ class Renderer {
     // this.useProgram( gl, SHADER_PROGRAM.UNLIT );
 
     let fullscreen = new Quad();
-    fullscreen.rebuildRenderData();
+    fullscreen.rebuildRenderData( gl );
 
     let shaderVariables = this.programData[ this.currentProgram ].uniforms;
 

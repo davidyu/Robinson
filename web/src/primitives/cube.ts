@@ -13,7 +13,7 @@ class Cube extends Primitive implements Renderable {
   }
 
   // this should only be called by the renderer module
-  public rebuildRenderData() {
+  public rebuildRenderData( gl: WebGLRenderingContext ) {
     if ( this.renderData.dirty ) {
       this.renderData.dirty = false;
       // TODO share vertices between faces??
@@ -147,6 +147,8 @@ class Cube extends Primitive implements Renderable {
       ];
 
       this.renderData.indices = new Uint16Array( cubeVertexIndices );
+
+      this.renderData.rebuildBufferObjects( gl );
     }
   }
 }

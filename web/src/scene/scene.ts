@@ -113,6 +113,9 @@ class Scene {
   hasEnvironment    : boolean;
   dynamicEnvironment: boolean;
 
+  // cached render objects
+  fullscreen: Quad;
+
   constructor( environmentMap: CubeMap, irradianceMap: CubeMap, hasEnvironment: boolean = false, dynamicEnvironment: boolean = false ) {
     this.renderables = [];
     this.lights = [];
@@ -256,8 +259,10 @@ class Scene {
   {
     renderer.useProgram( gl, SHADER_PROGRAM.SKY );
 
-    let fullscreen = new Quad();
-    fullscreen.rebuildRenderData();
+    if ( this.fullscreen == null ) {
+      this.fullscreen = new Quad();
+      this.fullscreen.rebuildRenderData( gl );
+    }
 
     let inverseProjectionMatrix = perspective.invert();
     gl.uniformMatrix4fv( variables.uInverseProjection, false, inverseProjectionMatrix.m );
@@ -269,20 +274,16 @@ class Scene {
 
     gl.uniform1f( variables.uTime, this.time );
 
-    gl.bindBuffer( gl.ARRAY_BUFFER, renderer.vertexBuffer );
-    gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.vertices, gl.STATIC_DRAW );
-
-    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, renderer.indexBuffer );
-    gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
-
-    gl.bindBuffer( gl.ARRAY_BUFFER, renderer.vertexBuffer );
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.fullscreen.renderData.vertexBuffer );
     gl.vertexAttribPointer( variables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
+
+    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.fullscreen.renderData.indexBuffer );
 
     gl.uniform1i( variables.uEnvMap, 0 );
     gl.activeTexture( gl.TEXTURE0 );
     gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapRT );
 
-    gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_INT, 0 );
+    gl.drawElements( gl.TRIANGLES, this.fullscreen.renderData.indices.length, gl.UNSIGNED_INT, 0 );
   }
 
   static setActiveScene( scene: Scene ) {

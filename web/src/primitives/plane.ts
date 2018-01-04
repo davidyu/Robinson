@@ -58,7 +58,7 @@ class Plane extends Primitive implements Renderable {
   }
 
   // this should only be called by the renderer module
-  public rebuildRenderData() {
+  public rebuildRenderData( gl: WebGLRenderingContext ) {
     if ( this.renderData.dirty ) {
       this.renderData.dirty = false;
 
@@ -159,9 +159,9 @@ class Plane extends Primitive implements Renderable {
         }
       }
 
-      console.log( planeVertexIndices );
-
       this.renderData.indices = new Uint32Array( planeVertexIndices );
+
+      this.renderData.rebuildBufferObjects( gl );
     }
   }
 }

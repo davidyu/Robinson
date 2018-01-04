@@ -22,10 +22,12 @@ class Sphere extends Primitive implements Renderable {
     this.meridians = meridians;
   }
 
-  public rebuildRenderData() {
+  public rebuildRenderData( gl: WebGLRenderingContext ) {
     let vertices = [];
     let indices = [];
     if ( this.renderData.dirty ) {
+      this.renderData.dirty = false;
+
       for ( let j = 0; j < this.parallels; j++ ) {
         let parallel = Math.PI * j / ( this.parallels - 1 );
         for ( let i = 0; i < this.meridians; i++) {
@@ -57,7 +59,7 @@ class Sphere extends Primitive implements Renderable {
       this.renderData.normals = new Float32Array( vertices ); // for a unit sphere located at 0,0,0, the normals are exactly the same as the vertices
       this.renderData.indices = new Uint32Array( indices );
 
-      this.renderData.dirty = false;
+      this.renderData.rebuildBufferObjects( gl );
     }
   }
 }
