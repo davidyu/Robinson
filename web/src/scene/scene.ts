@@ -19,15 +19,16 @@ class CubeMap {
   // resulting texture
   cubeMapTexture: WebGLTexture;
 
-  constructor( gl: WebGLTexture, dynamic: boolean = false );
-  constructor( px: string, nx: string, py: string, ny: string, pz: string, nz: string, finishedLoading: () => void, dynamic: boolean = false );
+  constructor( gl: WebGLTexture, dynamic: boolean );
+  constructor( px: string, nx: string, py: string, ny: string, pz: string, nz: string, finishedLoading: () => void, dynamic: boolean );
 
   constructor( ...args: any[] ) {
-    if ( args.length == 1 ) {
+    if ( args.length == 2 ) {
       this.cubeMapTexture = args[0];
+      this.dynamic = args[1];
       // we're generating a cube map from a shader, at constructor time
       // This should just take in a cubeMapTexture
-    } else if ( args.length == 7 ) {
+    } else if ( args.length == 8 ) {
       // we're generating a cube map from an array of 6 images
       let px: string = args[0];
       let nx: string = args[1];
@@ -36,6 +37,7 @@ class CubeMap {
       let pz: string = args[4];
       let nz: string = args[5];
       let finishedLoading: () => void = args[6];
+      let dynamic = args[7];
 
       this.faces = [];
       this.facesLoaded = 0;
@@ -53,8 +55,8 @@ class CubeMap {
       this.asyncLoadFace( ny, CUBEMAPTYPE.NEG_Y, finishedLoading );
       this.asyncLoadFace( pz, CUBEMAPTYPE.POS_Z, finishedLoading );
       this.asyncLoadFace( nz, CUBEMAPTYPE.NEG_Z, finishedLoading );
+      this.dynamic = dynamic;
     }
-    this.dynamic = dynamic;
   }
 
   generateCubeMapFromSources( gl: WebGLRenderingContext ) {
@@ -108,12 +110,15 @@ class Scene {
   environmentMap : CubeMap;
   irradianceMap  : CubeMap;
 
-  constructor( environmentMap: CubeMap, irradianceMap: CubeMap ) {
+  dynamicEnvironment: boolean;
+
+  constructor( environmentMap: CubeMap, irradianceMap: CubeMap, dynamicEnvironment: boolean ) {
     this.renderables = [];
     this.lights = [];
     this.environmentMap = environmentMap;
     this.irradianceMap = irradianceMap;
     this.time = 0;
+    this.dynamicEnvironment = dynamicEnvironment;
   }
 
   public addRenderable( renderable: Renderable ) {
