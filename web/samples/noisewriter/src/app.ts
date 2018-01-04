@@ -31,8 +31,6 @@ class NoiseApp {
     this.lastMousePos = new gml.Vec2( 0, 0 );
     this.noiseMat = new NoiseMaterial()
 
-    setInterval( () => { this.fixedUpdate( 1.0 / 30 ); }, 1000/30 );
-
     params.vp.addEventListener( 'mousedown', ev => {
       switch ( ev.button ) {
         case 0: // left
@@ -81,6 +79,18 @@ class NoiseApp {
 }
 
 var app: NoiseApp = null;
+var lastFrame: number = null;
+
+function updateAndDraw( t: number ) {
+  let dt = ( t - lastFrame ) / 1000.0;
+  lastFrame = t;
+
+  scene.time += dt;
+  app.renderer.update();
+  app.renderer.render();
+
+  window.requestAnimationFrame( updateAndDraw );
+}
 
 function StartNoiseWriter() {
   if ( app == null ) {
@@ -93,11 +103,13 @@ function StartNoiseWriter() {
       scene = new Scene( null, null, false, false );
       Scene.setActiveScene( scene );
 
-      // ocean
+      // noise test ss quad
       scene.addRenderable( new Quad( 1
                                    , gml.Vec4.origin
                                    , { x: gml.fromDegrees( 0 ), y: gml.fromDegrees( 0 ), z: gml.fromDegrees( 0 ) }
                                    , app.noiseMat ) );
+
+      window.requestAnimationFrame( updateAndDraw );
     } );
   }
 }

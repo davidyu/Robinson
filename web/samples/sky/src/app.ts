@@ -1,5 +1,5 @@
 var shaderRepo: ShaderRepository = null; // global for debugging
-var skyScene: Scene;
+var scene: Scene;
 
 interface SkyAppParams {
   vp : HTMLCanvasElement;
@@ -33,8 +33,6 @@ class SkyApp {
     this.dirty = true;
     this.dragStart = new gml.Vec2( 0, 0 );
     this.lastMousePos = new gml.Vec2( 0, 0 );
-
-    setInterval( () => { this.fixedUpdate( 1.0 / 30 ); }, 1000/30 );
 
     params.vp.addEventListener( 'mousedown', ev => {
       switch ( ev.button ) {
@@ -84,36 +82,42 @@ class SkyApp {
       }
     }, false );
   }
-
-  public fixedUpdate( delta: number ) {
-    skyScene.time += 1.0/30.0;
-
-    if ( this.dirty ) {
-      // rebuild camera
-      let baseAim = new gml.Vec4( 0, 0, -1, 0 );
-
-      let rotY = gml.Mat4.rotateY( this.yaw );
-      let rotRight = rotY.transform( gml.Vec4.right );
-
-      let rotX = gml.Mat4.rotate( rotRight, this.pitch );
-      let rotAim = rotX.transform( rotY.transform( baseAim ) ).normalized;
-      let rotUp = rotRight.cross( rotAim );
-
-      let rotPos = this.orbitCenter.add( rotAim.negate().multiply( this.orbitDistance ) );
-
-      this.camera = new Camera( rotPos, rotAim, rotUp, rotRight );
-      this.renderer.setCamera( this.camera );
-      this.renderer.update();
-      this.dirty = false;
-    }
-
-    // this is way too slow
-    this.renderer.dirty = true;
-    this.renderer.render();
-  }
 }
 
 var app: SkyApp = null;
+var lastFrame: number = null;
+
+function updateAndDraw( t: number ) {
+  let dt = ( t - lastFrame ) / 1000.0;
+  lastFrame = t;
+
+  scene.time += dt;
+
+  if ( app.dirty ) {
+    // rebuild camera
+    let baseAim = new gml.Vec4( 0, 0, -1, 0 );
+
+    let rotY = gml.Mat4.rotateY( app.yaw );
+    let rotRight = rotY.transform( gml.Vec4.right );
+
+    let rotX = gml.Mat4.rotate( rotRight, app.pitch );
+    let rotAim = rotX.transform( rotY.transform( baseAim ) ).normalized;
+    let rotUp = rotRight.cross( rotAim );
+
+    let rotPos = app.orbitCenter.add( rotAim.negate().multiply( app.orbitDistance ) );
+
+    app.camera = new Camera( rotPos, rotAim, rotUp, rotRight );
+    app.renderer.setCamera( app.camera );
+    app.renderer.update();
+    app.dirty = false;
+  }
+
+  // this is way too slow
+  app.renderer.dirty = true;
+  app.renderer.render();
+
+  window.requestAnimationFrame( updateAndDraw );
+}
 
 function StartSky() {
   if ( app == null ) {
@@ -123,34 +127,37 @@ function StartSky() {
       orbitDistance: 0.001
     };
 
-    shaderRepo = new ShaderRepository( ( repo ) => { app = new SkyApp( params, repo ); } );
+    shaderRepo = new ShaderRepository( ( repo ) => { 
+      app = new SkyApp( params, repo );
+      scene = new Scene( null, null, true, true );
+      Scene.setActiveScene( scene );
 
-    skyScene = new Scene( null, null, true, true );
-    Scene.setActiveScene( skyScene );
+      // ocean
+      scene.addRenderable( new InfinitePlane( 12
+                                       , 4
+                                       , new gml.Vec4( 0, 0, 0, 1 )
+                                       , { x: gml.fromDegrees( 0 ), y: gml.fromDegrees( 0 ), z: gml.fromDegrees( 0 ) }
+                                       , { u: 7, v: 7 }
+                                       , new WaterMaterial( new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                                          , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                                          , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                                          , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                                          , 1.53 ) ) );
+      
+      window.requestAnimationFrame( updateAndDraw );
 
-    // ocean
-    skyScene.addRenderable( new InfinitePlane( 16
-                                     , 4
-                                     , new gml.Vec4( 0, 0, 0, 1 )
-                                     , { x: gml.fromDegrees( 0 ), y: gml.fromDegrees( 0 ), z: gml.fromDegrees( 0 ) }
-                                     , { u: 7, v: 7 }
-                                     , new WaterMaterial( new gml.Vec4( 1.0, 1.0, 1.0, 1 )
-                                                        , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
-                                                        , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
-                                                        , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
-                                                        , 1.53 ) ) );
-
-    // screenspace ocean
-    /*
-    skyScene.addRenderable( new Quad( 1
-                                     , new gml.Vec4( 0, 30, 0, 1 )
-                                     , null
-                                     , new WaterMaterial( new gml.Vec4( 1.0, 1.0, 1.0, 1 )
-                                                        , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
-                                                        , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
-                                                        , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
-                                                        , 1.53
-                                                        , true ) ) );
-     */
+      // screenspace ocean
+      /*
+      scene.addRenderable( new Quad( 1
+                                       , new gml.Vec4( 0, 30, 0, 1 )
+                                       , null
+                                       , new WaterMaterial( new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                                          , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                                          , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                                          , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                                          , 1.53
+                                                          , true ) ) );
+       */
+    } );
   }
 }
