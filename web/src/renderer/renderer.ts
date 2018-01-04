@@ -662,6 +662,10 @@ class Renderer {
       gl.bufferData( gl.ARRAY_BUFFER, p.renderData.vertices, gl.STATIC_DRAW );
       gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
+      gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexTexCoordBuffer );
+      gl.bufferData( gl.ARRAY_BUFFER, p.renderData.textureCoords, gl.STATIC_DRAW );
+      gl.vertexAttribPointer( shaderVariables.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
+
       gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
       gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, p.renderData.indices, gl.STATIC_DRAW );
       gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexNormalBuffer );
@@ -805,7 +809,6 @@ class Renderer {
       // DRAW
       var scene = Scene.getActiveScene();
       if ( scene ) {
-
         //
         // SET UP ENVIRONMENT MAP
         let cubeMapTexture = null;
