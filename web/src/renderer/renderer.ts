@@ -203,11 +203,6 @@ class Renderer {
 
   camera: Camera;
   context: WebGLRenderingContext;
-  vertexBuffer: WebGLBuffer;
-  vertexColorBuffer: WebGLBuffer;
-  vertexNormalBuffer: WebGLBuffer;
-  vertexTexCoordBuffer: WebGLBuffer;
-  indexBuffer: WebGLBuffer;
 
   // shader programs
   // the currently enabled program
@@ -411,16 +406,6 @@ class Renderer {
       gl.framebufferRenderbuffer( gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, sb );
       */
     }
-
-    this.vertexBuffer = gl.createBuffer();
-
-    gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
-    gl.bufferData( gl.ARRAY_BUFFER, null, gl.STATIC_DRAW ); // allocate the buffer
-
-    this.vertexNormalBuffer = gl.createBuffer();
-    this.vertexColorBuffer = gl.createBuffer();
-    this.vertexTexCoordBuffer = gl.createBuffer();
-    this.indexBuffer = gl.createBuffer();
   }
 
   cacheLitShaderProgramLocations( sp: SHADER_PROGRAM ) {
@@ -557,14 +542,10 @@ class Renderer {
 
     gl.uniform1f( shaderVariables.uTime, scene.time );
 
-    gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
-    gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.vertices, gl.STATIC_DRAW );
-
-    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
-    gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
-
-    gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
+    gl.bindBuffer( gl.ARRAY_BUFFER, fullscreen.renderData.vertexBuffer );
     gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
+
+    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indexBuffer );
 
     if ( this.currentProgram == SHADER_PROGRAM.SKYBOX ) {
       gl.uniform1i( shaderVariables.uEnvMap, 0 );
@@ -667,8 +648,7 @@ class Renderer {
       gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
       if ( shaderVariables.aVertexTexCoord >= 0 ) {
-        gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexTexCoordBuffer );
-        gl.bufferData( gl.ARRAY_BUFFER, p.renderData.textureCoords, gl.STATIC_DRAW );
+        gl.bindBuffer( gl.ARRAY_BUFFER, p.renderData.vertexTexCoordBuffer );
         gl.vertexAttribPointer( shaderVariables.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
       }
 
@@ -731,16 +711,13 @@ class Renderer {
     gl.uniformMatrix3fv( shaderVariables.uNormalModelView, false, gml.Mat3.identity().m );
     gl.uniformMatrix4fv( shaderVariables.uPerspective, false, gml.Mat4.identity().m );
     
-    gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
-    gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.vertices, gl.STATIC_DRAW );
-    gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
+    gl.bindBuffer( gl.ARRAY_BUFFER, fullscreen.renderData.vertexBuffer );
 
-    gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexTexCoordBuffer );
+    gl.bindBuffer( gl.ARRAY_BUFFER, fullscreen.renderData.vertexTexCoordBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.textureCoords, gl.STATIC_DRAW );
     gl.vertexAttribPointer( shaderVariables.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
 
-    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
-    gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
+    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indexBuffer );
 
     if ( scene.environmentMap != null ) {
       gl.uniform1i( shaderVariables.uEnvMap, 0 ); // tells GL to look at texture slot 0
@@ -759,16 +736,14 @@ class Renderer {
 
     let shaderVariables = this.programData[ this.currentProgram ].uniforms;
 
-    gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
-    gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.vertices, gl.STATIC_DRAW );
+    gl.bindBuffer( gl.ARRAY_BUFFER, fullscreen.renderData.vertexBuffer );
     gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
-    gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexTexCoordBuffer );
+    gl.bindBuffer( gl.ARRAY_BUFFER, fullscreen.renderData.vertexTexCoordBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.textureCoords, gl.STATIC_DRAW );
     gl.vertexAttribPointer( shaderVariables.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
 
-    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
-    gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indices, gl.STATIC_DRAW );
+    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indexBuffer );
 
     gl.uniform1i( shaderVariables.uMaterial.colorMap, 0 );
     gl.activeTexture( gl.TEXTURE0 );

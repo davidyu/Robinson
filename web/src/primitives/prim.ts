@@ -14,6 +14,7 @@ class RenderData {
   // cached webgl buffer objects
   vertexBuffer: WebGLBuffer;
   vertexNormalBuffer: WebGLBuffer;
+  vertexTexCoordBuffer: WebGLBuffer;
   indexBuffer: WebGLBuffer;
 
   constructor() {
@@ -25,6 +26,7 @@ class RenderData {
     this.isTextureMapped = false;
     this.vertexBuffer = null;
     this.vertexNormalBuffer = null;
+    this.vertexTexCoordBuffer = null;
     this.indexBuffer = null;
   }
 
@@ -42,6 +44,10 @@ class RenderData {
       this.indexBuffer = gl.createBuffer();
     }
 
+    if ( this.vertexTexCoordBuffer == null ) {
+      this.vertexTexCoordBuffer = gl.createBuffer();
+    }
+
     gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, this.vertices, gl.STATIC_DRAW ); // allocate and fill the buffer
 
@@ -50,6 +56,9 @@ class RenderData {
 
     gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer );
     gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW );
+
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexTexCoordBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, this.textureCoords, gl.STATIC_DRAW );
   }
 }
 
