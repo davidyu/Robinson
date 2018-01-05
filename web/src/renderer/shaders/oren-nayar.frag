@@ -1,8 +1,8 @@
 precision mediump float;
 
 // fs in/vs out
-varying mediump vec4 vPosition;  // vertex position in view space, no need to convert
-varying mediump vec3 vNormal;    // normal vector in model space, need to convert here
+in mediump vec4 vPosition;  // vertex position in view space, no need to convert
+in mediump vec3 vNormal;    // normal vector in model space, need to convert here
 
 struct Light {
     vec4 position;
@@ -29,6 +29,8 @@ struct Material {
 uniform Material mat;
 
 uniform samplerCube irradiance;
+
+out vec4 fragColor;
 
 void main( void ) {
     mediump vec4 color = vec4( 0, 0, 0, 1 );
@@ -70,8 +72,8 @@ void main( void ) {
         color += attenuation * mat.diffuse * light.color * max( LdotN, 0.0 ) * ( A + B * max( 0.0, gamma ) * C );
     }
 
-    vec4 ibl_diffuse = engamma( textureCube( irradiance, reflected ) ) * mat.diffuse;
+    vec4 ibl_diffuse = engamma( texture( irradiance, reflected ) ) * mat.diffuse;
     color += ibl_diffuse;
 
-    gl_FragColor = degamma( color );
+    fragColor = degamma( color );
 }

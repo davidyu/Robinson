@@ -18,6 +18,7 @@ enum SHADERTYPE {
   WATER_FRAG,
   WATER_SS_FRAG,
   NOISE_WRITER_FRAG,
+  VOLUME_VIEWER_FRAG,
 };
 
 enum SHADER_PROGRAM {
@@ -33,6 +34,7 @@ enum SHADER_PROGRAM {
   SHADOWMAP,
   CUBE_SH,
   NOISE_WRITER,
+  VOLUME_VIEWER,
 };
 
 enum PASS {
@@ -90,6 +92,7 @@ class ShaderRepository {
     this.asyncLoadShader( "screenspacequad.vert"      , SHADERTYPE.SS_QUAD_VERT                  , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "water_screenspace.frag"    , SHADERTYPE.WATER_SS_FRAG                 , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "noise_writer.frag"         , SHADERTYPE.NOISE_WRITER_FRAG             , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "volume_viewer.frag"        , SHADERTYPE.VOLUME_VIEWER_FRAG            , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
   }
 
   asyncLoadShader( name: string, stype: SHADERTYPE, loaded: ( stype: SHADERTYPE, contents: string ) => void ) {
@@ -202,7 +205,7 @@ class Renderer {
   shaderLODExtension;
 
   camera: Camera;
-  context: WebGLRenderingContext;
+  context: WebGLRenderingContext & WebGL2RenderingContext;
 
   // shader programs
   // the currently enabled program
@@ -226,7 +229,7 @@ class Renderer {
   dirty: boolean; // UNUSED
 
   constructor( viewportElement: HTMLCanvasElement, sr: ShaderRepository, backgroundColor: gml.Vec4 = new gml.Vec4( 0, 0, 0, 1 ) ) {
-    var gl = <WebGLRenderingContext>( viewportElement.getContext( "experimental-webgl" ) );
+    var gl = viewportElement.getContext( "webgl2" ) as any;
 
     gl.viewport( 0, 0, viewportElement.width, viewportElement.height );
     
@@ -258,7 +261,7 @@ class Renderer {
 
     // compile phong program
     let phongProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
-                                                 , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.BLINN_PHONG_FRAGMENT ].source );
+                                                , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.BLINN_PHONG_FRAGMENT ].source );
     if ( phongProgram == null ) {
       alert( "Phong shader compilation failed. Please check the log for details." );
       success = false;
@@ -269,7 +272,7 @@ class Renderer {
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.BLINN_PHONG );
 
     let lambertProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
-                                                   , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.LAMBERT_FRAGMENT ].source );
+                                                  , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.LAMBERT_FRAGMENT ].source );
     if ( lambertProgram == null ) {
       alert( "Lambert shader compilation failed. Please check the log for details." );
       success = false;
@@ -319,7 +322,7 @@ class Renderer {
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.COOK_TORRANCE );
 
     let skyboxProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SKYBOX_VERTEX ].source
-                                                  , sr.files[ SHADERTYPE.SKYBOX_FRAG ].source );
+                                                 , sr.files[ SHADERTYPE.SKYBOX_FRAG ].source );
     if ( skyboxProgram == null ) {
       alert( "Skybox shader compilation failed. Please check the log for details." );
       success = false;
@@ -375,6 +378,17 @@ class Renderer {
     this.programData[ SHADER_PROGRAM.NOISE_WRITER ].program = noiseWriterProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.NOISE_WRITER );
 
+    let volumeViewerProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SS_QUAD_VERT ].source
+                                                       , sr.files[ SHADERTYPE.VOLUME_VIEWER_FRAG ].source );
+
+    if ( volumeViewerProgram == null ) {
+      alert( "Volume viewer compilation failed. Please check the log for details." );
+      success = false;
+    }
+
+    this.programData[ SHADER_PROGRAM.VOLUME_VIEWER ] = new ShaderProgramData();
+    this.programData[ SHADER_PROGRAM.VOLUME_VIEWER ].program = volumeViewerProgram;
+    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.VOLUME_VIEWER );
 
     let cubeMapSHProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.PASSTHROUGH_VERT ].source
                                                     , sr.files[ SHADERTYPE.CUBE_SH_FRAG ].source );
@@ -494,7 +508,9 @@ class Renderer {
       gl.linkProgram( program );
 
       if ( !gl.getProgramParameter( program, gl.LINK_STATUS ) ) {
-        console.log( "Unable to initialize the shader program." + gl.getProgramInfoLog( program ) );
+        console.log( "Unable to initialize the shader program: " + gl.getProgramInfoLog( program ) );
+        console.log( "Problematic vertex shader:\n" + vs );
+        console.log( "Problematic fragment shader:\n" + fs );
       }
 
       return program;
@@ -514,7 +530,7 @@ class Renderer {
     }
   }
 
-  renderSceneEnvironment( gl: WebGLRenderingContext, scene: Scene, mvStack: gml.Mat4[], viewportW, viewportH, perspective: gml.Mat4 = null ) {
+  renderSceneEnvironment( gl: WebGL2RenderingContext, scene: Scene, mvStack: gml.Mat4[], viewportW, viewportH, perspective: gml.Mat4 = null ) {
     if ( perspective == null ) {
       perspective = gml.makePerspective( gml.fromDegrees( 45 ), viewportW / viewportH, 0.1, 100.0 );
     }
@@ -556,7 +572,7 @@ class Renderer {
     gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_INT, 0 );
   }
 
-  renderScene( gl: WebGLRenderingContext, scene: Scene, mvStack: gml.Mat4[], pass: PASS ) {
+  renderScene( gl: WebGL2RenderingContext, scene: Scene, mvStack: gml.Mat4[], pass: PASS ) {
     let perspective = gml.makePerspective( gml.fromDegrees( 45 ), 640.0/480.0, 0.1, 1000.0 );
 
     scene.renderables.forEach( ( p, i ) => {
@@ -675,7 +691,7 @@ class Renderer {
     } );
   }
 
-  useProgram( gl: WebGLRenderingContext, program: SHADER_PROGRAM ) {
+  useProgram( gl: WebGL2RenderingContext, program: SHADER_PROGRAM ) {
     gl.useProgram( this.programData[ program ].program );
 
     let shaderVariables = this.programData[ program ].uniforms;
@@ -699,7 +715,7 @@ class Renderer {
     this.currentProgram = program;
   }
 
-  renderIrradianceFromScene( gl: WebGLRenderingContext, scene: Scene, pass: IRRADIANCE_PASS ) {
+  renderIrradianceFromScene( gl: WebGL2RenderingContext, scene: Scene, pass: IRRADIANCE_PASS ) {
     this.useProgram( gl, SHADER_PROGRAM.CUBE_SH );
 
     let fullscreen = new Quad();
@@ -728,7 +744,7 @@ class Renderer {
     gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
   }
 
-  renderFullScreenTexture( gl: WebGLRenderingContext, texture: WebGLTexture ) {
+  renderFullScreenTexture( gl: WebGL2RenderingContext, texture: WebGLTexture ) {
     // this.useProgram( gl, SHADER_PROGRAM.UNLIT );
 
     let fullscreen = new Quad();

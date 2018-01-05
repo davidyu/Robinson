@@ -1,9 +1,9 @@
 uniform vec4 cPosition_World;
 uniform float uTime;
 
-varying vec4 vPosition;
-varying vec4 vPosition_World;
-varying float vAmp;
+in vec4 vPosition;
+in vec4 vPosition_World;
+in float vAmp;
 
 uniform highp mat4 uVMatrix;
 uniform highp mat3 uInverseViewMatrix;
@@ -21,6 +21,8 @@ const float sea_choppiness = 4.0;
 const float sea_frequency = 0.1;
 const float sea_amplitude = 0.6;
 const float sea_scale = 0.6;
+
+out vec4 fragColor;
 
 float diffuse( vec3 normal, vec3 light, float p ) {
     return pow( dot( normal, light ) * 0.4 + 0.6, p );
@@ -177,7 +179,7 @@ void main( void ) {
     vec3 normal = normalize( uNormalMVMatrix * get_normal( vPosition_World.xz * sea_scale, cached_height, dist * 0.001 ) );
 
     vec3 reflected = uInverseViewMatrix * ( -reflect( view, normal ) );
-    vec4 ibl_specular = engamma( textureCube( environment, reflected ) * 0.9 );
+    vec4 ibl_specular = engamma( texture( environment, reflected ) * 0.9 );
     
     vec3 lightdir = normalize( uVMatrix * vec4( sun_light_dir, 0 ) ).xyz;
 
@@ -196,5 +198,5 @@ void main( void ) {
     
     color = mix( color, vec4( 1.0, 1.0, 1.0, 1.0 ), foam( vPosition_World.xz * sea_scale, cached_height ) );
 
-    gl_FragColor = degamma( color );
+    fragColor = degamma( color );
 }

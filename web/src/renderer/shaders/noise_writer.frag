@@ -1,8 +1,12 @@
+#version 300 es
+
 precision mediump float;
 
 uniform float uNoiseLayer;
-varying vec3 vPosition; // unused
-varying vec2 vTexCoord;
+in vec3 vPosition; // unused
+in vec2 vTexCoord;
+
+out vec4 fragColor;
 
 #define NOISE_PERIOD 128.0
 #define NOISE_1_DIV_PERIOD ( 1.0 / NOISE_PERIOD )
@@ -119,5 +123,5 @@ float pnoise(vec3 P, vec3 period)
 
 void main() {
     float color = pnoise( NOISE_PERIOD * vec3( vTexCoord.x, vTexCoord.y, uNoiseLayer ), vec3( NOISE_PERIOD ) );
-    gl_FragColor = vec4( vec3( color ), 1.0 );
+    fragColor = vec4( vec3( color ), 1.0 );
 }

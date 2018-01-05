@@ -29,7 +29,7 @@ class NoiseApp {
     this.dirty = true;
     this.dragStart = new gml.Vec2( 0, 0 );
     this.lastMousePos = new gml.Vec2( 0, 0 );
-    this.noiseMat = new NoiseMaterial()
+    this.noiseMat = new NoiseMaterial();
 
     params.vp.addEventListener( 'mousedown', ev => {
       switch ( ev.button ) {

@@ -19,6 +19,7 @@ var sources = [
   new ProgramSource( 'water.vert' , 'water.frag' ),
   new ProgramSource( 'screenspacequad.vert' , 'water_screenspace.frag' ),
   new ProgramSource( 'screenspacequad.vert' , 'noise_writer.frag' ),
+  new ProgramSource( 'screenspacequad.vert' , 'volume_viewer.frag' ),
   new ProgramSource( 'passthrough.vert' , 'cube-sh.frag' ),
 ];
 

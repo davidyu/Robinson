@@ -1,8 +1,10 @@
+#version 300 es
+
 precision mediump float;
 
 uniform vec4 cPosition_World;
 uniform float uTime;
-varying vec3 vDirection;
+in vec3 vDirection;
 
 const   vec3  sun_light_dir = normalize( vec3( 0.0, 1.0, 0.4 ) );
 const   float sun_flare_size = 0.5;
@@ -16,6 +18,8 @@ const   float cloud_scale = 0.0015;
 
 const   vec3  cloud_base_color = vec3( 0.3, 0.4, 0.5 );
 const   vec3  cloud_top_color  = vec3( 1.0 );
+
+out vec4 fragColor;
 
 #define PI 3.14159
 // Permutation polynomial (ring size 289 = 17*17)
@@ -379,5 +383,5 @@ void main() {
     float t = pow( 1.0 - 0.7 * vDirection.y, 15.0 ); // what is t?
     sky = mix( sky, cl.rgb, cl.a * ( 1.0 - t ) );
 
-    gl_FragColor = vec4( sky.r, sky.g, sky.b, 1.0 );
+    fragColor = vec4( sky.r, sky.g, sky.b, 1.0 );
 }

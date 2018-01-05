@@ -1,5 +1,7 @@
-attribute highp vec3 aVertexPosition;
-attribute highp vec3 aVertexNormal;
+#version 300 es
+
+in highp vec3 aVertexPosition;
+in highp vec3 aVertexNormal;
 
 uniform highp mat4 uMMatrix;           // model matrix
 uniform highp mat4 uVMatrix;           // view matrix
@@ -11,10 +13,10 @@ uniform highp mat3 uNormalMVMatrix;    // inverse model view matrix
 uniform mediump float uTime;
 uniform mediump vec4 cPosition_World;
 
-varying mediump vec3 vDirection;
-varying mediump vec4 vPosition;
-varying mediump vec4 vPosition_World;
-varying mediump float vAmp;
+out mediump vec3 vDirection;
+out mediump vec4 vPosition;
+out mediump vec4 vPosition_World;
+out mediump float vAmp;
 
 const float sea_speed = 2.0;
 const float sea_choppiness = 4.0;

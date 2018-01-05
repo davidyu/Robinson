@@ -1,4 +1,4 @@
-#extension GL_EXT_shader_texture_lod : enable
+#version 300 es
 
 precision mediump float;
 

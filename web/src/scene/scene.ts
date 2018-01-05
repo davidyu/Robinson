@@ -113,6 +113,8 @@ class Scene {
   hasEnvironment    : boolean;
   dynamicEnvironment: boolean;
 
+  noiseTexture: WebGLTexture;
+
   // cached render objects
   fullscreen: Quad;
 
@@ -135,7 +137,7 @@ class Scene {
   }
 
   public generateEnvironmentMapFromShader( renderer  : Renderer
-                                         , gl        : WebGLRenderingContext
+                                         , gl        : WebGLRenderingContext & WebGL2RenderingContext
                                          , shader    : WebGLProgram
                                          , variables : ShaderUniforms )
   {
@@ -247,7 +249,7 @@ class Scene {
   }
 
   renderFace( renderer       : Renderer
-            , gl             : WebGLRenderingContext
+            , gl             : WebGLRenderingContext & WebGL2RenderingContext
             , shader         : WebGLProgram
             , variables      : ShaderUniforms
             , cubeMapRT      : WebGLTexture

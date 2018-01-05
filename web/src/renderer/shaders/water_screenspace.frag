@@ -1,3 +1,5 @@
+#version 300 es
+
 precision mediump float;
 
 uniform vec4 cPosition_World;
@@ -16,7 +18,9 @@ const float sea_frequency = 0.16;
 const float sea_amplitude = 0.6;
 const float sea_scale = 1.0;
 
-varying vec3 vDirection;
+in vec3 vDirection;
+
+out vec4 fragColor;
 
 float diffuse( vec3 normal, vec3 light, float p ) {
     return pow( dot( normal, light ) * 0.4 + 0.6, p );
@@ -184,7 +188,7 @@ void main( void ) {
     vec3 normal = get_normal( p * sea_scale, dot( dist,dist ) * 0.00007 );
 
     vec3 reflected = ( reflect( view, normal ) );
-    vec4 ibl_specular = textureCube( environment, reflected );
+    vec4 ibl_specular = texture( environment, reflected );
     
     vec3 lightdir = normalize( vec4( vec3( sun_size ), 0 ) ).xyz;
 
@@ -202,7 +206,7 @@ void main( void ) {
     // bteitler: Apply specular highlight
     color += vec4( get_specular( normal, lightdir, view, 60.0 ) );
 
-    gl_FragColor = mix( vec4( 0.0, 0.0, 0.0, 0.0 ) // transparent - draw what's behind us (environment)
+    fragColor = mix( vec4( 0.0, 0.0, 0.0, 0.0 ) // transparent - draw what's behind us (environment)
                       , color // ocean color
     	              , pow( smoothstep( 0.0, -0.05, view.y ), 0.3 ) );
 }

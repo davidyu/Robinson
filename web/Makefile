@@ -5,7 +5,7 @@ SRC=src
 TEST=test
 DIST=dist
 
-LIBFLAGS=--target ES5 --sourceMap --removeComments
+LIBFLAGS=--target ES5 --sourceMap --removeComments --lib webgl2
 DECFLAGS=--target ES5 --declaration
 
 app: folders shaders

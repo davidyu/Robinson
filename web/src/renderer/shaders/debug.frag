@@ -1,8 +1,10 @@
+#version 300 es
+
 precision mediump float;
 
 // fs in/vs out
-varying mediump vec4 vPosition;
-varying mediump vec3 vNormal_World;    // normal vector in world space
+in mediump vec4 vPosition;
+in mediump vec3 vNormal_World;    // normal vector in world space
 
 struct Light {
     vec4 position;
@@ -12,7 +14,9 @@ struct Light {
 
 uniform Light lights[10];
 
+out vec4 fragColor;
+
 void main( void ) {
     // color based on normal
-    gl_FragColor = vec4( ( normalize( vNormal_World ) * 0.5 + vec3( 0.5, 0.5, 0.5 ) ), 1 );
+    fragColor = vec4( ( normalize( vNormal_World ) * 0.5 + vec3( 0.5, 0.5, 0.5 ) ), 1 );
 }

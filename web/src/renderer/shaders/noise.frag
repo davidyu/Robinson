@@ -1,6 +1,7 @@
 precision mediump float;
 
-varying vec3 vDirection;
+in vec3 vDirection;
+out vec4 fragColor;
 
 // noise functions by Inigo Quilez
 float hash(float n) { return fract(sin(n) * 1e4); }
@@ -22,5 +23,5 @@ float noise(vec3 x) {
 
 void main() {
     float noise = noise( vDirection );
-    gl_FragColor = vec4( noise, noise, noise, 1.0 );
+    fragColor = vec4( noise, noise, noise, 1.0 );
 }

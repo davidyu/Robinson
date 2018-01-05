@@ -1,9 +1,11 @@
-attribute highp vec3 aVertexPosition;
+#version 300 es
 
-uniform highp mat4   uInverseProjectionMatrix;
-uniform highp mat3   uInverseViewMatrix;
+in highp vec3 aVertexPosition;
 
-varying mediump vec3 vDirection;
+uniform highp mat4 uInverseProjectionMatrix;
+uniform highp mat3 uInverseViewMatrix;
+
+out mediump vec3 vDirection;
 
 void main() {
     // reproduce the camera aim, per vertex, which is automatically interpolated to be per-pixel when we're in the fragment shader

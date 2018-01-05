@@ -14,4 +14,6 @@ echo updating libraries...
 
 echo updating typescript definition files...
 
+npm install @types/webgl2 --save
+
 echo all done.

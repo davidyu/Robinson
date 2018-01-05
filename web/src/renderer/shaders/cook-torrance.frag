@@ -1,8 +1,8 @@
 precision mediump float;
 
 // fs in/vs out
-varying mediump vec4 vPosition;        // vertex position in view space, no need to convert
-varying mediump vec3 vNormal;          // normal vector in model space, need to convert here
+in mediump vec4 vPosition;        // vertex position in view space, no need to convert
+in mediump vec3 vNormal;          // normal vector in model space, need to convert here
 
 struct Light {
     vec4 position;
@@ -36,6 +36,8 @@ struct Material {
 };
 
 uniform Material mat;
+
+out vec4 fragColor;
 
 void main( void ) {
     mediump vec4 color = vec4( 0, 0, 0, 1 );
@@ -73,12 +75,12 @@ void main( void ) {
         color += ( ( mat.specular * specular ) + mat.diffuse ) * attenuation * light.color * max( LdotN, 0.0 );
     }
 
-    vec4 ibl_diffuse = engamma( textureCube( irradiance, reflected ) ) * mat.diffuse;
+    vec4 ibl_diffuse = engamma( texture( irradiance, reflected ) ) * mat.diffuse;
 
     float lod = mat.roughness * environmentMipMaps;
-    vec4 ibl_specular = engamma( textureCubeLodEXT( environment, reflected, lod ) ) * mat.specular;
+    vec4 ibl_specular = engamma( textureLodEXT( environment, reflected, lod ) ) * mat.specular;
 
     color += ibl_diffuse * mat.roughness + ibl_specular * ( 1.0 - mat.roughness );
 
-    gl_FragColor = degamma( color );
+    fragColor = degamma( color );
 }
