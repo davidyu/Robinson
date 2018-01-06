@@ -176,6 +176,7 @@ class ShaderUniforms {
   uInverseView: WebGLUniformLocation;
   uCameraPos: WebGLUniformLocation;
   uEnvMap: WebGLUniformLocation;
+  uVolume: WebGLUniformLocation;
   uProcSky: WebGLUniformLocation;
   uIrradianceMap: WebGLUniformLocation;
   uEnvironmentMipMaps: WebGLUniformLocation;
@@ -451,6 +452,7 @@ class Renderer {
     uniforms.uInverseView = gl.getUniformLocation( program, "uInverseViewMatrix" );
     uniforms.uCameraPos = gl.getUniformLocation( program, "cPosition_World" );
     uniforms.uEnvMap = gl.getUniformLocation( program, "environment" );
+    uniforms.uVolume = gl.getUniformLocation( program, "volume" );
     uniforms.uProcSky = gl.getUniformLocation( program, "proceduralSky" );
     uniforms.uIrradianceMap = gl.getUniformLocation( program, "irradiance" );
     uniforms.uEnvironmentMipMaps = gl.getUniformLocation( program, "environmentMipMaps" );
@@ -628,6 +630,17 @@ class Renderer {
         this.useProgram( gl, SHADER_PROGRAM.NOISE_WRITER );
         let shaderVariables = this.programData[ this.currentProgram ].uniforms
         gl.uniform1f( shaderVariables.uNoiseLayer, ( <NoiseMaterial> p.material ).layer );
+      } else if ( p.material instanceof VolumeMaterial ) {
+        let mat = p.material as VolumeMaterial;
+        this.useProgram( gl, SHADER_PROGRAM.VOLUME_VIEWER );
+        let shaderVariables = this.programData[ this.currentProgram ].uniforms
+        gl.uniform1f( shaderVariables.uNoiseLayer, mat.layer );
+
+        if ( mat.volumeTexture != null ) {
+          gl.uniform1i( shaderVariables.uVolume, 0 );
+          gl.activeTexture( gl.TEXTURE0 );
+          gl.bindTexture( gl.TEXTURE_3D, mat.volumeTexture );
+        }
       }
 
       let shaderVariables = this.programData[ this.currentProgram ].uniforms;
