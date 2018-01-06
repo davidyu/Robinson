@@ -78,25 +78,28 @@ class NoiseApp {
       for ( let y = 0; y < size; y++ ) {
         for ( let z = 0; z < size; z++ ) {
           let n = noise.perlin3( x / size, y / size, z / size )
-          p3[ z * size * size + y * size + x ] = n;
-          p3[ z * size * size + y * size + x + 1 ] = n;
-          p3[ z * size * size + y * size + x + 2 ] = n;
+          p3[ z * size * size + y * size + x ] = n * 255;
+          p3[ z * size * size + y * size + x + 1 ] = n * 255;
+          p3[ z * size * size + y * size + x + 2 ] = n * 255;
         }
       }
     }
 
+    console.log( p3 );
+
     let noiseTexture = gl.createTexture();
 
     gl.bindTexture( gl.TEXTURE_3D, noiseTexture );
+
     // no mips
     gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_BASE_LEVEL, 0 );
     gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MAX_LEVEL, 0 );
     gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
     gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
+    gl.texImage3D   ( gl.TEXTURE_3D, 0, gl.RGB, size, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, p3 );
+    gl.bindTexture  ( gl.TEXTURE_3D, null );
 
     this.noiseMat = new VolumeMaterial( noiseTexture );
-
-    gl.texImage3D( gl.TEXTURE_3D, 0, gl.RGB, size, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, p3 );
   }
 
   public fixedUpdate( delta: number ) {
