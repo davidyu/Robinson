@@ -73,17 +73,18 @@ class NoiseApp {
 
     let noise = new Noise();
 
-    let p3 = new Uint8Array( size * size * size * 3 );
-    for ( let x = 0; x < size; x++ ) {
+    let img = [];
+    for ( let z = 0; z < size; z++ ) {
       for ( let y = 0; y < size; y++ ) {
-        for ( let z = 0; z < size; z++ ) {
-          let n = noise.perlin3( x / size, y / size, z / size )
-          p3[ z * size * size + y * size + x ] = n * 255;
-          p3[ z * size * size + y * size + x + 1 ] = n * 255;
-          p3[ z * size * size + y * size + x + 2 ] = n * 255;
+        for ( let x = 0; x < size; x++ ) {
+          let n = noise.perlin3( x * 0.1, y * 0.1, z * 0.1 );
+          img.push( n * 255 );
+          img.push( n * 255 );
+          img.push( n * 255 );
         }
       }
     }
+    let p3 = new Uint8Array( img );
 
     console.log( p3 );
 
