@@ -6,7 +6,7 @@
     "readme": "n/a",
     "devDependencies" : {
         "colors": "1.x",
-        "gl":"3.x",
+        "get-canvas-context":"1.x",
         "webgl-compile-shader":"2.x"
     }
 }

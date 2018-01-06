@@ -1,6 +1,8 @@
 var compiler = require( 'webgl-compile-shader' );
-var gl = require( 'gl' )( 1024, 768 );
 var fs = require( 'fs' );
+var getContext = require('get-canvas-context')
+ 
+var gl = getContext('webgl' );
 var colors = require( 'colors' );
 
 function ProgramSource( vs, fs ) {
@@ -31,9 +33,9 @@ var logs = sources.map( function( source ) {
   var fragmentSource = utils + fs.readFileSync( source.fs, 'utf8' );
 
   return compiler( {
+    gl: gl,
     vertex: vertexSource,
     fragment: fragmentSource,
-    gl: gl,
     verbose: true,
   } );
 } );
