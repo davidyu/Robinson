@@ -77,16 +77,15 @@ class NoiseApp {
     for ( let z = 0; z < size; z++ ) {
       for ( let y = 0; y < size; y++ ) {
         for ( let x = 0; x < size; x++ ) {
-          let n = noise.perlin3( x * 0.1, y * 0.1, z * 0.1 );
+          let n = noise.perlin3( x * 1.01, y * 1.01, z * 1.01 );
           img.push( n * 255 );
           img.push( n * 255 );
           img.push( n * 255 );
         }
       }
     }
-    let p3 = new Uint8Array( img );
 
-    console.log( p3 );
+    let p3 = new Uint8Array( img );
 
     let noiseTexture = gl.createTexture();
 
@@ -95,8 +94,8 @@ class NoiseApp {
     // no mips
     gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_BASE_LEVEL, 0 );
     gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MAX_LEVEL, 0 );
-    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
-    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
     gl.texImage3D   ( gl.TEXTURE_3D, 0, gl.RGB, size, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, p3 );
     gl.bindTexture  ( gl.TEXTURE_3D, null );
 
