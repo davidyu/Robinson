@@ -77,7 +77,7 @@ class NoiseApp {
     for ( let z = 0; z < size; z++ ) {
       for ( let y = 0; y < size; y++ ) {
         for ( let x = 0; x < size; x++ ) {
-          let n = noise.perlin3( x * 1.01, y * 1.01, z * 1.01 );
+          let n = noise.perlin3( x * 1.001, y * 1.001, z * 1.001, 127 );
           img.push( n * 255 );
           img.push( n * 255 );
           img.push( n * 255 );
