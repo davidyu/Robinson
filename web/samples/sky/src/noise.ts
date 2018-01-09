@@ -1,6 +1,7 @@
 // Implementation heavily based on josephg's noisejs, which is based on Stefan Gustavson's implementation.
 // Source:
 //  https://github.com/josephg/noisejs/blob/master/perlin.js
+
 class Noise {
   perm: number[];
   grad3: gml.Vec3[];
@@ -65,6 +66,37 @@ class Noise {
 
   lerp( a: number, b: number, t: number ) {
     return (1-t)*a + t*b;
+  }
+
+  perlin3Texture( gl: WebGL2RenderingContext, size: number ): WebGLTexture {
+    let rgb = [];
+    for ( let z = 0; z < size; z++ ) {
+      for ( let y = 0; y < size; y++ ) {
+        for ( let x = 0; x < size; x++ ) {
+          let n = this.perlin3( x * 1.001, y * 1.001, z * 1.001, size - 1 );
+          rgb.push( n * 255 ); // R
+          rgb.push( n * 255 ); // G
+          rgb.push( n * 255 ); // B
+        }
+      }
+    }
+
+    console.log( rgb );
+
+    let data = new Uint8Array( rgb );
+    let noiseTexture = gl.createTexture();
+
+    gl.bindTexture( gl.TEXTURE_3D, noiseTexture );
+
+    // no mips
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_BASE_LEVEL, 0 );
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MAX_LEVEL, 0 );
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+    gl.texImage3D   ( gl.TEXTURE_3D, 0, gl.RGB, size, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, data );
+    gl.bindTexture  ( gl.TEXTURE_3D, null );
+
+    return noiseTexture;
   }
 
   perlin3( x, y, z, period: number = 255 ) {

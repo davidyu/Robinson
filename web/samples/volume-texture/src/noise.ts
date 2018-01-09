@@ -81,6 +81,8 @@ class Noise {
       }
     }
 
+    console.log( rgb );
+
     let data = new Uint8Array( rgb );
     let noiseTexture = gl.createTexture();
 

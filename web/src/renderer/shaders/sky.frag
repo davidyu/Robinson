@@ -1,9 +1,12 @@
 #version 300 es
 
 precision mediump float;
+precision mediump sampler3D;
 
 uniform vec4 cPosition_World;
 uniform float uTime;
+uniform sampler3D uPerlinNoise;
+
 in vec3 vDirection;
 
 const   vec3  sun_light_dir = normalize( vec3( 0.0, 1.0, 0.4 ) );

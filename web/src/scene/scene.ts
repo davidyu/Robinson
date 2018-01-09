@@ -113,12 +113,12 @@ class Scene {
   hasEnvironment    : boolean;
   dynamicEnvironment: boolean;
 
-  noiseTexture: WebGLTexture;
+  noiseVolume: WebGLTexture;
 
   // cached render objects
   fullscreen: Quad;
 
-  constructor( environmentMap: CubeMap, irradianceMap: CubeMap, hasEnvironment: boolean = false, dynamicEnvironment: boolean = false ) {
+  constructor( environmentMap: CubeMap, irradianceMap: CubeMap, hasEnvironment: boolean = false, dynamicEnvironment: boolean = false, noiseVolume: WebGLTexture = null ) {
     this.renderables = [];
     this.lights = [];
     this.environmentMap = environmentMap;
@@ -126,6 +126,7 @@ class Scene {
     this.time = 0;
     this.hasEnvironment = hasEnvironment;
     this.dynamicEnvironment = dynamicEnvironment;
+    this.noiseVolume = noiseVolume;
   }
 
   public addRenderable( renderable: Renderable ) {
@@ -188,6 +189,13 @@ class Scene {
                                 , 0,-1, 0, 0
                                 ,-1, 0, 0, 0
                                 , 0, 0, 0, 1 );
+
+    if ( this.noiseVolume != null ) {
+      gl.uniform1i( variables.uPerlinNoise, 1 );
+      gl.activeTexture( gl.TEXTURE1 );
+      gl.bindTexture( gl.TEXTURE_3D, this.noiseVolume );
+    }
+
     this.renderFace( renderer, gl, shader, variables, cubeMapRenderTarget, rightView, size, size, perspective, cameraPos );
 
     // draw -x view
