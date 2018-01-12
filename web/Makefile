@@ -16,8 +16,8 @@ shaders: folders
 	@cp -rf $(TEST)/shaders/* $(DIST)/test/
 	@cp $(TEST)/package.json $(DIST)/test/
 	@cp $(SRC)/renderer/shaders/* $(DIST)/test/
-	@( pushd $(DIST)/test && npm install && popd )
-	@pushd $(DIST)/test > /dev/null && node compileshader.js && popd > /dev/null
+	@( pushd $(DIST)/test && npm install --silent > /dev/null && popd )
+	@pushd $(DIST)/test > /dev/null && ./node_modules/.bin/karma start && popd > /dev/null
 
 all: app
 

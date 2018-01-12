@@ -1,43 +1,165 @@
-var compiler = require( 'webgl-compile-shader' );
-var fs = require( 'fs' );
-var getContext = require('get-canvas-context')
- 
-var gl = getContext('webgl' );
-var colors = require( 'colors' );
+// simple structure that stores the names of the shaders
+// and loads them
+function ProgramSource( vs, fs, shouldPrependUtils ) {
+  this.vs_name = vs;
+  this.fs_name = fs;
+  this.shouldPrependUtils = shouldPrependUtils;
+  this.vs = null;
+  this.fs = null;
 
-function ProgramSource( vs, fs ) {
-  this.vs = vs;
-  this.fs = fs;
+  this.loadShaders = function( done ) {
+    var source = this; // closure
+
+    // load vertex shader
+    var vs_req = new XMLHttpRequest();
+    vs_req.addEventListener( "load", function( evt ) {
+      if ( source.vs == null ) {
+        done( false );
+      }
+      source.vs = vs_req.responseText;
+      if ( source.vs != null && source.fs != null ) {
+        done();
+      }
+    } );
+    vs_req.open( "GET", '/base/' + this.vs_name, true );
+    vs_req.send();
+
+    // load fragment shader
+    var fs_req = new XMLHttpRequest();
+    fs_req.addEventListener( "load", function( evt ) {
+      if ( fs_req.responseText == null ) {
+        done( false );
+      }
+      source.fs = fs_req.responseText;
+      if ( source.vs != null && source.fs != null ) {
+        done();
+      }
+    } );
+    fs_req.open( "GET", '/base/' + this.fs_name, true );
+    fs_req.send();
+  };
 }
 
 var sources = [
-  new ProgramSource( 'basic.vert' , 'lambert.frag' ),
-  new ProgramSource( 'basic.vert' , 'blinn-phong.frag' ),
-  new ProgramSource( 'basic.vert' , 'oren-nayar.frag' ),
-  new ProgramSource( 'basic.vert' , 'cook-torrance.frag' ),
-  new ProgramSource( 'debug.vert' , 'debug.frag' ),
-  new ProgramSource( 'skybox.vert', 'skybox.frag' ),
-  new ProgramSource( 'skybox.vert', 'sky.frag' ),
-  new ProgramSource( 'water.vert' , 'water.frag' ),
-  new ProgramSource( 'screenspacequad.vert' , 'water_screenspace.frag' ),
-  new ProgramSource( 'screenspacequad.vert' , 'noise_writer.frag' ),
-  new ProgramSource( 'screenspacequad.vert' , 'volume_viewer.frag' ),
-  new ProgramSource( 'passthrough.vert' , 'cube-sh.frag' ),
+  new ProgramSource( 'basic.vert'           , 'lambert.frag'          , true ) ,
+  new ProgramSource( 'basic.vert'           , 'blinn-phong.frag'      , true ) ,
+  new ProgramSource( 'basic.vert'           , 'oren-nayar.frag'       , true ) ,
+  new ProgramSource( 'basic.vert'           , 'cook-torrance.frag'    , true ) ,
+  new ProgramSource( 'debug.vert'           , 'debug.frag'            , false ) ,
+  new ProgramSource( 'skybox.vert'          , 'skybox.frag'           , false ) ,
+  new ProgramSource( 'skybox.vert'          , 'sky.frag'              , false ) ,
+  new ProgramSource( 'water.vert'           , 'water.frag'            , true ) ,
+  new ProgramSource( 'screenspacequad.vert' , 'water_screenspace.frag', false ) ,
+  new ProgramSource( 'screenspacequad.vert' , 'noise_writer.frag'     , false ) ,
+  new ProgramSource( 'screenspacequad.vert' , 'volume_viewer.frag'    , false ) ,
+  new ProgramSource( 'passthrough.vert'     , 'cube-sh.frag'          , false ) ,
 ];
 
-var logs = sources.map( function( source ) {
-  process.stdout.write( "Compiling program ... " + source.vs + " + " + source.fs + "\n" );
-  var vertexSource = fs.readFileSync( source.vs, 'utf8' );
+// TODO get rid of this hack; maybe perform a shader processing step
+var util_frag_source = null;
 
-  var utils = fs.readFileSync( "utils.frag", 'utf8' );
-  var fragmentSource = utils + fs.readFileSync( source.fs, 'utf8' );
+// handy little function from webgl-compile-shader
+// source: https://github.com/mattdesl/webgl-compile-shader/
+// License: 
+/*
+ * The MIT License (MIT)
+ * Copyright (c) 2014 Matt DesLauriers
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
+ * OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ */
+function addLineNumbers( string ) {
+    var lines = string.split( '\n' );
+    for ( var i = 0; i < lines.length; i ++ ) {
+        lines[ i ] = ( i + 1 ) + ': ' + lines[ i ];
+    }
+    return lines.join( '\n' );
+}
 
-  return compiler( {
-    gl: gl,
-    vertex: vertexSource,
-    fragment: fragmentSource,
-    verbose: true,
+describe( "shader", function() {
+  describe( "existence test", function() {
+    sources.forEach( function( s ) {
+      it( s.vs_name + " and " + s.fs_name + " should load", function( done ) {
+        s.loadShaders( done );
+      } );
+    } );
+    it ( 'utils.frag should load', function( done ) {
+      var req = new XMLHttpRequest();
+      req.addEventListener( "load", function( evt ) {
+        if ( req.responseText == null ) {
+          done( false );
+        }
+        util_frag_source = req.responseText;
+        if ( util_frag_source != null ) {
+          done();
+        }
+      } );
+      req.open( "GET", '/base/utils.frag', true );
+      req.send();
+    } );
+  } );
+
+  describe( "compile test", function() {
+    var gl = null;
+
+    before( function() {
+      var canvas = document.createElement('canvas');
+      gl = canvas.getContext( "webgl2" );
+    } );
+
+    sources.forEach( function( s ) {
+      it( s.vs_name + " and " + s.fs_name + " should compile", function() {
+        var vertexShader = gl.createShader( gl.VERTEX_SHADER );
+        gl.shaderSource( vertexShader, s.vs );
+        gl.compileShader( vertexShader );
+
+        if ( !gl.getShaderParameter( vertexShader, gl.COMPILE_STATUS ) ) {
+          throw new Error( "An error occurred compiling " + s.vs_name + ": " + gl.getShaderInfoLog( vertexShader ) );
+        }
+
+        var fragmentShader = gl.createShader( gl.FRAGMENT_SHADER );
+
+        if ( s.shouldPrependUtils ) {
+          gl.shaderSource( fragmentShader, util_frag_source + s.fs );
+        } else {
+          gl.shaderSource( fragmentShader, s.fs );
+        }
+
+        gl.compileShader( fragmentShader );
+
+        if ( !gl.getShaderParameter( fragmentShader, gl.COMPILE_STATUS ) ) {
+          throw new Error( "An error occurred compiling " + s.fs_name + ": " + gl.getShaderInfoLog( fragmentShader ) );
+        }
+
+        // Create the shader program
+        var program = gl.createProgram();
+        gl.attachShader( program, vertexShader );
+        gl.attachShader( program, fragmentShader );
+
+        gl.linkProgram( program );
+
+        if ( !gl.getProgramParameter( program, gl.LINK_STATUS ) ) {
+          console.log( "Problematic vertex shader: " + s.vs_name + "\n" );
+          console.log( "Problematic fragment shader: " + s.fs_name + "\n" );
+          throw new Error( "Unable to link the shader program: " + gl.getProgramInfoLog( program ) );
+        }
+      } );
+    } );
   } );
 } );
-
-process.stdout.write( ( "Success!" ).green + "\n" );

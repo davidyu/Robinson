@@ -7,6 +7,10 @@
     "devDependencies" : {
         "colors": "1.x",
         "get-canvas-context":"1.x",
-        "webgl-compile-shader":"2.x"
+        "webgl-compile-shader":"2.x",
+        "karma":"2.x",
+        "karma-chrome-launcher":"2.x",
+        "mocha":"4.x",
+        "karma-mocha":"1.x"
     }
 }

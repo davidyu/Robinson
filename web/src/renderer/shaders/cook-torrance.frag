@@ -78,7 +78,7 @@ void main( void ) {
     vec4 ibl_diffuse = engamma( texture( irradiance, reflected ) ) * mat.diffuse;
 
     float lod = mat.roughness * environmentMipMaps;
-    vec4 ibl_specular = engamma( textureLodEXT( environment, reflected, lod ) ) * mat.specular;
+    vec4 ibl_specular = engamma( textureLod( environment, reflected, lod ) ) * mat.specular;
 
     color += ibl_diffuse * mat.roughness + ibl_specular * ( 1.0 - mat.roughness );
 
