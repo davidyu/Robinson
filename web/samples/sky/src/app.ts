@@ -34,6 +34,15 @@ class SkyApp {
     this.dragStart = new gml.Vec2( 0, 0 );
     this.lastMousePos = new gml.Vec2( 0, 0 );
 
+    let options: NodeListOf<HTMLSelectElement> = document.getElementsByTagName( "select" );
+    let frameLimiterOption: HTMLSelectElement = null;
+
+    for ( let i = 0; i < options.length; i++ ) {
+      if ( options[i].id == 'frame-limiter' ) frameLimiterOption = options[i];
+    }
+
+    frameLimiterOption.onchange = changeFrameLimit;
+
     params.vp.addEventListener( 'mousedown', ev => {
       switch ( ev.button ) {
         case 0: // left
@@ -84,11 +93,39 @@ class SkyApp {
   }
 }
 
+var frameLimit: number = 2;
+
+function changeFrameLimit( e ) {
+  switch ( e.target.value ) {
+    case "adaptive":
+      frameLimit = -1;
+      break;
+    case "60":
+      frameLimit = 60;
+      break;
+    case "120":
+      frameLimit = 120;
+      break;
+    case "144":
+      frameLimit = 144;
+      break;
+    case "custom":
+      frameLimit = 240; // Haahaa
+      break;
+  }
+}
+
 var app: SkyApp = null;
 var lastFrame: number = null;
 
 function updateAndDraw( t: number ) {
   let dt = ( t - lastFrame ) / 1000.0;
+
+  if ( frameLimit != -1 && dt < 1.0 / frameLimit ) {
+    window.requestAnimationFrame( updateAndDraw );
+    return;
+  }
+
   lastFrame = t;
 
   scene.time += dt;
@@ -149,7 +186,9 @@ function StartSky() {
                                                           , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
                                                           , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
                                                           , 1.53 ) ) );
-      
+
+      lastFrame = performance.now();
+
       window.requestAnimationFrame( updateAndDraw );
 
       // screenspace ocean

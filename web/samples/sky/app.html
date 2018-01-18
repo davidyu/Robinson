@@ -34,15 +34,17 @@
         Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
       </canvas>
     </div>
-    <div id="editor-container">
+    <div id="options-container">
       <label>Frame limiter</label>
-      <select>
-        <option value="0">Monitor refresh rate</option>
-        <option value="1">60</option>
-        <option value="2">120</option>
-        <option value="3">144</option>
-        <option value="4">Custom</option>
+      <select id="frame-limiter">
+        <option value="adaptive">Monitor refresh rate</option>
+        <option value="60">60</option>
+        <option value="120">120</option>
+        <option value="144">144</option>
+        <option value="custom">Custom</option>
       </select>
+    </div>
+    <div id="editor-container">
       <textarea id="vertex-shader-editor">
       </textarea>
       <textarea id="fragment-shader-editor">
