@@ -81,8 +81,6 @@ class Noise {
       }
     }
 
-    console.log( rgb );
-
     let data = new Uint8Array( rgb );
     let noiseTexture = gl.createTexture();
 
@@ -130,7 +128,64 @@ class Noise {
                         this.lerp(n010, n110, u),
                         this.lerp(n011, n111, u), w),
                      v );
-  };
+  }
+
+  worley3(x, y, z, int seed)
+  {
+    //Declare some values for later use
+    uint lastRandom, numberFeaturePoints;
+    Vector3 randomDiff, featurePoint;
+    int cubeX, cubeY, cubeZ;
+    
+    let distanceArray = [ 55 ]; // we only care about the closest distance. TODO: fix me!!!!!!!!!!!
+    //Initialize values in distance array to large values
+    for (int i = 0; i < distanceArray.Length; i++)
+      distanceArray[i] = 6666;
+
+    //1. Determine which cube the evaluation point is in
+    int evalCubeX = (int)Math.Floor(input.X);
+    int evalCubeY = (int)Math.Floor(input.Y);
+    int evalCubeZ = (int)Math.Floor(input.Z);
+
+    for (int i = -1; i < 2; ++i)
+      for (int j = -1; j < 2; ++j)
+        for (int k = -1; k < 2; ++k)
+        {
+          cubeX = evalCubeX + i;
+          cubeY = evalCubeY + j;
+          cubeZ = evalCubeZ + k;
+
+          //2. Generate a reproducible random number generator for the cube
+          lastRandom = lcgRandom(hash((uint)(cubeX + seed), (uint)(cubeY), (uint)(cubeZ)));
+          //3. Determine how many feature points are in the cube
+          numberFeaturePoints = probLookup(lastRandom);
+          //4. Randomly place the feature points in the cube
+          for (uint l = 0; l < numberFeaturePoints; ++l)
+          {
+            lastRandom = lcgRandom(lastRandom);
+            randomDiff.X = (float)lastRandom / 0x100000000;
+
+            lastRandom = lcgRandom(lastRandom);
+            randomDiff.Y = (float)lastRandom / 0x100000000;
+
+            lastRandom = lcgRandom(lastRandom);
+            randomDiff.Z = (float)lastRandom / 0x100000000;
+
+            featurePoint = new Vector3(randomDiff.X + (float)cubeX, randomDiff.Y + (float)cubeY, randomDiff.Z + (float)cubeZ);
+
+            //5. Find the feature point closest to the evaluation point. 
+            //This is done by inserting the distances to the feature points into a sorted list
+            insert(distanceArray, distanceFunc(input, featurePoint));
+          }
+          //6. Check the neighboring cubes to ensure their are no closer evaluation points.
+          // This is done by repeating steps 1 through 5 above for each neighboring cube
+        }
+
+    float color = combineDistancesFunc(distanceArray);
+    if(color < 0) color = 0;
+    if(color > 1) color = 1;
+    return new Vector4(color, color, color, 1);
+  }
 }
 
 /*

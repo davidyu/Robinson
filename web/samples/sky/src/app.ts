@@ -8,6 +8,7 @@ interface SkyAppParams {
 }
 
 class SkyApp {
+  editor: ShaderEditor;
   renderer: Renderer;
   camera: Camera;
   dirty: boolean;
@@ -25,6 +26,7 @@ class SkyApp {
 
   constructor( params: SkyAppParams, shaderRepo: ShaderRepository ) {
     this.renderer = new Renderer( params.vp, shaderRepo );
+    this.editor = new ShaderEditor( this.renderer );
     this.orbitCenter = params.orbitCenter;
     this.orbitDistance = params.orbitDistance;
     this.yaw = gml.fromDegrees( 140 );
@@ -169,6 +171,8 @@ function StartSky() {
 
       let size = 128; // dimensions, in pixels, of our 3D texture
       let gl = app.renderer.context;
+
+      app.editor.install();
 
       let noise = new Noise();
 

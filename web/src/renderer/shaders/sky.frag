@@ -285,13 +285,17 @@ float worley(vec3 P, float jitter) {
 	return sqrt( d11.x );
 }
 
+float pnoise( vec3 x ) {
+    return texture( uPerlinNoise, mod( x, vec3( 128, 128, 128 ) ) / vec3( 128, 128, 128 ) ).r * ( 1.0 / 255.0 );
+}
+
 float sample_cloud( vec3 x ) {
     float v = 0.0;
     float a = 0.5;
     vec3 shift = vec3( 100 );
     const int NUM_OCTAVES = 4;
     for (int i = 0; i < NUM_OCTAVES; ++i) {
-        v += mix( 0.45, 0.7, cloudiness ) * a * snoise( x );
+        v += mix( 0.45, 0.7, cloudiness ) * a * pnoise( x );
         // modulate with Worley noise to produce billowy shapes
         v += mix( 0.3, 0.5, cloudiness ) * a * ( 1.0 - worley( x * 1.0, 1.0 ) );
         x = x * 2.3 + shift;
