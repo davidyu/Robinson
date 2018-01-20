@@ -230,7 +230,11 @@ class Renderer {
 
   dirty: boolean; // UNUSED
 
+  repo: ShaderRepository;
+
   constructor( viewportElement: HTMLCanvasElement, sr: ShaderRepository, backgroundColor: gml.Vec4 = new gml.Vec4( 0, 0, 0, 1 ) ) {
+    this.repo = sr;
+
     var gl = viewportElement.getContext( "webgl2" ) as any;
 
     gl.viewport( 0, 0, viewportElement.width, viewportElement.height );
