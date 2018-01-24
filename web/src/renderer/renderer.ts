@@ -192,7 +192,11 @@ class ShaderUniforms {
 class ShaderProgramData {
   program: WebGLProgram;
   uniforms: ShaderUniforms;
-  constructor() {
+  vert: string;
+  frag: string;
+  constructor( vert: string, frag: string ) {
+    this.vert = vert;
+    this.frag = frag;
     this.program = null;
     this.uniforms = new ShaderUniforms();
   }
@@ -204,7 +208,7 @@ class Renderer {
 
   elementIndexExtension;
 
-  shaderLODExtension;
+  shaderLODExtension; // TODO deleteme
 
   camera: Camera;
   context: WebGLRenderingContext & WebGL2RenderingContext;
@@ -273,7 +277,7 @@ class Renderer {
       success = false;
     }
 
-    this.programData[ SHADER_PROGRAM.BLINN_PHONG ] = new ShaderProgramData();
+    this.programData[ SHADER_PROGRAM.BLINN_PHONG ] = new ShaderProgramData( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source, sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.BLINN_PHONG_FRAGMENT ].source );
     this.programData[ SHADER_PROGRAM.BLINN_PHONG ].program = phongProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.BLINN_PHONG );
 
@@ -284,29 +288,29 @@ class Renderer {
       success = false;
     }
 
-    this.programData[ SHADER_PROGRAM.LAMBERT ] = new ShaderProgramData();
+    this.programData[ SHADER_PROGRAM.LAMBERT ] = new ShaderProgramData( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source, sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.LAMBERT_FRAGMENT ].source );
     this.programData[ SHADER_PROGRAM.LAMBERT ].program = lambertProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.LAMBERT );
 
     let debugProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.DEBUG_VERTEX ].source
-                                                 , sr.files[ SHADERTYPE.DEBUG_FRAGMENT ].source );
+                                                , sr.files[ SHADERTYPE.DEBUG_FRAGMENT ].source );
     if ( debugProgram == null ) {
       alert( "Debug shader compilation failed. Please check the log for details." );
       success = false;
     }
 
-    this.programData[ SHADER_PROGRAM.DEBUG ] = new ShaderProgramData();
+    this.programData[ SHADER_PROGRAM.DEBUG ] = new ShaderProgramData( sr.files[ SHADERTYPE.DEBUG_VERTEX ].source, sr.files[ SHADERTYPE.DEBUG_FRAGMENT ].source );
     this.programData[ SHADER_PROGRAM.DEBUG ].program = debugProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.DEBUG );
 
     let orenNayarProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
-                                                     , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.OREN_NAYAR_FRAGMENT ].source );
+                                                    , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.OREN_NAYAR_FRAGMENT ].source );
     if ( orenNayarProgram == null ) {
       alert( "Oren-Nayar shader compilation failed. Please check the log for details." );
       success = false;
     }
 
-    this.programData[ SHADER_PROGRAM.OREN_NAYAR ] = new ShaderProgramData();
+    this.programData[ SHADER_PROGRAM.OREN_NAYAR ] = new ShaderProgramData( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source, sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.OREN_NAYAR_FRAGMENT ].source );
     this.programData[ SHADER_PROGRAM.OREN_NAYAR ].program = orenNayarProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.OREN_NAYAR );
 
@@ -323,7 +327,7 @@ class Renderer {
       success = false;
     }
 
-    this.programData[ SHADER_PROGRAM.COOK_TORRANCE ] = new ShaderProgramData();
+    this.programData[ SHADER_PROGRAM.COOK_TORRANCE ] = new ShaderProgramData( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source, sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.COOK_TORRANCE_FRAGMENT_NO_EXT ].source );
     this.programData[ SHADER_PROGRAM.COOK_TORRANCE ].program = cookTorranceProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.COOK_TORRANCE );
 
@@ -334,7 +338,7 @@ class Renderer {
       success = false;
     }
 
-    this.programData[ SHADER_PROGRAM.SKYBOX ] = new ShaderProgramData();
+    this.programData[ SHADER_PROGRAM.SKYBOX ] = new ShaderProgramData( sr.files[ SHADERTYPE.SKYBOX_VERTEX ].source, sr.files[ SHADERTYPE.SKYBOX_FRAG ].source );
     this.programData[ SHADER_PROGRAM.SKYBOX ].program = skyboxProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.SKYBOX );
 
@@ -345,7 +349,7 @@ class Renderer {
       success = false;
     }
 
-    this.programData[ SHADER_PROGRAM.SKY ] = new ShaderProgramData();
+    this.programData[ SHADER_PROGRAM.SKY ] = new ShaderProgramData( sr.files[ SHADERTYPE.SKYBOX_VERTEX ].source, sr.files[ SHADERTYPE.SKY_FRAG ].source );
     this.programData[ SHADER_PROGRAM.SKY ].program = skyProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.SKY );
 
@@ -356,7 +360,7 @@ class Renderer {
       success = false;
     }
 
-    this.programData[ SHADER_PROGRAM.WATER ] = new ShaderProgramData();
+    this.programData[ SHADER_PROGRAM.WATER ] = new ShaderProgramData( sr.files[ SHADERTYPE.WATER_VERT ].source, sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.WATER_FRAG ].source );
     this.programData[ SHADER_PROGRAM.WATER ].program = waterProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.WATER );
 
@@ -368,7 +372,7 @@ class Renderer {
       success = false;
     }
 
-    this.programData[ SHADER_PROGRAM.WATER_SS ] = new ShaderProgramData();
+    this.programData[ SHADER_PROGRAM.WATER_SS ] = new ShaderProgramData( sr.files[ SHADERTYPE.SS_QUAD_VERT ].source, sr.files[ SHADERTYPE.WATER_SS_FRAG ].source );
     this.programData[ SHADER_PROGRAM.WATER_SS ].program = waterSSProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.WATER_SS );
 
@@ -380,7 +384,7 @@ class Renderer {
       success = false;
     }
 
-    this.programData[ SHADER_PROGRAM.NOISE_WRITER ] = new ShaderProgramData();
+    this.programData[ SHADER_PROGRAM.NOISE_WRITER ] = new ShaderProgramData( sr.files[ SHADERTYPE.SS_QUAD_VERT ].source, sr.files[ SHADERTYPE.NOISE_WRITER_FRAG ].source );
     this.programData[ SHADER_PROGRAM.NOISE_WRITER ].program = noiseWriterProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.NOISE_WRITER );
 
@@ -392,7 +396,7 @@ class Renderer {
       success = false;
     }
 
-    this.programData[ SHADER_PROGRAM.VOLUME_VIEWER ] = new ShaderProgramData();
+    this.programData[ SHADER_PROGRAM.VOLUME_VIEWER ] = new ShaderProgramData( sr.files[ SHADERTYPE.SS_QUAD_VERT ].source, sr.files[ SHADERTYPE.VOLUME_VIEWER_FRAG ].source );
     this.programData[ SHADER_PROGRAM.VOLUME_VIEWER ].program = volumeViewerProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.VOLUME_VIEWER );
 
@@ -404,7 +408,7 @@ class Renderer {
       success = false;
     }
 
-    this.programData[ SHADER_PROGRAM.CUBE_SH ] = new ShaderProgramData();
+    this.programData[ SHADER_PROGRAM.CUBE_SH ] = new ShaderProgramData( sr.files[ SHADERTYPE.PASSTHROUGH_VERT ].source, sr.files[ SHADERTYPE.CUBE_SH_FRAG ].source );
     this.programData[ SHADER_PROGRAM.CUBE_SH ].program = cubeMapSHProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.CUBE_SH );
 
