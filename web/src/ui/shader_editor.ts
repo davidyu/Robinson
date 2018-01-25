@@ -7,12 +7,18 @@ class ShaderEditor {
   vertexEditorField  : HTMLTextAreaElement;
   fragmentEditorField: HTMLTextAreaElement;
   shaderList: HTMLUListElement;
+  shaderEditor: HTMLDivElement;
 
   constructor( renderer: Renderer ) {
     this.renderer = renderer;
     this.vertexEditorField = document.createElement( "textarea" );
+    this.vertexEditorField.setAttribute( "style", "width:49%; height:100%; margin:0; padding:0;" );
     this.fragmentEditorField = document.createElement( "textarea" );
+    this.fragmentEditorField.setAttribute( "style", "width:49%; height:100%; margin:0; padding:0;" );
     this.shaderList = document.createElement( "ul" );
+    this.shaderList.setAttribute( "style", "width:150px; listt-style-type:none; float:left; padding-left:0" );
+    this.shaderEditor = document.createElement( "div" );
+    this.shaderEditor.setAttribute( "style", "float:left; flex-grow:1;" );
   }
 
   install() {
@@ -35,7 +41,8 @@ class ShaderEditor {
     }
 
     container.appendChild( this.shaderList );
-    container.appendChild( this.vertexEditorField );
-    container.appendChild( this.fragmentEditorField );
+    container.appendChild( this.shaderEditor );
+    this.shaderEditor.appendChild( this.vertexEditorField );
+    this.shaderEditor.appendChild( this.fragmentEditorField );
   }
 }
