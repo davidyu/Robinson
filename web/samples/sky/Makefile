@@ -4,12 +4,12 @@ SHELL = /bin/bash
 SRC=src
 DIST=dist
 
-debug: folders shaders update page
+debug: folders dependencies shaders update page
 	sh files.sh debug
 	tsc @files.txt --target ES5 --sourceMap --out $(DIST)/app.js
 	rm files.txt
 
-release: folders shaders update page
+release: folders dependencies shaders update page
 	pushd ../../ && make lib && popd
 	cp ../../dist/robinson.d.ts .
 	cp ../../dist/robinson.js $(DIST)/
@@ -19,6 +19,9 @@ release: folders shaders update page
 
 shaders:
 	cp -rf ../../dist/shaders $(DIST)/
+
+dependencies:
+	cp -rf ../../dist/lib/*.js $(DIST)/
 
 page:
 	cp app.html dist/

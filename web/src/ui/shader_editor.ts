@@ -4,11 +4,13 @@ class ShaderEditor {
   // it should highlight (ideally) problematic lines after compilation has failed
 
   renderer: Renderer;
-  vertexEditorField  : HTMLTextAreaElement;
-  fragmentEditorField: HTMLTextAreaElement;
+  vertexEditorField  : HTMLDivElement;
+  fragmentEditorField: HTMLDivElement;
   shaderList: HTMLUListElement;
   shaderEditor: HTMLDivElement;
   selectedShader: HTMLLIElement;
+  vertexShaderEditor;
+  fragmentShaderEditor;
 
   constructor( renderer: Renderer ) {
     this.renderer = renderer;
@@ -19,14 +21,21 @@ class ShaderEditor {
     this.selectedShader = null;
 
     // vert/frag shader textbox
-    this.vertexEditorField = document.createElement( "textarea" );
+    this.vertexEditorField = document.createElement( "div" );
     this.vertexEditorField.setAttribute( "class", "shader-text" );
-    this.fragmentEditorField = document.createElement( "textarea" );
+    this.fragmentEditorField = document.createElement( "div" );
     this.fragmentEditorField.setAttribute( "class", "shader-text" );
     this.shaderEditor = document.createElement( "div" );
     this.shaderEditor.setAttribute( "class", "shader-text-con" );
     this.shaderEditor.appendChild( this.vertexEditorField );
     this.shaderEditor.appendChild( this.fragmentEditorField );
+
+    this.vertexShaderEditor = ace.edit( this.vertexEditorField );
+    this.vertexShaderEditor.setTheme("ace/theme/solarized_light");
+    this.vertexShaderEditor.session.setMode( "ace/mode/glsl" );
+    this.fragmentShaderEditor = ace.edit( this.fragmentEditorField );
+    this.fragmentShaderEditor.session.setMode( "ace/mode/glsl" );
+    this.fragmentShaderEditor.setTheme("ace/theme/solarized_light");
 
     // create stylesheet dynamically
     // this should probably just be put in a CSS file somewhere so it's overrideable
@@ -42,19 +51,19 @@ class ShaderEditor {
       stylesheet = document.styleSheets[0] as CSSStyleSheet;
     }
 
-    stylesheet.insertRule( "body             { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; }" );
+    stylesheet.insertRule( "html, body       { height: 100%; margin: 0; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; }" );
     stylesheet.insertRule( ".shader-list     { border: 1px #ccc solid; border-bottom:0; float:left; list-style-type:none; margin:0; padding-left:0; width: 200px; }" );
-    stylesheet.insertRule( ".shader-entry    { border-bottom: 1px #ccc solid; font-size: 70%; padding-left: 12%; padding-top: 5%; padding-bottom: 5%; cursor: default; }" );
+    stylesheet.insertRule( ".shader-entry    { border-bottom: 1px #ccc solid; font-size: 70%; padding-left: 10%; padding-top: 3%; padding-bottom: 3%; cursor: default; }" );
     stylesheet.insertRule( ".selected        { background-color: #0079e8; color: #fff }" );
     stylesheet.insertRule( ".shader-text     { border: 1px #ccc solid; border-left: 0; width: 50%; height: 100%; margin: 0; padding: 0; }" );
-    stylesheet.insertRule( ".shader-text-con { float:left; flex-grow:1; white-space:nowrap; }" );
+    stylesheet.insertRule( ".shader-text-con { float: left; flex-grow: 1; display: flex; }" );
   }
 
   install() {
     let container = document.getElementById( "editor-container" );
 
-    this.vertexEditorField.value = this.renderer.programData[ 0 ].vert;
-    this.fragmentEditorField.value = this.renderer.programData[ 0 ].frag;
+    this.vertexShaderEditor.setValue( this.renderer.programData[ 0 ].vert, -1 );
+    this.fragmentShaderEditor.setValue( this.renderer.programData[ 0 ].frag, -1 ); 
 
     for ( var programName in SHADER_PROGRAM ) {
       if ( isNaN( <any> programName ) ) {
@@ -65,8 +74,8 @@ class ShaderEditor {
         this.shaderList.appendChild( li );
         li.onclick = () => {
           if ( this.selectedShader != li ) {
-            this.vertexEditorField.value = this.renderer.programData[ index ].vert;
-            this.fragmentEditorField.value = this.renderer.programData[ index ].frag;
+            this.vertexShaderEditor.setValue( this.renderer.programData[ index ].vert, -1 );
+            this.fragmentShaderEditor.setValue( this.renderer.programData[ index ].frag, -1 );
             this.selectedShader.setAttribute( "class", "shader-entry" ); // deselect
             this.selectedShader = li;
             li.setAttribute( "class", "selected shader-entry" );

@@ -8,8 +8,11 @@ DIST=dist
 LIBFLAGS=--target ES5 --sourceMap --removeComments --lib webgl2
 DECFLAGS=--target ES5 --declaration
 
-app: folders shaders
+app: folders dependencies shaders
 	pushd $(SRC); find . -name "*.ts" -type f -not -path "*/dist/*" >src.txt; tsc @src.txt --target ES5 --sourceMap --out ../dist/app.js; rm src.txt; popd
+
+dependencies: folders
+	@cp $(SRC)/lib/*.js $(DIST)/lib
 
 shaders: folders
 	@cp $(SRC)/renderer/shaders/* $(DIST)/shaders 

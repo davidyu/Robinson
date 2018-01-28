@@ -12,9 +12,14 @@ echo "updating vendor code..."
 
 echo updating libraries...
 
+download https://raw.githubusercontent.com/ajaxorg/ace-builds/master/src-min-noconflict/ace.js ace.js
+download https://raw.githubusercontent.com/ajaxorg/ace-builds/master/src-min-noconflict/mode-glsl.js mode-glsl.js
+download https://raw.githubusercontent.com/ajaxorg/ace-builds/master/src-min-noconflict/theme-solarized_light.js theme-solarized_light.js
+download https://raw.githubusercontent.com/ajaxorg/ace-builds/master/src-min-noconflict/theme-monokai.js theme-monokai.js
+
 echo updating typescript definition files...
 
 npm install @types/webgl2 --save
-npm install @types/codemirror --save
+npm install @types/ace --save
 
 echo all done.
