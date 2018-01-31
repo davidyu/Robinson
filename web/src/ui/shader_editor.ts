@@ -39,10 +39,12 @@ class ShaderEditor {
     this.vertexShaderEditor = ace.edit( this.vertexEditorField );
     this.vertexShaderEditor.setTheme("ace/theme/solarized_light");
     this.vertexShaderEditor.session.setMode( "ace/mode/glsl" );
+    this.vertexShaderEditor.$blockScrolling = Infinity;
 
     this.fragmentShaderEditor = ace.edit( this.fragmentEditorField );
     this.fragmentShaderEditor.setTheme("ace/theme/solarized_light");
     this.fragmentShaderEditor.session.setMode( "ace/mode/glsl" );
+    this.fragmentShaderEditor.$blockScrolling = Infinity;
 
     // create stylesheet dynamically
     // this should probably just be put in a CSS file somewhere so it's overrideable
@@ -67,6 +69,8 @@ class ShaderEditor {
   }
 
   rebuildSelectedShader( session: AceAjax.IEditSession ) {
+    console.assert( session == this.vertexShaderEditor.session || session == this.fragmentShaderEditor.assertion );
+
     let gl = this.renderer.context;
     if ( gl ) {
       let vertexShader = gl.createShader( gl.VERTEX_SHADER );
@@ -78,8 +82,8 @@ class ShaderEditor {
         let annotations = [];
         for ( let i = 0; i < errors.length; i++ ) {
           let error = errors[i];
-          if ( error.length == 0 ) break;
           let results = /\w+: [0-9]+:([0-9]+): (.*)$/g.exec( error ); // group 1: line number, group 2: error message
+          if ( results == null ) continue;
           // see https://regexr.com/3k19s
           annotations.push( { row: parseInt( results[1] ) - 1, column: 0, text: results[2], type: "error" } );
         }
@@ -105,8 +109,8 @@ class ShaderEditor {
         let annotations = [];
         for ( let i = 0; i < errors.length; i++ ) {
           let error = errors[i];
-          if ( error.length == 0 ) break;
           let results = /\w+: [0-9]+:([0-9]+): (.*)$/g.exec( error ); // group 1: line number, group 2: error message
+          if ( results == null ) continue;
           // see https://regexr.com/3k19s
           annotations.push( { row: parseInt( results[1] ) - 1, column: 0, text: results[2], type: "error" } );
         }
