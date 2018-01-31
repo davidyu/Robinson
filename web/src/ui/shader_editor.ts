@@ -157,18 +157,16 @@ class ShaderEditor {
     this.vertexEditSessions = [];
     this.fragmentEditSessions = [];
 
-    let EditSession = ace.require( "ace/edit_session" ).EditSession;
-
     for ( var programName in SHADER_PROGRAM ) {
       if ( isNaN( <any> programName ) ) {
         let index = parseInt( SHADER_PROGRAM[ programName ] );
 
-        let vertexSession = new EditSession( this.renderer.programData[ index ].vert, "ace/mode/glsl" );
+        let vertexSession = ace.createEditSession( this.renderer.programData[ index ].vert, <any> "ace/mode/glsl" );
         vertexSession.on( "change", ( e ) => {
           this.rebuildSelectedShader( vertexSession );
         } );
         this.vertexEditSessions.push( vertexSession );
-        let fragSession = new EditSession( this.renderer.programData[ index ].frag, "ace/mode/glsl" );
+        let fragSession = ace.createEditSession( this.renderer.programData[ index ].frag, <any> "ace/mode/glsl" );
         fragSession.on( "change", ( e ) => {
           this.rebuildSelectedShader( fragSession );
         } );
@@ -181,8 +179,8 @@ class ShaderEditor {
         li.onclick = () => {
           if ( this.selectedShader != li ) {
             this.selectedShaderIndex = index;
-            this.vertexShaderEditor.setSession( this.vertexEditSessions[ index ] );
-            this.fragmentShaderEditor.setSession( this.fragmentEditSessions[ index ] );
+            this.vertexShaderEditor.setSession( vertexSession );
+            this.fragmentShaderEditor.setSession( fragSession );
             this.selectedShader.setAttribute( "class", "shader-entry" ); // deselect
             this.selectedShader = li;
             li.setAttribute( "class", "selected shader-entry" );

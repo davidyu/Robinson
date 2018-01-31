@@ -190,12 +190,6 @@ class Scene {
                                 ,-1, 0, 0, 0
                                 , 0, 0, 0, 1 );
 
-    if ( this.noiseVolume != null ) {
-      gl.uniform1i( variables.uPerlinNoise, 1 );
-      gl.activeTexture( gl.TEXTURE1 );
-      gl.bindTexture( gl.TEXTURE_3D, this.noiseVolume );
-    }
-
     this.renderFace( renderer, gl, shader, variables, cubeMapRenderTarget, rightView, size, size, perspective, cameraPos );
 
     // draw -x view
@@ -292,6 +286,12 @@ class Scene {
     gl.uniform1i( variables.uEnvMap, 0 );
     gl.activeTexture( gl.TEXTURE0 );
     gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapRT );
+
+    if ( this.noiseVolume != null ) {
+      gl.uniform1i( variables.uPerlinNoise, 1 );
+      gl.activeTexture( gl.TEXTURE1 );
+      gl.bindTexture( gl.TEXTURE_3D, this.noiseVolume );
+    }
 
     gl.drawElements( gl.TRIANGLES, this.fullscreen.renderData.indices.length, gl.UNSIGNED_INT, 0 );
   }
