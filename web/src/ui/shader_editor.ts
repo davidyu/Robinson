@@ -1,3 +1,5 @@
+var verbose_editor_logging = false;
+
 class ShaderEditor {
   // the shader editor should, at a function call, install the editor somewhere (preferably on the lower half of the screen, resizable)
   // it should populate with the vertex shader on the left and the fragment shader on the right
@@ -9,8 +11,12 @@ class ShaderEditor {
   shaderList: HTMLUListElement;
   shaderEditor: HTMLDivElement;
   selectedShader: HTMLLIElement;
+  selectedShaderIndex: number;
   vertexShaderEditor;
   fragmentShaderEditor;
+
+  vertexEditSessions  : AceAjax.IEditSession[];
+  fragmentEditSessions: AceAjax.IEditSession[];
 
   constructor( renderer: Renderer ) {
     this.renderer = renderer;
@@ -33,9 +39,10 @@ class ShaderEditor {
     this.vertexShaderEditor = ace.edit( this.vertexEditorField );
     this.vertexShaderEditor.setTheme("ace/theme/solarized_light");
     this.vertexShaderEditor.session.setMode( "ace/mode/glsl" );
+
     this.fragmentShaderEditor = ace.edit( this.fragmentEditorField );
-    this.fragmentShaderEditor.session.setMode( "ace/mode/glsl" );
     this.fragmentShaderEditor.setTheme("ace/theme/solarized_light");
+    this.fragmentShaderEditor.session.setMode( "ace/mode/glsl" );
 
     // create stylesheet dynamically
     // this should probably just be put in a CSS file somewhere so it's overrideable
@@ -59,23 +66,119 @@ class ShaderEditor {
     stylesheet.insertRule( ".shader-text-con { float: left; flex-grow: 1; display: flex; }" );
   }
 
+  rebuildSelectedShader( session: AceAjax.IEditSession ) {
+    let gl = this.renderer.context;
+    if ( gl ) {
+      let vertexShader = gl.createShader( gl.VERTEX_SHADER );
+      gl.shaderSource( vertexShader, this.vertexShaderEditor.getValue() );
+      gl.compileShader( vertexShader );
+
+      if ( !gl.getShaderParameter( vertexShader, gl.COMPILE_STATUS ) ) {
+        let errors = gl.getShaderInfoLog( vertexShader ).split( "\n" );
+        let annotations = [];
+        for ( let i = 0; i < errors.length; i++ ) {
+          let error = errors[i];
+          if ( error.length == 0 ) break;
+          let results = /\w+: [0-9]+:([0-9]+): (.*)$/g.exec( error ); // group 1: line number, group 2: error message
+          // see https://regexr.com/3k19s
+          annotations.push( { row: parseInt( results[1] ) - 1, column: 0, text: results[2], type: "error" } );
+        }
+
+        this.vertexShaderEditor.session.clearAnnotations();
+        this.vertexShaderEditor.session.setAnnotations( annotations );
+
+        if ( verbose_editor_logging ) {
+          console.log( errors );
+        }
+        return;
+      } else {
+        // all good.
+        this.vertexShaderEditor.session.clearAnnotations();
+      }
+
+      let fragmentShader = gl.createShader( gl.FRAGMENT_SHADER );
+      gl.shaderSource( fragmentShader, this.fragmentShaderEditor.getValue() );
+      gl.compileShader( fragmentShader );
+
+      if ( !gl.getShaderParameter( fragmentShader, gl.COMPILE_STATUS ) ) {
+        let errors = gl.getShaderInfoLog( fragmentShader ).split( "\n" );
+        let annotations = [];
+        for ( let i = 0; i < errors.length; i++ ) {
+          let error = errors[i];
+          if ( error.length == 0 ) break;
+          let results = /\w+: [0-9]+:([0-9]+): (.*)$/g.exec( error ); // group 1: line number, group 2: error message
+          // see https://regexr.com/3k19s
+          annotations.push( { row: parseInt( results[1] ) - 1, column: 0, text: results[2], type: "error" } );
+        }
+
+        this.fragmentShaderEditor.session.clearAnnotations();
+        this.fragmentShaderEditor.session.setAnnotations( annotations );
+
+        if ( verbose_editor_logging ) {
+          console.log( errors );
+        }
+        return;
+      } else {
+        // all good.
+        this.fragmentShaderEditor.session.clearAnnotations();
+      }
+
+      var program = gl.createProgram();
+      gl.attachShader( program, vertexShader );
+      gl.attachShader( program, fragmentShader );
+
+      // force aVertexPosition to be bound to 0 to avoid perf penalty
+      // gl.bindAttribLocation( program, 0, "aVertexPosition" );
+      gl.linkProgram( program );
+
+      if ( !gl.getProgramParameter( program, gl.LINK_STATUS ) ) {
+        console.log( "Unable to initialize the shader program: " + gl.getProgramInfoLog( program ) );
+        return;
+      }
+
+      this.renderer.programData [ this.selectedShaderIndex ].program = program;
+      this.renderer.cacheLitShaderProgramLocations( this.selectedShaderIndex );
+    } else {
+      console.log( "no renderer context! This is bad." );
+    }
+  }
+
   install() {
     let container = document.getElementById( "editor-container" );
 
+    this.selectedShaderIndex = <SHADER_PROGRAM> 0;
     this.vertexShaderEditor.setValue( this.renderer.programData[ 0 ].vert, -1 );
     this.fragmentShaderEditor.setValue( this.renderer.programData[ 0 ].frag, -1 ); 
 
+    this.vertexEditSessions = [];
+    this.fragmentEditSessions = [];
+
+    let EditSession = ace.require( "ace/edit_session" ).EditSession;
+
     for ( var programName in SHADER_PROGRAM ) {
       if ( isNaN( <any> programName ) ) {
-        let index = SHADER_PROGRAM[ programName ];
+        let index = parseInt( SHADER_PROGRAM[ programName ] );
+
+        let vertexSession = new EditSession( this.renderer.programData[ index ].vert, "ace/mode/glsl" );
+        vertexSession.on( "change", ( e ) => {
+          this.rebuildSelectedShader( vertexSession );
+        } );
+        this.vertexEditSessions.push( vertexSession );
+        let fragSession = new EditSession( this.renderer.programData[ index ].frag, "ace/mode/glsl" );
+        fragSession.on( "change", ( e ) => {
+          this.rebuildSelectedShader( fragSession );
+        } );
+        this.fragmentEditSessions.push( fragSession );
+
         let li = document.createElement( "li" );
         li.innerText = this.prettifyEnum( programName );
         li.setAttribute( "class", "shader-entry" );
         this.shaderList.appendChild( li );
         li.onclick = () => {
           if ( this.selectedShader != li ) {
-            this.vertexShaderEditor.setValue( this.renderer.programData[ index ].vert, -1 );
-            this.fragmentShaderEditor.setValue( this.renderer.programData[ index ].frag, -1 );
+            this.selectedShaderIndex = index;
+            this.vertexShaderEditor.setSession( this.vertexEditSessions[ index ] );
+            this.fragmentShaderEditor.setSession( this.fragmentEditSessions[ index ] );
             this.selectedShader.setAttribute( "class", "shader-entry" ); // deselect
             this.selectedShader = li;
             li.setAttribute( "class", "selected shader-entry" );

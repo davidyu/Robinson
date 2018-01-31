@@ -31,7 +31,6 @@ enum SHADER_PROGRAM {
   SKY,
   WATER,
   WATER_SS,
-  SHADOWMAP,
   CUBE_SH,
   NOISE_WRITER,
   VOLUME_VIEWER,
@@ -489,14 +488,14 @@ class Renderer {
     }
   }
 
-  compileShaderProgram( vs: string, fs: string ): WebGLProgram {
+  compileShaderProgram( vs: string, fs: string, suppressErrors: boolean = false ): WebGLProgram {
     var gl = this.context;
     if ( gl ) {
       var vertexShader = gl.createShader( gl.VERTEX_SHADER );
       gl.shaderSource( vertexShader, vs );
       gl.compileShader( vertexShader );
 
-      if ( !gl.getShaderParameter( vertexShader, gl.COMPILE_STATUS ) ) {
+      if ( !suppressErrors && !gl.getShaderParameter( vertexShader, gl.COMPILE_STATUS ) ) {
         console.log( "An error occurred compiling the vertex shader: " + gl.getShaderInfoLog( vertexShader ) );
         return null;
       }
@@ -505,7 +504,7 @@ class Renderer {
       gl.shaderSource( fragmentShader, fs );
       gl.compileShader( fragmentShader );
 
-      if ( !gl.getShaderParameter( fragmentShader, gl.COMPILE_STATUS ) ) {
+      if ( !suppressErrors && !gl.getShaderParameter( fragmentShader, gl.COMPILE_STATUS ) ) {
         console.log( "An error occurred compiling the fragment shader: " + gl.getShaderInfoLog( fragmentShader ) );
         return null;
       }
