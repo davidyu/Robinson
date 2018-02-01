@@ -286,7 +286,8 @@ float worley(vec3 P, float jitter) {
 }
 
 float pnoise( vec3 x ) {
-    return texture( uPerlinNoise, mod( x, vec3( 128 ) ) / vec3( 128 ) ).r;
+    #define CLOUD_SIZE 64
+    return texture( uPerlinNoise, mod( x, vec3( CLOUD_SIZE ) ) / vec3( CLOUD_SIZE ) ).r;
 }
 
 float sample_cloud( vec3 x ) {
