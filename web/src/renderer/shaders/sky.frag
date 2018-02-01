@@ -286,7 +286,7 @@ float worley(vec3 P, float jitter) {
 }
 
 float pnoise( vec3 x ) {
-    return texture( uPerlinNoise, mod( x, vec3( 128, 128, 128 ) ) / vec3( 128, 128, 128 ) ).r * ( 1.0 / 255.0 );
+    return texture( uPerlinNoise, mod( x, vec3( 128 ) ) / vec3( 128 ) ).r;
 }
 
 float sample_cloud( vec3 x ) {
@@ -297,13 +297,13 @@ float sample_cloud( vec3 x ) {
     for (int i = 0; i < NUM_OCTAVES; ++i) {
         v += mix( 0.45, 0.7, cloudiness ) * a * pnoise( x );
         // modulate with Worley noise to produce billowy shapes
-        v += mix( 0.3, 0.5, cloudiness ) * a * ( 1.0 - worley( x * 1.0, 1.0 ) );
+        // v += mix( 0.3, 0.5, cloudiness ) * a * ( 1.0 - worley( x * 1.0, 1.0 ) );
         x = x * 2.3 + shift;
         a *= 0.5;
 	}
 
     // smoothstep parameter carefully tuned to look cloudlike
-    return smoothstep( 0.4, 0.8, v );
+    return smoothstep( 0.1, 0.4, v );
 }
 
 vec3 sun( vec3 v ) {
