@@ -8,6 +8,8 @@ class Noise {
   gradP: gml.Vec3[];
   p: number[];
 
+  worleyFeaturePoints: gml.Vec3[];
+
   constructor() {
     this.grad3 = [ new gml.Vec3(1,1,0), new gml.Vec3(-1,1,0), new gml.Vec3(1,-1,0), new gml.Vec3(-1,-1,0)
                  , new gml.Vec3(1,0,1), new gml.Vec3(-1,0,1), new gml.Vec3(1,0,-1), new gml.Vec3(-1,0,-1)
@@ -32,6 +34,9 @@ class Noise {
     this.gradP = new Array( 512 );
 
     this.seed( 0 );
+
+    // generate random feature points for Worley noise
+    this.worleySeed = 12345;
   }
 
   // josephg: This isn't a very good seeding function, but it works ok. It supports 2^16
@@ -66,6 +71,53 @@ class Noise {
 
   lerp( a: number, b: number, t: number ) {
     return (1-t)*a + t*b;
+  }
+
+  worley3Texture( gl: WebGL2RenderingContext, size: number ): WebGLTexture {
+    //2. Generate a reproducible random number generator for the cube
+    let random = this.lcgRandom( this.worleySeed );
+
+    this.worleyFeaturePoints = [];
+    let numFP = 64;
+
+    for ( let i = 0; i < numFP; i++ ) {
+      let x = Math.sin( i + 1 ) * random;
+      let y = Math.cos( i + 1 ) * random;
+      let z = Math.sin ( 2 * i + 1 ) * random;
+
+      let featurePointX = size * ( x - Math.floor( x ) );
+      let featurePointY = size * ( y - Math.floor( y ) );
+      let featurePointZ = size * ( z - Math.floor( z ) );
+
+      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY, featurePointZ ) );
+    }
+
+    let rgb = [];
+    for ( let z = 0; z < size; z++ ) {
+      for ( let y = 0; y < size; y++ ) {
+        for ( let x = 0; x < size; x++ ) {
+          let n = 1.0 - this.worley3( x, y, z ) / ( 0.5 * size );
+          rgb.push( n * 255 ); // R
+          rgb.push( n * 255 ); // G
+          rgb.push( n * 255 ); // B
+        }
+      }
+    }
+
+    let data = new Uint8Array( rgb );
+    let noiseTexture = gl.createTexture();
+
+    gl.bindTexture( gl.TEXTURE_3D, noiseTexture );
+
+    // no mips
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_BASE_LEVEL, 0 );
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MAX_LEVEL, 0 );
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+    gl.texImage3D   ( gl.TEXTURE_3D, 0, gl.RGB, size, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, data );
+    gl.bindTexture  ( gl.TEXTURE_3D, null );
+
+    return noiseTexture;
   }
 
   perlin3Texture( gl: WebGL2RenderingContext, size: number ): WebGLTexture {
@@ -130,61 +182,41 @@ class Noise {
                      v );
   }
 
-  worley3(x, y, z, int seed)
-  {
-    //Declare some values for later use
-    uint lastRandom, numberFeaturePoints;
-    Vector3 randomDiff, featurePoint;
-    int cubeX, cubeY, cubeZ;
-    
-    let distanceArray = [ 55 ]; // we only care about the closest distance. TODO: fix me!!!!!!!!!!!
-    //Initialize values in distance array to large values
-    for (int i = 0; i < distanceArray.Length; i++)
-      distanceArray[i] = 6666;
+  probLookup( value: number ) {
+    if (value < 393325350)  return 1;
+    if (value < 1022645910) return 2;
+    if (value < 1861739990) return 3;
+    if (value < 2700834071) return 4;
+    if (value < 3372109335) return 5;
+    if (value < 3819626178) return 6;
+    if (value < 4075350088) return 7;
+    if (value < 4203212043) return 8;
+    return 9;
+  }
 
-    //1. Determine which cube the evaluation point is in
-    int evalCubeX = (int)Math.Floor(input.X);
-    int evalCubeY = (int)Math.Floor(input.Y);
-    int evalCubeZ = (int)Math.Floor(input.Z);
+  lcgRandom( lastValue ): number {
+    return ( ( 1103515245 * lastValue + 12345 ) % 0x100000000 );
+  }
 
-    for (int i = -1; i < 2; ++i)
-      for (int j = -1; j < 2; ++j)
-        for (int k = -1; k < 2; ++k)
-        {
-          cubeX = evalCubeX + i;
-          cubeY = evalCubeY + j;
-          cubeZ = evalCubeZ + k;
+  hash( x, y, z ): number {
+    return ( ( ( ( ( 2166136261 ^ x ) * 16777619 ) ^ y ) * 16777619 ) ^ z ) * 16777619;
+  }
 
-          //2. Generate a reproducible random number generator for the cube
-          lastRandom = lcgRandom(hash((uint)(cubeX + seed), (uint)(cubeY), (uint)(cubeZ)));
-          //3. Determine how many feature points are in the cube
-          numberFeaturePoints = probLookup(lastRandom);
-          //4. Randomly place the feature points in the cube
-          for (uint l = 0; l < numberFeaturePoints; ++l)
-          {
-            lastRandom = lcgRandom(lastRandom);
-            randomDiff.X = (float)lastRandom / 0x100000000;
+  worleySeed: number = 0;
 
-            lastRandom = lcgRandom(lastRandom);
-            randomDiff.Y = (float)lastRandom / 0x100000000;
+  worley3( x, y, z, period: number = 255 ) {
+    let closest = Number.MAX_VALUE;
+    for ( let i = 0; i < this.worleyFeaturePoints.length; i++ ) {
+      let dx = ( this.worleyFeaturePoints[i].x - x ) * ( this.worleyFeaturePoints[i].x - x );
+      let dy = ( this.worleyFeaturePoints[i].y - y ) * ( this.worleyFeaturePoints[i].y - y );
+      let dz = ( this.worleyFeaturePoints[i].z - z ) * ( this.worleyFeaturePoints[i].z - z );
+      let dist = Math.sqrt( dx + dy + dz );
+      if ( closest > dist ) {
+        closest = dist;
+      }
+    }
 
-            lastRandom = lcgRandom(lastRandom);
-            randomDiff.Z = (float)lastRandom / 0x100000000;
-
-            featurePoint = new Vector3(randomDiff.X + (float)cubeX, randomDiff.Y + (float)cubeY, randomDiff.Z + (float)cubeZ);
-
-            //5. Find the feature point closest to the evaluation point. 
-            //This is done by inserting the distances to the feature points into a sorted list
-            insert(distanceArray, distanceFunc(input, featurePoint));
-          }
-          //6. Check the neighboring cubes to ensure their are no closer evaluation points.
-          // This is done by repeating steps 1 through 5 above for each neighboring cube
-        }
-
-    float color = combineDistancesFunc(distanceArray);
-    if(color < 0) color = 0;
-    if(color > 1) color = 1;
-    return new Vector4(color, color, color, 1);
+    return closest;
   }
 }
 
