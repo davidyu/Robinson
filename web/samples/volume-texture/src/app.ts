@@ -74,7 +74,7 @@ class NoiseApp {
     let noise = new Noise();
 
     // this.noiseMat = new VolumeMaterial( noise.perlin3Texture( gl, 128 ) );
-    this.noiseMat = new VolumeMaterial( noise.worley3Texture( gl, 128 ) );
+    this.noiseMat = new VolumeMaterial( noise.fusionTexture( gl, 64 ) );
   }
 
   public fixedUpdate( delta: number ) {
