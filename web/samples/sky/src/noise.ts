@@ -8,6 +8,9 @@ class Noise {
   gradP: gml.Vec3[];
   p: number[];
 
+  worleyFeaturePoints: gml.Vec3[];
+  worleyApproxMaxDist: number;
+
   constructor() {
     this.grad3 = [ new gml.Vec3(1,1,0), new gml.Vec3(-1,1,0), new gml.Vec3(1,-1,0), new gml.Vec3(-1,-1,0)
                  , new gml.Vec3(1,0,1), new gml.Vec3(-1,0,1), new gml.Vec3(1,0,-1), new gml.Vec3(-1,0,-1)
@@ -32,6 +35,8 @@ class Noise {
     this.gradP = new Array( 512 );
 
     this.seed( 0 );
+
+    this.seedWorley();
   }
 
   // josephg: This isn't a very good seeding function, but it works ok. It supports 2^16
@@ -60,12 +65,117 @@ class Noise {
     }
   }
 
+  // doesn't take a seed because I don't have a PRNG
+  seedWorley() {
+    this.worleyFeaturePoints = [];
+    let numFP = 16;
+
+    for ( let i = 0; i < numFP; i++ ) {
+      let featurePointX = Math.random();
+      let featurePointY = Math.random();
+      let featurePointZ = Math.random();
+
+      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY, featurePointZ ) );
+
+      // for tiling in 3D space...
+      // pretend each feature point also exists exactly one cube unit over (for each face, edge and corner)
+      // this can probably be slightly optimized (IE: can probably cut this by 33%)
+      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX + 1, featurePointY, featurePointZ ) );
+      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX - 1, featurePointY, featurePointZ ) );
+      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY + 1, featurePointZ ) );
+      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY - 1, featurePointZ ) );
+      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY, featurePointZ + 1 ) );
+      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY, featurePointZ - 1 ) );
+      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX + 1, featurePointY + 1, featurePointZ ) );
+      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX - 1, featurePointY + 1, featurePointZ ) );
+      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX + 1, featurePointY - 1, featurePointZ ) );
+      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX - 1, featurePointY - 1, featurePointZ ) );
+      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY + 1, featurePointZ + 1) );
+      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY - 1, featurePointZ + 1) );
+      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY + 1, featurePointZ - 1) );
+      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY - 1, featurePointZ - 1) );
+      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX + 1, featurePointY, featurePointZ + 1 ) );
+      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX - 1, featurePointY, featurePointZ + 1 ) );
+      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX + 1, featurePointY, featurePointZ - 1 ) );
+      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX - 1, featurePointY, featurePointZ - 1 ) );
+    }
+
+    this.worleyApproxMaxDist = 1.0 / 2.51; // 2.51 == cuberoot( 16 )
+  }
+
   fade( t: number ) {
     return t*t*t*(t*(t*6-15)+10);
   }
 
   lerp( a: number, b: number, t: number ) {
     return (1-t)*a + t*b;
+  }
+
+  fusionTexture( gl: WebGL2RenderingContext, size: number ): WebGLTexture {
+    let rgb = [];
+    let pt = new gml.Vec3( 0, 0, 0 );
+    for ( let z = 0; z < size; z++ ) {
+      for ( let y = 0; y < size; y++ ) {
+        for ( let x = 0; x < size; x++ ) {
+          pt.x = x / size;
+          pt.y = y / size;
+          pt.z = z / size;
+          let perlin = this.perlin3( x * 1.001, y * 1.001, z * 1.001, size - 1 );
+          let worley = Math.max( ( this.worleyApproxMaxDist - this.worley3( pt ) ) / this.worleyApproxMaxDist, 0.0 );
+          rgb.push( perlin * 255 ); // R
+          rgb.push( worley * 255 ); // G
+          rgb.push( 0 ); // unused
+        }
+      }
+    }
+
+    let data = new Uint8Array( rgb );
+    let noiseTexture = gl.createTexture();
+
+    gl.bindTexture( gl.TEXTURE_3D, noiseTexture );
+
+    // no mips
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_BASE_LEVEL, 0 );
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MAX_LEVEL, 0 );
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+    gl.texImage3D   ( gl.TEXTURE_3D, 0, gl.RGB, size, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, data );
+    gl.bindTexture  ( gl.TEXTURE_3D, null );
+
+    return noiseTexture;
+  }
+
+  worley3Texture( gl: WebGL2RenderingContext, size: number ): WebGLTexture {
+    let rgb = [];
+    let pt = new gml.Vec3( 0, 0, 0 );
+    for ( let z = 0; z < size; z++ ) {
+      for ( let y = 0; y < size; y++ ) {
+        for ( let x = 0; x < size; x++ ) {
+          pt.x = x / size;
+          pt.y = y / size;
+          pt.z = z / size;
+          let n = Math.max( ( this.worleyApproxMaxDist - this.worley3( pt ) ) / this.worleyApproxMaxDist, 0.0 );
+          rgb.push( n * 255 ); // R
+          rgb.push( n * 255 ); // G
+          rgb.push( n * 255 ); // B
+        }
+      }
+    }
+
+    let data = new Uint8Array( rgb );
+    let noiseTexture = gl.createTexture();
+
+    gl.bindTexture( gl.TEXTURE_3D, noiseTexture );
+
+    // no mips
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_BASE_LEVEL, 0 );
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MAX_LEVEL, 0 );
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+    gl.texImage3D   ( gl.TEXTURE_3D, 0, gl.RGB, size, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, data );
+    gl.bindTexture  ( gl.TEXTURE_3D, null );
+
+    return noiseTexture;
   }
 
   perlin3Texture( gl: WebGL2RenderingContext, size: number ): WebGLTexture {
@@ -80,8 +190,6 @@ class Noise {
         }
       }
     }
-
-    console.log( rgb );
 
     let data = new Uint8Array( rgb );
     let noiseTexture = gl.createTexture();
@@ -130,7 +238,188 @@ class Noise {
                         this.lerp(n010, n110, u),
                         this.lerp(n011, n111, u), w),
                      v );
-  };
+  }
+
+  probLookup( value: number ) {
+    if (value < 393325350)  return 1;
+    if (value < 1022645910) return 2;
+    if (value < 1861739990) return 3;
+    if (value < 2700834071) return 4;
+    if (value < 3372109335) return 5;
+    if (value < 3819626178) return 6;
+    if (value < 4075350088) return 7;
+    if (value < 4203212043) return 8;
+    return 9;
+  }
+
+  lcgRandom( lastValue ): number {
+    return ( ( 1103515245 * lastValue + 12345 ) % 0x100000000 );
+  }
+
+  worleySeed: number = 0;
+
+  worley3( pt: gml.Vec3, period: number = 255 ) {
+    let closest = -1;
+    let closestSq = Number.MAX_VALUE;
+    for ( let i = 0; i < this.worleyFeaturePoints.length; i++ ) {
+      let distSq = gml.Vec3.distsq( pt, this.worleyFeaturePoints[i] );
+      if ( closestSq > distSq ) {
+        closestSq = distSq;
+        closest = i;
+      }
+    }
+
+    return gml.Vec3.distance( pt, this.worleyFeaturePoints[closest] );
+
+    /*
+    let nearest = this.worleyFeaturePointKDTree.findNearest( pt, Number.MAX_VALUE );
+    return nearest;
+     */
+  }
+}
+
+enum Axis {
+  X,
+  Y,
+  Z,
+}
+
+// 3-dimensional KD-tree to speed up nearest neighbor lookup
+// NOTE: buggy and slow for <1000 feature pts, just use linear scan
+class KDTree {
+  point: gml.Vec3;
+  getAxisValue: ( p: gml.Vec3 ) => number;
+  compareFunction: ( p1: gml.Vec3, p2: gml.Vec3 ) => number;
+  min: number;
+  max: number;
+  first: KDTree;
+  second: KDTree;
+
+  static CompareX( p1: gml.Vec3, p2: gml.Vec3 ): number {
+    return p1.x - p2.x;
+  }
+
+  static CompareY( p1: gml.Vec3, p2: gml.Vec3 ): number {
+    return p1.y - p2.y;
+  }
+
+  static CompareZ( p1: gml.Vec3, p2: gml.Vec3 ): number {
+    return p1.z - p2.z;
+  }
+
+  static GetX( p: gml.Vec3 ): number {
+    return p.x;
+  }
+
+  static GetY( p: gml.Vec3 ): number {
+    return p.y;
+  }
+
+  static GetZ( p: gml.Vec3 ): number {
+    return p.z;
+  }
+
+  constructor( p: gml.Vec3, min: number, max: number, axis: Axis, first: KDTree, second: KDTree ) {
+    this.point = p;
+    this.min = min;
+    this.max = max;
+    switch ( axis ) {
+      case Axis.X:
+        this.getAxisValue = KDTree.GetX;
+        this.compareFunction = KDTree.CompareX;
+        break;
+      case Axis.Y:
+        this.getAxisValue = KDTree.GetY;
+        this.compareFunction = KDTree.CompareY;
+        break;
+      case Axis.Z:
+        this.getAxisValue = KDTree.GetZ;
+        this.compareFunction = KDTree.CompareZ;
+        break;
+    }
+    this.first = first;
+    this.second = second;
+  }
+
+  findNearest( target: gml.Vec3, bestDist: number ): number {
+    let dist = gml.Vec3.distance( this.point, target )
+    if ( dist < bestDist ) bestDist = dist;
+    if ( this.first == null && this.second == null ) {
+        return dist;
+    } else {
+      if ( this.compareFunction( target, this.point ) < 0 ) {
+        let r = this.first.findNearest( target, bestDist );
+        if ( r < bestDist ) bestDist = r;
+        
+        if ( this.second != null && this.second.min - this.getAxisValue( target ) < bestDist ) {
+          r = Math.min( r, this.second.findNearest( target, bestDist ) );
+        }
+
+        return r;
+      } else if ( this.second != null ) {
+        let r = this.second.findNearest( target, bestDist );
+        if ( r < bestDist ) bestDist = r;
+
+        if ( this.getAxisValue( target ) - this.first.max < bestDist ) {
+          r = Math.min( r, this.first.findNearest( target, bestDist ) );
+        }
+
+        return r;
+      }
+    }
+  }
+}
+
+function nextAxis( axis: Axis ) {
+  switch ( axis ) {
+    case Axis.X: return Axis.Y;
+    case Axis.Y: return Axis.Z;
+    case Axis.Z: return Axis.X;
+  }
+}
+
+function treeify( points: gml.Vec3[], sortAxis: Axis ) {
+  if ( points == null || points.length == 0 ) return null;
+
+  if ( points.length > 1 ) {
+    points.sort( function( p1, p2 ) {
+      switch ( sortAxis ) {
+        case Axis.X:
+          return p1.x - p2.x;
+        case Axis.Y:
+          return p1.y - p2.y;
+        case Axis.Z:
+          return p1.z - p2.z;
+      }
+    } );
+  }
+
+  let mid = Math.floor( points.length / 2 );
+
+  let min = 0;
+  let max = 0;
+
+  switch ( sortAxis ) {
+    case Axis.X:
+      min = points[0].x;
+      max = points[points.length - 1].x;
+      break;
+    case Axis.Y:
+      min = points[0].y;
+      max = points[points.length - 1].y;
+      break;
+    case Axis.Z:
+      min = points[0].z;
+      max = points[points.length - 1].z;
+      break;
+  }
+
+  return new KDTree( points[mid]
+                    , min
+                    , max
+                    , sortAxis
+                    , treeify( points.slice( 0, mid ), nextAxis( sortAxis ) )
+                    , treeify( points.slice( mid + 1 ), nextAxis( sortAxis ) ) );
 }
 
 /*

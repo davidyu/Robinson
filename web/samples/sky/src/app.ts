@@ -95,7 +95,7 @@ class SkyApp {
   }
 }
 
-var frameLimit: number = 2;
+var frameLimit: number = -1;
 
 function changeFrameLimit( e ) {
   switch ( e.target.value ) {
@@ -169,14 +169,13 @@ function StartSky() {
     shaderRepo = new ShaderRepository( ( repo ) => { 
       app = new SkyApp( params, repo );
 
-      let size = 128; // dimensions, in pixels, of our 3D texture
       let gl = app.renderer.context;
 
       app.editor.install();
 
       let noise = new Noise();
 
-      scene = new Scene( null, null, true, true, noise.perlin3Texture( gl, 128 ) );
+      scene = new Scene( null, null, true, true, noise.fusionTexture( gl, 64 ) );
       Scene.setActiveScene( scene );
 
       // ocean
