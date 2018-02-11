@@ -61,10 +61,10 @@ class ShaderEditor {
     }
 
     stylesheet.insertRule( "html, body       { height: 100%; margin: 0; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; }" );
-    stylesheet.insertRule( ".shader-list     { border: 1px #ccc solid; border-bottom:0; float:left; list-style-type:none; margin:0; padding-left:0; width: 200px; }" );
+    stylesheet.insertRule( ".shader-list     { float:left; list-style-type:none; margin:0; padding-left:0; width: 200px; }" );
     stylesheet.insertRule( ".shader-entry    { border-bottom: 1px #ccc solid; font-size: 70%; padding-left: 10%; padding-top: 3%; padding-bottom: 3%; cursor: default; }" );
     stylesheet.insertRule( ".selected        { background-color: #0079e8; color: #fff }" );
-    stylesheet.insertRule( ".shader-text     { border: 1px #ccc solid; border-left: 0; width: 50%; height: 100%; margin: 0; padding: 0; }" );
+    stylesheet.insertRule( ".shader-text     { border-left: 1px #ccc solid; width: 50%; height: 100%; margin: 0; padding: 0; }" );
     stylesheet.insertRule( ".shader-text-con { float: left; flex-grow: 1; display: flex; }" );
   }
 
@@ -148,7 +148,7 @@ class ShaderEditor {
   }
 
   install() {
-    let container = document.getElementById( "editor-container" );
+    let container = document.getElementById( "shader-editor" );
 
     this.selectedShaderIndex = <SHADER_PROGRAM> 0;
     this.vertexShaderEditor.setValue( this.renderer.programData[ 0 ].vert, -1 );

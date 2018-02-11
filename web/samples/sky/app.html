@@ -9,21 +9,75 @@
       height: 100%;
     }
 
-    #viewport-container, #options-container {
-      flex: 0 1 auto; /* grow to fit content */
+    #viewport-container {
+      flex: 0 1 auto; /* grow to fit the size of my content */
     }
 
     #editor-container {
-      flex: 1 1 auto; /* fill rest of height */
+      flex: 1 1 auto;    /* I should fill the remainder of my parent's height*/
+      flex-flow: column; /* don't flex on row */
+      display: flex;     /* for my children, the tabs and the tab-contents */
     }
 
     #big-viewport {
       display: block;
       margin: auto;
     }
+
+    .tabs {
+      flex: 0 1 auto; /* I should grow to fit content in me */
+      clear: both;
+    }
+
+    .tab {
+      float: left;
+    }
+
+    .tab [type=radio] {
+      display: none;   
+    }
+
+    [type=radio] ~ label {
+      background: #eee; 
+      padding: 10px; 
+      border: 1px solid #ccc; 
+      margin-left: -1px;  /* hides the adjacent 1px border */
+      margin-bottom: -1px; /* hides bottom border when this is checked */
+      left: 10px; 
+      position: relative;
+      display: inline-block; /* give the labels proper heights */
+    }
+
+    [type=radio]:checked ~ label {
+      background: white;
+      border-bottom: 1px solid white;
+      z-index: 2;
+    }
+
+    .tab-contents {
+      clear: both;
+      flex: 1 1 auto; /* I should fill out the remaining height in my parent element */
+      display: flex;  /* for my children, .tab-content */
+    }
+
+    .tab-content {
+      display: none; /* when showing, display should be flex" */
+      border-top: 1px solid #ccc; 
+      flex: 1 1 auto; /* fill rest of height */
+    }
   </style>
   <script src="./app.js" type="text/javascript"></script>
   <script src="./ace.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    function changeTab( tabId ) {
+        var tabs = document.getElementsByClassName( "tab-content" );
+        for ( var i = 0; i < tabs.length; i++ ) {
+            tabs[i].removeAttribute( "style" ); // by default, these are display:none, so removing the style override hides them
+        }
+
+        document.getElementById( tabId ).style.display = "flex"; // show the one we selected
+    }
+  </script>
   <title>Orbit</title>
 </head>
 <body onload="StartSky()">
@@ -34,17 +88,32 @@
         Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
       </canvas>
     </div>
-    <div id="options-container">
-      <label>Frame limiter</label>
-      <select id="frame-limiter">
-        <option value="adaptive">Monitor refresh rate</option>
-        <option value="60">60</option>
-        <option value="120">120</option>
-        <option value="144">144</option>
-        <option value="custom">Custom</option>
-      </select>
-    </div>
-    <div id="editor-container" style="display:flex;">
+    <div id="editor-container">
+        <div class="tabs">
+            <div class="tab">
+                <input type="radio" id="tab-1" name="tab-group-1" onchange="changeTab('parameter-editor')" checked >
+                <label for="tab-1">Settings</label>
+            </div>
+            <div class="tab">
+                <input type="radio" id="tab-2" name="tab-group-1" onchange="changeTab('shader-editor')">
+                <label for="tab-2">Shaders</label>
+            </div>
+        </div>
+        <div class="tab-contents">
+            <div id="parameter-editor" class="tab-content" style="display:flex;">
+                <div id="options-container">
+                  <label>Frame limiter</label>
+                  <select id="frame-limiter">
+                    <option value="adaptive">Monitor refresh rate</option>
+                    <option value="60">60</option>
+                    <option value="120">120</option>
+                    <option value="144">144</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                </div>
+            </div>
+            <div id="shader-editor" class="tab-content"></div>
+        </div>
     </div>
   </div>
   </body>
