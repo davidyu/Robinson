@@ -68,7 +68,7 @@ class Noise {
   // doesn't take a seed because I don't have a PRNG
   seedWorley() {
     this.worleyFeaturePoints = [];
-    let numFP = 16;
+    let numFP = 128;
 
     for ( let i = 0; i < numFP; i++ ) {
       let featurePointX = Math.random();

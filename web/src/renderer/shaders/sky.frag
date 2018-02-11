@@ -25,14 +25,13 @@ const   vec3  cloud_top_color  = vec3( 1.0 );
 out vec4 fragColor;
 
 #define PI 3.14159
+#define CLOUD_SIZE 128
 
 float worley(vec3 x) {
-    #define CLOUD_SIZE 64
     return texture( uPerlinNoise, mod( x, vec3( CLOUD_SIZE ) ) / vec3( CLOUD_SIZE ) ).g;
 }
 
 float pnoise( vec3 x ) {
-    #define CLOUD_SIZE 64
     return texture( uPerlinNoise, mod( x, vec3( CLOUD_SIZE ) ) / vec3( CLOUD_SIZE ) ).r;
 }
 
@@ -44,7 +43,7 @@ float sample_cloud( vec3 x ) {
     for (int i = 0; i < NUM_OCTAVES; ++i) {
         v += mix( 0.2, 0.4, cloudiness ) * a * pnoise( x );
         // modulate with Worley noise to produce billowy shapes
-        v += mix( 0.2, 0.4, cloudiness ) * a * worley( x * 0.2 );
+        v += mix( 0.2, 0.4, cloudiness ) * a * worley( x * 30.0 );
         x = x * 2.3 + shift;
         a *= 0.5;
 	}

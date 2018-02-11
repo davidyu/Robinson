@@ -18,6 +18,27 @@
       display: block;
       margin: auto;
     }
+
+    .link-button {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      text-decoration: none;
+      background-color: #EEEEEE;
+      color: #FFF;
+      cursor: pointer;
+      background-color: #0095ff;
+      border: 1px solid #07c;
+      box-shadow: inset 0 1px 0 #66bfff;
+      padding: .61538462em 1em;
+      vertical-align: middle;
+    }
+
+    .link-button:hover {
+      color: rgba(255,255,255,0.9);
+      background-color: #07c;
+      border-color: #005999;
+      box-shadow: inset 0 1px 0 #3af;
+    }
   </style>
   <!--
   <script src="./vendor/mousetrap.js" type="text/javascript"></script>
@@ -33,6 +54,10 @@
       <canvas id="big-viewport" width="512" height="512">
         Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
       </canvas>
+      <br/>
+      <center>
+        <a class="link-button" id="download-texture">Download texture data</a>
+      </center>
     </div>
   </div>
   </body>

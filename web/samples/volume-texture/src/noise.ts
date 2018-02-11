@@ -68,7 +68,7 @@ class Noise {
   // doesn't take a seed because I don't have a PRNG
   seedWorley() {
     this.worleyFeaturePoints = [];
-    let numFP = 16;
+    let numFP = 128;
 
     for ( let i = 0; i < numFP; i++ ) {
       let featurePointX = Math.random();
@@ -77,30 +77,57 @@ class Noise {
 
       this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY, featurePointZ ) );
 
-      // for tiling in 3D space...
-      // pretend each feature point also exists exactly one cube unit over (for each face, edge and corner)
-      // this can probably be slightly optimized (IE: can probably cut this by 33%)
-      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX + 1, featurePointY, featurePointZ ) );
-      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX - 1, featurePointY, featurePointZ ) );
-      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY + 1, featurePointZ ) );
-      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY - 1, featurePointZ ) );
-      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY, featurePointZ + 1 ) );
-      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY, featurePointZ - 1 ) );
-      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX + 1, featurePointY + 1, featurePointZ ) );
-      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX - 1, featurePointY + 1, featurePointZ ) );
-      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX + 1, featurePointY - 1, featurePointZ ) );
-      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX - 1, featurePointY - 1, featurePointZ ) );
-      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY + 1, featurePointZ + 1) );
-      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY - 1, featurePointZ + 1) );
-      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY + 1, featurePointZ - 1) );
-      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY - 1, featurePointZ - 1) );
-      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX + 1, featurePointY, featurePointZ + 1 ) );
-      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX - 1, featurePointY, featurePointZ + 1 ) );
-      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX + 1, featurePointY, featurePointZ - 1 ) );
-      this.worleyFeaturePoints.push( new gml.Vec3( featurePointX - 1, featurePointY, featurePointZ - 1 ) );
+      // for tiling in 3D space...add the same point tiled on various facets of the unit cube
+      if ( featurePointX < 0.5 ) {
+        this.worleyFeaturePoints.push( new gml.Vec3( featurePointX + 1, featurePointY, featurePointZ ) );
+        if ( featurePointY < 0.5 ) {
+          this.worleyFeaturePoints.push( new gml.Vec3( featurePointX + 1, featurePointY + 1, featurePointZ ) );
+        } else {
+          this.worleyFeaturePoints.push( new gml.Vec3( featurePointX + 1, featurePointY - 1, featurePointZ ) );
+        }
+        if ( featurePointZ < 0.5 ) {
+          this.worleyFeaturePoints.push( new gml.Vec3( featurePointX + 1, featurePointY, featurePointZ + 1 ) );
+        } else {
+          this.worleyFeaturePoints.push( new gml.Vec3( featurePointX + 1, featurePointY, featurePointZ - 1 ) );
+        }
+      } else {
+        this.worleyFeaturePoints.push( new gml.Vec3( featurePointX - 1, featurePointY, featurePointZ ) );
+        if ( featurePointY < 0.5 ) {
+          this.worleyFeaturePoints.push( new gml.Vec3( featurePointX - 1, featurePointY + 1, featurePointZ ) );
+        } else {
+          this.worleyFeaturePoints.push( new gml.Vec3( featurePointX - 1, featurePointY - 1, featurePointZ ) );
+        }
+        if ( featurePointZ < 0.5 ) {
+          this.worleyFeaturePoints.push( new gml.Vec3( featurePointX - 1, featurePointY, featurePointZ + 1 ) );
+        } else {
+          this.worleyFeaturePoints.push( new gml.Vec3( featurePointX - 1, featurePointY, featurePointZ - 1 ) );
+        }
+      }
+
+      if ( featurePointY < 0.5 ) {
+        this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY + 1, featurePointZ ) );
+        if ( featurePointZ < 0.5 ) {
+          this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY + 1, featurePointZ + 1) );
+        } else {
+          this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY + 1, featurePointZ - 1) );
+        }
+      } else {
+        this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY - 1, featurePointZ + 1) );
+        if ( featurePointZ < 0.5 ) {
+          this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY - 1, featurePointZ - 1) );
+        } else {
+          this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY - 1, featurePointZ ) );
+        }
+      }
+
+      if ( featurePointZ < 0.5 ) {
+        this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY, featurePointZ + 1 ) );
+      } else {
+        this.worleyFeaturePoints.push( new gml.Vec3( featurePointX, featurePointY, featurePointZ - 1 ) );
+      }
     }
 
-    this.worleyApproxMaxDist = 1.0 / 2.51; // 2.51 == cuberoot( 16 )
+    this.worleyApproxMaxDist = 1.0 / 5.04;
   }
 
   fade( t: number ) {
@@ -145,8 +172,8 @@ class Noise {
     return noiseTexture;
   }
 
-  worley3Texture( gl: WebGL2RenderingContext, size: number ): WebGLTexture {
-    let rgb = [];
+  worley3TextureDataPacked( size: number ): Uint8Array {
+    let data = [];
     let pt = new gml.Vec3( 0, 0, 0 );
     for ( let z = 0; z < size; z++ ) {
       for ( let y = 0; y < size; y++ ) {
@@ -155,14 +182,53 @@ class Noise {
           pt.y = y / size;
           pt.z = z / size;
           let n = Math.max( ( this.worleyApproxMaxDist - this.worley3( pt ) ) / this.worleyApproxMaxDist, 0.0 );
-          rgb.push( n * 255 ); // R
-          rgb.push( n * 255 ); // G
-          rgb.push( n * 255 ); // B
+          data.push( 255 * n );
         }
       }
     }
+    return new Uint8Array( data );
+  }
 
-    let data = new Uint8Array( rgb );
+  perlin3TextureDataPacked( size: number ): Uint8Array {
+    let data = [];
+    for ( let z = 0; z < size; z++ ) {
+      for ( let y = 0; y < size; y++ ) {
+        for ( let x = 0; x < size; x++ ) {
+          let n = this.perlin3( x * 1.001, y * 1.001, z * 1.001, size - 1 );
+          data.push( n * 255 ); // R
+        }
+      }
+    }
+    return new Uint8Array( data );
+  }
+
+  // assumes input data is single-channel (grayscale) texture
+  textureFromPackedData( gl: WebGL2RenderingContext, data: Uint8Array, size: number ) {
+    let unpacked = [];
+
+    // unpack RGB
+    for ( let i = 0; i < data.length; i++ ) {
+      unpacked.push( data[i] );
+      unpacked.push( data[i] );
+      unpacked.push( data[i] );
+    }
+
+    let noiseTexture = gl.createTexture();
+
+    gl.bindTexture( gl.TEXTURE_3D, noiseTexture );
+
+    // no mips
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_BASE_LEVEL, 0 );
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MAX_LEVEL, 0 );
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+    gl.texImage3D   ( gl.TEXTURE_3D, 0, gl.RGB, size, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array( unpacked ) );
+    gl.bindTexture  ( gl.TEXTURE_3D, null );
+
+    return noiseTexture;
+  }
+
+  textureFromData( gl: WebGL2RenderingContext, data: Uint8Array, size: number ): WebGLTexture {
     let noiseTexture = gl.createTexture();
 
     gl.bindTexture( gl.TEXTURE_3D, noiseTexture );

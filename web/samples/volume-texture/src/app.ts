@@ -18,6 +18,8 @@ class NoiseApp {
   dragStart: gml.Vec2;
   lastMousePos: gml.Vec2;
 
+  textureDataDownloadElement: HTMLAnchorElement;
+
   constructor( params: NoiseAppParams, shaderRepo: ShaderRepository ) {
     this.renderer = new Renderer( params.vp, shaderRepo );
     let pos    = new gml.Vec4( 0, 0, 1000, 1 )
@@ -29,6 +31,8 @@ class NoiseApp {
     this.dirty = true;
     this.dragStart = new gml.Vec2( 0, 0 );
     this.lastMousePos = new gml.Vec2( 0, 0 );
+
+    this.textureDataDownloadElement = <HTMLAnchorElement> document.getElementById( "download-texture" );
 
     params.vp.addEventListener( 'mousedown', ev => {
       switch ( ev.button ) {
@@ -73,8 +77,11 @@ class NoiseApp {
 
     let noise = new Noise();
 
-    // this.noiseMat = new VolumeMaterial( noise.perlin3Texture( gl, 128 ) );
-    this.noiseMat = new VolumeMaterial( noise.fusionTexture( gl, 64 ) );
+    let data = noise.worley3TextureDataPacked( 64 );
+    this.noiseMat = new VolumeMaterial( noise.textureFromPackedData( gl, data, 64 ) );
+    this.textureDataDownloadElement.href = window.URL.createObjectURL( new Blob( [ data ], { type: 'application/octet-stream' } ) );
+    this.textureDataDownloadElement.download = "noise.blob";
+    // this.noiseMat = new VolumeMaterial( noise.fusionTexture( gl, 64 ) );
   }
 
   public fixedUpdate( delta: number ) {
