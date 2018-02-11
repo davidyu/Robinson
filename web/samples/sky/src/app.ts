@@ -119,6 +119,7 @@ function changeFrameLimit( e ) {
 
 var app: SkyApp = null;
 var lastFrame: number = null;
+var finishedDownloadingTexture = false;
 
 function updateAndDraw( t: number ) {
   let dt = ( t - lastFrame ) / 1000.0;
@@ -152,8 +153,10 @@ function updateAndDraw( t: number ) {
   }
 
   // this is way too slow
-  app.renderer.dirty = true;
-  app.renderer.render();
+  if ( finishedDownloadingTexture ) {
+    app.renderer.dirty = true;
+    app.renderer.render();
+  }
 
   window.requestAnimationFrame( updateAndDraw );
 }
@@ -175,7 +178,11 @@ function StartSky() {
 
       let noise = new Noise();
 
-      scene = new Scene( null, null, true, true, noise.fusionTexture( gl, 64 ) );
+      scene = new Scene( null, null, true, true, [ noise.perlin3Texture( gl, 128 ), noise.textureFromOfflinePackedData( gl, "worley.blob", 64, ( texture ) => {
+        finishedDownloadingTexture = true;
+        scene.noiseVolumes[1] = texture;
+      } ) ] );
+
       Scene.setActiveScene( scene );
 
       // ocean

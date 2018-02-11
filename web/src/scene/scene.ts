@@ -113,12 +113,12 @@ class Scene {
   hasEnvironment    : boolean;
   dynamicEnvironment: boolean;
 
-  noiseVolume: WebGLTexture;
+  noiseVolumes: WebGLTexture[];
 
   // cached render objects
   fullscreen: Quad;
 
-  constructor( environmentMap: CubeMap, irradianceMap: CubeMap, hasEnvironment: boolean = false, dynamicEnvironment: boolean = false, noiseVolume: WebGLTexture = null ) {
+  constructor( environmentMap: CubeMap, irradianceMap: CubeMap, hasEnvironment: boolean = false, dynamicEnvironment: boolean = false, noiseVolumes: WebGLTexture[] = [] ) {
     this.renderables = [];
     this.lights = [];
     this.environmentMap = environmentMap;
@@ -126,7 +126,7 @@ class Scene {
     this.time = 0;
     this.hasEnvironment = hasEnvironment;
     this.dynamicEnvironment = dynamicEnvironment;
-    this.noiseVolume = noiseVolume;
+    this.noiseVolumes = noiseVolumes;
   }
 
   public addRenderable( renderable: Renderable ) {
@@ -287,10 +287,13 @@ class Scene {
     gl.activeTexture( gl.TEXTURE0 );
     gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapRT );
 
-    if ( this.noiseVolume != null ) {
+    if ( this.noiseVolumes.length > 0 ) {
       gl.uniform1i( variables.uPerlinNoise, 1 );
       gl.activeTexture( gl.TEXTURE1 );
-      gl.bindTexture( gl.TEXTURE_3D, this.noiseVolume );
+      gl.bindTexture( gl.TEXTURE_3D, this.noiseVolumes[0]);
+      gl.uniform1i( variables.uWorleyNoise, 2 );
+      gl.activeTexture( gl.TEXTURE2 );
+      gl.bindTexture( gl.TEXTURE_3D, this.noiseVolumes[1] );
     }
 
     gl.drawElements( gl.TRIANGLES, this.fullscreen.renderData.indices.length, gl.UNSIGNED_INT, 0 );

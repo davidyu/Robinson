@@ -11,7 +11,7 @@ class NoiseApp {
   dirty: boolean;
 
   // material
-  noiseMat: NoiseMaterial;
+  noiseMat: VolumeMaterial;
 
   // ui
   dragging: boolean;
@@ -81,7 +81,23 @@ class NoiseApp {
     this.noiseMat = new VolumeMaterial( noise.textureFromPackedData( gl, data, 64 ) );
     this.textureDataDownloadElement.href = window.URL.createObjectURL( new Blob( [ data ], { type: 'application/octet-stream' } ) );
     this.textureDataDownloadElement.download = "noise.blob";
-    // this.noiseMat = new VolumeMaterial( noise.fusionTexture( gl, 64 ) );
+
+    let loadTextureElement = document.getElementById( "load-texture" );
+    loadTextureElement.onchange = ( e ) => {
+      let file = ( <any> e.target ).files[0];
+      if ( !file.name.match( '.*blob' ) ) {
+        return;
+      }
+
+      let reader = new FileReader();
+      reader.addEventListener( "loadend", () => {
+        let texture = noise.textureFromPackedData( gl, new Uint8Array( reader.result ), 64 );
+        this.noiseMat.volumeTexture = texture;
+        console.log( reader.result.size );
+      } );
+      console.log( file );
+      reader.readAsArrayBuffer( file );
+    }
   }
 
   public fixedUpdate( delta: number ) {

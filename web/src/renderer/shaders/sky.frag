@@ -6,6 +6,7 @@ precision mediump sampler3D;
 uniform vec4 cPosition_World;
 uniform float uTime;
 uniform sampler3D uPerlinNoise;
+uniform sampler3D uWorleyNoise;
 
 in vec3 vDirection;
 
@@ -25,14 +26,16 @@ const   vec3  cloud_top_color  = vec3( 1.0 );
 out vec4 fragColor;
 
 #define PI 3.14159
-#define CLOUD_SIZE 128
 
+#define WORLEY_SAMPLE_MAX 12.0
 float worley(vec3 x) {
-    return texture( uPerlinNoise, mod( x, vec3( CLOUD_SIZE ) ) / vec3( CLOUD_SIZE ) ).g;
+    //return texture( uWorleyNoise, mod( x, vec3( WORLEY_SAMPLE_MAX ) ) / vec3( WORLEY_SAMPLE_MAX ) ).g;
+    return texture( uWorleyNoise, fract( x / vec3( WORLEY_SAMPLE_MAX ) ) ).r;
 }
 
+#define PERLIN_SAMPLE_MAX 128
 float pnoise( vec3 x ) {
-    return texture( uPerlinNoise, mod( x, vec3( CLOUD_SIZE ) ) / vec3( CLOUD_SIZE ) ).r;
+    return texture( uPerlinNoise, fract( x / vec3( PERLIN_SAMPLE_MAX ) ) ).r;
 }
 
 float sample_cloud( vec3 x ) {
@@ -41,9 +44,8 @@ float sample_cloud( vec3 x ) {
     vec3 shift = vec3( 100 );
     const int NUM_OCTAVES = 4;
     for (int i = 0; i < NUM_OCTAVES; ++i) {
-        v += mix( 0.2, 0.4, cloudiness ) * a * pnoise( x );
-        // modulate with Worley noise to produce billowy shapes
-        v += mix( 0.2, 0.4, cloudiness ) * a * worley( x * 30.0 );
+        v += mix( 0.2, 0.4, cloudiness ) * a * worley( x ); // macro, billow-y shapes
+        v += mix( 0.2, 0.4, cloudiness ) * a * pnoise( x ); // add wispiness
         x = x * 2.3 + shift;
         a *= 0.5;
 	}

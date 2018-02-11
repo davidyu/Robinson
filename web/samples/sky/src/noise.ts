@@ -276,6 +276,57 @@ class Noise {
     return nearest;
      */
   }
+
+  textureFromOfflinePackedData( gl: WebGL2RenderingContext, path: string, size: number, loadDoneCallback:( texture: WebGLTexture ) => void ): WebGLTexture {
+    // download blob file
+    var req = new XMLHttpRequest();
+    // onload, create texture for use
+    req.addEventListener( "load", evt => {
+      let texture = this.textureFromPackedData( gl, new Uint8Array( req.response ), size );
+      loadDoneCallback( texture );
+    } );
+    req.open( "GET", path, true );
+    req.responseType = "arraybuffer";
+    req.send();
+
+    // create an empty 1x1x1 texture for temporary use
+    let emptyTexture = gl.createTexture();
+
+    gl.bindTexture( gl.TEXTURE_3D, emptyTexture );
+
+    // no mips, 1x1x1...
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_BASE_LEVEL, 0 );
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MAX_LEVEL, 0 );
+    gl.texImage3D   ( gl.TEXTURE_3D, 0, gl.RGB, 1, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array( [ 0, 0, 0 ] ) );
+    gl.bindTexture  ( gl.TEXTURE_3D, null );
+
+    return emptyTexture;
+  }
+
+  textureFromPackedData( gl: WebGL2RenderingContext, data: Uint8Array, size: number ) {
+    let unpacked = [];
+
+    // unpack RGB
+    for ( let i = 0; i < data.length; i++ ) {
+      unpacked.push( data[i] );
+      unpacked.push( data[i] );
+      unpacked.push( data[i] );
+    }
+
+    let noiseTexture = gl.createTexture();
+
+    gl.bindTexture( gl.TEXTURE_3D, noiseTexture );
+
+    // no mips
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_BASE_LEVEL, 0 );
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MAX_LEVEL, 0 );
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+    gl.texImage3D   ( gl.TEXTURE_3D, 0, gl.RGB, size, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array( unpacked ) );
+    gl.bindTexture  ( gl.TEXTURE_3D, null );
+
+    return noiseTexture;
+  }
 }
 
 enum Axis {
