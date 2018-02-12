@@ -130,7 +130,7 @@ class Scene {
     this.hasEnvironment = hasEnvironment;
     this.dynamicEnvironment = dynamicEnvironment;
     this.noiseVolumes = noiseVolumes;
-    this.cloudiness = 0.5;
+    this.cloudiness = 0.25;
     this.cloudSpeed = 3;
   }
 

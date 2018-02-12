@@ -137,10 +137,8 @@ void main() {
                    , 1.0 - blueness                     // less green as we move up, linear
                    , 0.6 + ( 1.0 - blueness ) * 0.4 );  // blue depends on how far up we are
 
-    sky = desaturate( sky, uCloudiness );
-
     sky = desaturate( sky, 0.5 * uCloudiness * uCloudiness ); // desaturate with cloudiness
-    sky *= ( 1.0 - 0.65 * uCloudiness * uCloudiness ); // darken with cloudiness
+    sky *= ( 1.0 - 0.5 * uCloudiness * uCloudiness ); // darken with cloudiness
 
     sky += sun( eye );
     vec4 cl = clouds( eye );
