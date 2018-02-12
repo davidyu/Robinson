@@ -1,18 +1,22 @@
 #version 300 es
 
+// "ground-truth" TDM seascape shader with minimal changes
+// testing to see if valid heightmap tracing makes a difference
+
 precision mediump float;
 
 uniform vec4 cPosition_World;
 uniform float uTime;
+uniform highp mat4 uVMatrix;
 
 uniform samplerCube environment;
 uniform float environmentMipMaps;
 
-const   float sun_size = sqrt( 1.0 / 3.0 );  // radius of sun sphere
+const   vec3  sun_light_dir = normalize( vec3( 0.0, 1.0, 0.4 ) );  // radius of sun sphere
 const   vec3  sea_base_color  = vec3(0.1,0.19,0.22);
 const   vec3  sea_water_color = vec3(0.15,0.9,0.8);
 
-const float sea_speed = 1.0;
+const float sea_speed = 2.0;
 const float sea_choppiness = 4.0;
 const float sea_frequency = 0.16;
 const float sea_amplitude = 0.6;
@@ -25,8 +29,6 @@ out vec4 fragColor;
 float diffuse( vec3 normal, vec3 light, float p ) {
     return pow( dot( normal, light ) * 0.4 + 0.6, p );
 }
-
-// testing to see if valid heightmap tracing makes a difference
 
 // based on Shadertoy "Seascape" entry by TDM
 
@@ -175,6 +177,59 @@ float heightMapTracing(vec3 ori, vec3 dir, out vec3 p) {
     return tmid;
 }
 
+float foam_detail( vec2 p )
+{
+    // use the same noise layering technique we've been using
+    // except modify parameters slightly to add detail to foam
+    // technique inspired by "Buoy" by TekF on ShaderToy
+    // source: https://www.shadertoy.com/view/XdsGDB 
+    p *= exp2( 2.5 );
+    p.y -= uTime * 0.5;
+    p.x += uTime * 0.1;
+    
+    float d = 0.0;
+    float freq = sea_frequency * 1.7;
+    float amp  = sea_amplitude * 0.25;
+    float choppiness = sea_choppiness;
+    float height = 0.0;
+    
+    const mat2 octave_matrix = mat2( 1.6, 1.2, -1.2, 1.6 );
+    for ( int i = 0; i < 5; i++ ) {
+        // warp input domain
+        p = p.xy + p.yx * vec2( -1,1 ) / sqrt( 2.0 );
+        d  = octave( ( p + uTime * sea_speed ) * freq, choppiness ), 
+        d += octave( ( p - uTime * sea_speed ) * freq, choppiness ), 
+        height += d * amp;
+        p *= octave_matrix;
+        freq *= 2.9;
+        amp *= 0.22;
+        choppiness = mix( choppiness, 1.0, 0.2 );
+    }
+
+    return height;
+}
+
+float foam( vec2 pos, float detailed_height )
+{
+    // foaminess is modulated by height
+    float base_foaminess = detailed_height;
+
+    float detail = foam_detail( pos );
+   
+    // poke some holes in foam to simulate appearance of bubbles
+    // first term is large bubbles (to reduce noticeable artifacting at close range, we reduce large bubble alpha)
+    // second term is tiny bubbles (no noticeable artifacting unless at a particular distance, but that's a sampling artifact)
+    float fizziness = clamp( abs( noise( pos * 25.0 ) ) * 0.04 + abs( noise( pos * 380.0 ) ) * 0.2, 0.0, 1.0 );
+
+    // the smoothstep is actually quite important in producing the end result. We purposefully (artistically :) pick
+    // a range in the produced noise that looks reasonably passable as foam
+    // modulate fizziness by wave height (so we don't see too much foam bubbles on the edge)
+    float foam = smoothstep( 0.9, 2.1, base_foaminess + detail ) - smoothstep( 0.5, 1.6, base_foaminess ) * fizziness;
+    
+    // eliminate negative values
+    return max( foam, 0.0 );
+}
+
 void main( void ) {
     vec3 view = normalize( vDirection );
     vec3 ori = cPosition_World.xyz;
@@ -190,7 +245,7 @@ void main( void ) {
     vec3 reflected = ( reflect( view, normal ) );
     vec4 ibl_specular = texture( environment, reflected );
     
-    vec3 lightdir = normalize( vec4( vec3( sun_size ), 0 ) ).xyz;
+    vec3 lightdir = normalize( uVMatrix * vec4( sun_light_dir, 0 ) ).xyz;
 
     vec4 refracted = vec4( sea_base_color + diffuse( normal, lightdir, 80.0 ) * sea_water_color * 0.12, 1.0 ); 
 
@@ -203,8 +258,9 @@ void main( void ) {
 
     color += vec4( sea_water_color * ( height_detailed( p * sea_scale ) ) * 0.18 * atten * sea_scale, 1.0 );
     
-    // bteitler: Apply specular highlight
     color += vec4( get_specular( normal, lightdir, view, 60.0 ) );
+
+    color = mix( color, vec4( 1.0, 1.0, 1.0, 1.0 ), foam( p.xz * sea_scale, p.y ) );
 
     fragColor = mix( vec4( 0.0, 0.0, 0.0, 0.0 ) // transparent - draw what's behind us (environment)
                       , color // ocean color

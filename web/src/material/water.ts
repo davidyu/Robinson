@@ -6,6 +6,7 @@ class WaterMaterial extends Material {
   specular: gml.Vec4;
   emissive: gml.Vec4;
   shininess: number;
+  speed: number;
   screenspace: boolean;
 
   constructor( ambient: gml.Vec4 = new gml.Vec4( 0.5, 0.5, 0.5, 1 )
@@ -21,6 +22,7 @@ class WaterMaterial extends Material {
     this.emissive = emissive;
     this.shininess = shininess;
     this.screenspace = screenspace;
+    this.speed = 1.0;
   }
 }
 
