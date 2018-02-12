@@ -634,12 +634,14 @@ class Renderer {
           this.useProgram( gl, SHADER_PROGRAM.WATER_SS );
           let shaderVariables = this.programData[ this.currentProgram ].uniforms
           gl.uniform1f( shaderVariables.uTime, scene.time );
+          gl.uniform1f( shaderVariables.uCloudiness, scene.cloudiness );
           let inverseProjectionMatrix = perspective.invert();
           gl.uniformMatrix4fv( shaderVariables.uInverseProjection, false, inverseProjectionMatrix.m );
         } else {
           this.useProgram( gl, SHADER_PROGRAM.WATER );
           let shaderVariables = this.programData[ this.currentProgram ].uniforms
           gl.uniform1f( shaderVariables.uTime, scene.time );
+          gl.uniform1f( shaderVariables.uCloudiness, scene.cloudiness );
         }
       } else if ( p.material instanceof NoiseMaterial ) {
         this.useProgram( gl, SHADER_PROGRAM.NOISE_WRITER );

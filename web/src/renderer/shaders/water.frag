@@ -8,6 +8,7 @@ in float vAmp;
 uniform highp mat4 uVMatrix;
 uniform highp mat3 uInverseViewMatrix;
 uniform highp mat3 uNormalMVMatrix;    // inverse model view matrix
+uniform float uCloudiness;
 
 uniform samplerCube environment;
 uniform float environmentMipMaps;
@@ -114,7 +115,7 @@ vec3 get_normal( vec2 p, float detailed_height, float epsilon )
 
 float get_specular( vec3 n, vec3 l, vec3 e, float s ) {
     float nrm = ( s + 8.0 ) / ( 3.1415926 * 8.0 );
-    return pow( max ( dot( reflect( e, n ), l ), 0.0 ), s ) * nrm;
+    return ( 1.0 - uCloudiness ) * pow( max ( dot( reflect( e, n ), l ), 0.0 ), s ) * nrm;
 }
 
 float foam_detail( vec2 p )
@@ -179,22 +180,22 @@ void main( void ) {
     vec3 normal = normalize( uNormalMVMatrix * get_normal( vPosition_World.xz * sea_scale, cached_height, dist * 0.001 ) );
 
     vec3 reflected = uInverseViewMatrix * ( -reflect( view, normal ) );
-    vec4 ibl_specular = engamma( texture( environment, reflected ) * 0.9 );
+    vec4 ibl_specular = engamma( texture( environment, reflected ) );
     
     vec3 lightdir = normalize( uVMatrix * vec4( sun_light_dir, 0 ) ).xyz;
 
     vec4 refracted = engamma( vec4( sea_base_color + diffuse( normal, lightdir, 80.0 ) * sea_water_color * 0.12, 1.0 ) ); 
 
     float fresnel = 1.0 - max(dot(-normal,-view),0.0);
-    fresnel = pow(fresnel,3.0);
+    fresnel = pow(fresnel,3.0) * 0.65;
     
     vec4 color = mix( refracted, ibl_specular, fresnel );
 
-    float atten = max( 1.0 - dot( dist, dist ) * 0.0000015, 0.0 );
+    float atten = max( 1.0 - dot( dist, dist ) * 0.001, 0.0 );
 
-    color += engamma( vec4( sea_water_color * cached_height * 0.05 * atten, 1.0 ) );
+    color += engamma( vec4( sea_water_color * cached_height * 0.18 * atten, 1.0 ) );
 
-    color += engamma( vec4( get_specular( normal, lightdir, -view, 100.0 ) ) * 0.35 );
+    color += engamma( vec4( get_specular( normal, lightdir, -view, 100.0 ) ) );
     
     color = mix( color, vec4( 1.0, 1.0, 1.0, 1.0 ), foam( vPosition_World.xz * sea_scale, cached_height ) );
 

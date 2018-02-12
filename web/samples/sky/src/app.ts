@@ -198,7 +198,6 @@ function StartSky() {
       Scene.setActiveScene( scene );
 
       // ocean
-      /*
       scene.addRenderable( new InfinitePlane( 12
                                        , 4
                                        , new gml.Vec4( 0, 0, 0, 1 )
@@ -209,7 +208,6 @@ function StartSky() {
                                                           , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
                                                           , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
                                                           , 1.53 ) ) );
-                                                          */
 
       lastFrame = performance.now();
 
@@ -222,6 +220,7 @@ function StartSky() {
       window.requestAnimationFrame( updateAndDraw );
 
       // screenspace ocean
+      /*
       scene.addRenderable( new Quad( 1
                                        , new gml.Vec4( 0, 30, 0, 1 )
                                        , null
@@ -230,7 +229,7 @@ function StartSky() {
                                                           , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
                                                           , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
                                                           , 1.53
-                                                          , true ) ) );
+                                                          , true ) ) ); */
     } );
   }
 }
