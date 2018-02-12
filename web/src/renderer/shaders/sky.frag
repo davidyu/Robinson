@@ -112,6 +112,12 @@ vec4 clouds( vec3 v )
     return acc;
 }
 
+vec3 desaturate( vec3 color, float desaturation ) {
+    float intensity = dot( vec3( 0.3, 0.59, 0.11 ), color );
+    color = mix( vec3( intensity ), color, 1.0 - desaturation );
+    return color;
+}
+
 void main() {
     // get the eye lookat vector
     vec3 eye = normalize( vDirection );
@@ -130,6 +136,11 @@ void main() {
     vec3 sky = vec3( pow( 1.0 - blueness, 2.0 )         // less red as we move up, quadratic
                    , 1.0 - blueness                     // less green as we move up, linear
                    , 0.6 + ( 1.0 - blueness ) * 0.4 );  // blue depends on how far up we are
+
+    sky = desaturate( sky, uCloudiness );
+
+    sky = desaturate( sky, 0.5 * uCloudiness * uCloudiness ); // desaturate with cloudiness
+    sky *= ( 1.0 - 0.65 * uCloudiness * uCloudiness ); // darken with cloudiness
 
     sky += sun( eye );
     vec4 cl = clouds( eye );
