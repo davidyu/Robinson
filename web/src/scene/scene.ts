@@ -115,6 +115,9 @@ class Scene {
 
   noiseVolumes: WebGLTexture[];
 
+  cloudiness: number;
+  cloudSpeed: number;
+
   // cached render objects
   fullscreen: Quad;
 
@@ -127,6 +130,8 @@ class Scene {
     this.hasEnvironment = hasEnvironment;
     this.dynamicEnvironment = dynamicEnvironment;
     this.noiseVolumes = noiseVolumes;
+    this.cloudiness = 0.5;
+    this.cloudSpeed = 3;
   }
 
   public addRenderable( renderable: Renderable ) {
@@ -277,6 +282,9 @@ class Scene {
     gl.uniform4fv( variables.uCameraPos, cameraPos.v );
 
     gl.uniform1f( variables.uTime, this.time );
+
+    gl.uniform1f( variables.uCloudiness, this.cloudiness );
+    gl.uniform1f( variables.uCloudSpeed, this.cloudSpeed );
 
     gl.bindBuffer( gl.ARRAY_BUFFER, this.fullscreen.renderData.vertexBuffer );
     gl.vertexAttribPointer( variables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );

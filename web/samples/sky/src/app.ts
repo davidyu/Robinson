@@ -1,6 +1,3 @@
-var shaderRepo: ShaderRepository = null; // global for debugging
-var scene: Scene;
-
 interface SkyAppParams {
   vp : HTMLCanvasElement;
   orbitCenter: gml.Vec4;
@@ -44,6 +41,12 @@ class SkyApp {
     }
 
     frameLimiterOption.onchange = changeFrameLimit;
+
+    let cloudinessSlider = <HTMLInputElement> document.getElementById( "cloud-slider" );
+    let cloudSpeedSlider = <HTMLInputElement> document.getElementById( "wind-slider" );
+
+    cloudinessSlider.oninput = changeCloudiness;
+    cloudSpeedSlider.oninput = changeCloudSpeed;
 
     params.vp.addEventListener( 'mousedown', ev => {
       switch ( ev.button ) {
@@ -97,6 +100,14 @@ class SkyApp {
 
 var frameLimit: number = -1;
 
+function changeCloudiness( e ) {
+  scene.cloudiness = e.target.value / 100;
+}
+
+function changeCloudSpeed( e ) {
+  scene.cloudSpeed = e.target.value / 2; // 1 to 50
+}
+
 function changeFrameLimit( e ) {
   switch ( e.target.value ) {
     case "adaptive":
@@ -118,6 +129,7 @@ function changeFrameLimit( e ) {
 }
 
 var app: SkyApp = null;
+var scene: Scene = null;
 var lastFrame: number = null;
 var finishedDownloadingTexture = false;
 
@@ -169,7 +181,7 @@ function StartSky() {
       orbitDistance: 0.001
     };
 
-    shaderRepo = new ShaderRepository( ( repo ) => { 
+    let shaderRepo = new ShaderRepository( ( repo ) => { 
       app = new SkyApp( params, repo );
 
       let gl = app.renderer.context;
@@ -198,6 +210,12 @@ function StartSky() {
                                                           , 1.53 ) ) );
 
       lastFrame = performance.now();
+
+      let cloudinessSlider = <HTMLInputElement> document.getElementById( "cloud-slider" );
+      let cloudSpeedSlider = <HTMLInputElement> document.getElementById( "wind-slider" );
+
+      cloudinessSlider.value = ( scene.cloudiness * 100 ).toString();
+      cloudSpeedSlider.value = ( scene.cloudSpeed * 2 ).toString();
 
       window.requestAnimationFrame( updateAndDraw );
 

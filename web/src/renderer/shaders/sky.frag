@@ -7,6 +7,8 @@ uniform vec4 cPosition_World;
 uniform float uTime;
 uniform sampler3D uPerlinNoise;
 uniform sampler3D uWorleyNoise;
+uniform float uCloudiness;
+uniform float uCloudSpeed;
 
 in vec3 vDirection;
 
@@ -16,8 +18,6 @@ const   float sun_flare_size = 0.5;
 const   float sky_saturation = 0.7;       // how blue should the sky be (if we look straight up)
 const   float sky_horizon_offset = -0.3;  // between -1 and 1, moves horizon down if negative, moves horizon up if positive 
 
-const   float cloudiness = 0.5;
-const   float cloud_speed = 3.0;
 const   float cloud_scale = 0.0015;
 
 const   vec3  cloud_base_color = vec3( 0.3, 0.4, 0.5 );
@@ -29,7 +29,6 @@ out vec4 fragColor;
 
 #define WORLEY_SAMPLE_MAX 12.0
 float worley(vec3 x) {
-    //return texture( uWorleyNoise, mod( x, vec3( WORLEY_SAMPLE_MAX ) ) / vec3( WORLEY_SAMPLE_MAX ) ).g;
     return texture( uWorleyNoise, fract( x / vec3( WORLEY_SAMPLE_MAX ) ) ).r;
 }
 
@@ -44,8 +43,8 @@ float sample_cloud( vec3 x ) {
     vec3 shift = vec3( 100 );
     const int NUM_OCTAVES = 4;
     for (int i = 0; i < NUM_OCTAVES; ++i) {
-        v += mix( 0.2, 0.4, cloudiness ) * a * worley( x ); // macro, billow-y shapes
-        v += mix( 0.2, 0.4, cloudiness ) * a * pnoise( x ); // add wispiness
+        v += mix( 0.2, 0.4, uCloudiness ) * a * worley( x ); // macro, billow-y shapes
+        v += mix( 0.2, 0.4, uCloudiness ) * a * pnoise( x ); // add wispiness
         x = x * 2.3 + shift;
         a *= 0.5;
 	}
@@ -79,7 +78,7 @@ float hg( float q )
 
 vec4 clouds( vec3 v )
 {
-    vec3 ofs = vec3( uTime * cloud_speed * 30.0, uTime * cloud_speed * 20.0, uTime * cloud_speed * 40.0 );
+    vec3 ofs = vec3( uTime * uCloudSpeed * 30.0, uTime * uCloudSpeed * 20.0, uTime * uCloudSpeed * 40.0 );
     vec4 acc = vec4( 0, 0, 0, 0 ); // this is the final color value we return
 
     // early exit if we're beneath a certain threshold
@@ -90,7 +89,7 @@ vec4 clouds( vec3 v )
     for ( int i = 0; i < samples; i++ ) {
         float d = ( float( i ) * 12.0 + 200.0 - cPosition_World.y ) / v.y;
         vec3 cloudPos = cloud_scale * ( cPosition_World.xyz + d * v + ofs );
-        float cloud_sample = cloudiness * sample_cloud( cloudPos );
+        float cloud_sample = uCloudiness * sample_cloud( cloudPos );
 
         vec3 cloud_color = mix( vec3( 1.0, 1.0, 1.0 ), cloud_base_color, cloud_sample );
 

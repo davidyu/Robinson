@@ -180,6 +180,8 @@ class ShaderUniforms {
   uIrradianceMap: WebGLUniformLocation;
   uEnvironmentMipMaps: WebGLUniformLocation;
   uTime: WebGLUniformLocation;
+  uCloudiness: WebGLUniformLocation;
+  uCloudSpeed: WebGLUniformLocation;
   uMaterial: ShaderMaterialProperties;
   uLights: ShaderLightProperties[];
   uNoiseLayer: WebGLUniformLocation;
@@ -466,6 +468,8 @@ class Renderer {
     uniforms.uIrradianceMap = gl.getUniformLocation( program, "irradiance" );
     uniforms.uEnvironmentMipMaps = gl.getUniformLocation( program, "environmentMipMaps" );
     uniforms.uTime = gl.getUniformLocation( program, "uTime" );
+    uniforms.uCloudiness = gl.getUniformLocation( program, "uCloudiness" );
+    uniforms.uCloudSpeed = gl.getUniformLocation( program, "uCloudSpeed" );
     uniforms.uNoiseLayer = gl.getUniformLocation( program, "uNoiseLayer" );
     uniforms.uPerlinNoise = gl.getUniformLocation( program, "uPerlinNoise" );
     uniforms.uWorleyNoise = gl.getUniformLocation( program, "uWorleyNoise" );
