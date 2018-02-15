@@ -21,6 +21,8 @@ class SkyApp {
   dragStart: gml.Vec2;
   lastMousePos: gml.Vec2;
 
+  FPSContainer: HTMLDivElement;
+
   constructor( params: SkyAppParams, shaderRepo: ShaderRepository ) {
     this.renderer = new Renderer( params.vp, shaderRepo );
     this.editor = new ShaderEditor( this.renderer );
@@ -50,6 +52,11 @@ class SkyApp {
 
     let wireframeCheckbox = <HTMLInputElement> document.getElementById( "water-wireframe" );
     wireframeCheckbox.onchange = changeWireframe;
+
+    let showFPSCheckbox = <HTMLInputElement> document.getElementById( "debug-fps" );
+    showFPSCheckbox.onchange = changeShowFPS;
+
+    this.FPSContainer = <HTMLDivElement> document.getElementById( "fps-indicator" );
 
     params.vp.addEventListener( 'mousedown', ev => {
       switch ( ev.button ) {
@@ -120,6 +127,14 @@ function changeWireframe( e ) {
   watermat.wireframe = e.target.checked;
 }
 
+function changeShowFPS( e ) {
+  if ( e.target.checked ) {
+    app.FPSContainer.style.visibility = "visible";
+  } else {
+    app.FPSContainer.style.visibility = "hidden";
+  }
+}
+
 function changeFrameLimit( e ) {
   switch ( e.target.value ) {
     case "adaptive":
@@ -185,6 +200,8 @@ function updateAndDraw( t: number ) {
     app.renderer.dirty = true;
     app.renderer.render();
   }
+
+  app.FPSContainer.innerHTML = "FPS: " + ( 1.0 / dt ).toFixed( 0 );
 
   window.requestAnimationFrame( updateAndDraw );
 }

@@ -80,6 +80,23 @@
       display: inline-block;
       width: 120px;
     }
+
+    #viewport-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      margin: auto;
+      z-index: 10;
+    }
+
+    #fps-indicator {
+      display: inline-block;
+      background: rgba( 128, 128, 128, .5 );
+      text-shadow: rgb(0, 0, 0) 1px 1px;
+      color: rgb(255, 255, 255);
+      font-size: 11px;
+    }
   </style>
   <script src="./app.js" type="text/javascript"></script>
   <script src="./ace.js" type="text/javascript"></script>
@@ -102,6 +119,11 @@
       <canvas id="big-viewport" width="848" height="480">
         Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
       </canvas>
+      <div id="viewport-overlay" style="width:848px">
+        <div id="fps-indicator" style="visibility:hidden">
+          FPS: 240
+        </div>
+      </div>
     </div>
     <div id="editor-container">
         <div class="tabs">
@@ -120,7 +142,7 @@
                     <div class="option">
                       <label>Limit FPS</label>
                       <select id="frame-limiter">
-                        <option value="adaptive">Monitor refresh rate</option>
+                        <option value="adaptive" selected>Monitor refresh rate</option>
                         <option value="30">30</option>
                         <option value="60">60</option>
                         <option value="120">120</option>
@@ -129,16 +151,20 @@
                       </select>
                     </div>
                     <div class="option">
+                      <label>Show FPS</label>
+                      <input id="debug-fps" type="checkbox"/>
+                    </div>
+                    <div class="option">
+                      <label>Show wireframe</label>
+                      <input id="water-wireframe" type="checkbox"/>
+                    </div>
+                    <div class="option">
                       <label>Cloudiness</label>
                       <input id="cloud-slider" type="range" min="0" max="100" step="1" />
                     </div>
                     <div class="option">
                       <label>Wind</label>
                       <input id="wind-slider" type="range" min="0" max="100" step="1" />
-                    </div>
-                    <div class="option">
-                      <label>Wireframe</label>
-                      <input id="water-wireframe" type="checkbox"/>
                     </div>
                 </div>
             </div>
