@@ -201,7 +201,7 @@ function updateAndDraw( t: number ) {
     app.renderer.render();
   }
 
-  app.FPSContainer.innerHTML = "FPS: " + ( 1.0 / dt ).toFixed( 0 );
+  app.FPSContainer.innerHTML = "FPS: " + Math.round( 1.0 / dt );
 
   window.requestAnimationFrame( updateAndDraw );
 }

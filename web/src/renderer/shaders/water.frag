@@ -173,13 +173,13 @@ float foam( vec2 pos, float detailed_height )
     return max( foam, 0.0 );
 }
 
-void main( void ) {
-    vec2 vRel = fract( vQuadCoord );
-    if ( uDrawWireframe && any( lessThan( vec4( vRel, 1.0 - vRel ), vec4( 0.02 ) ) ) ) {
-        fragColor = vec4( 1.0, 0.0, 0.0, 1.0 );
-        return;
-    }
+float edgeFactor( vec4 vRel ) {
+    vec4 d = fwidth( vRel );
+    vec4 a4 = smoothstep( vec4( 0.0 ), d * 1.4, vRel );
+    return min( min( min( a4.x, a4.y ), a4.z ), a4.w );
+}
 
+void main( void ) {
     float cached_height = height_detailed( vPosition_World.xz * sea_scale );
 
     float dist = length( cPosition_World - vPosition_World );
@@ -208,4 +208,10 @@ void main( void ) {
     color = mix( color, vec4( 1.0, 1.0, 1.0, 1.0 ), foam( vPosition_World.xz * sea_scale, cached_height ) );
 
     fragColor = degamma( color );
+
+    if ( uDrawWireframe ) {
+        vec2 vRel = fract( vQuadCoord );
+        fragColor = mix( fragColor, vec4( 1.0, 0.0, 0.0, 1.0 ), 1.0 - edgeFactor( vec4( vRel, 1.0 - vRel ) ) );
+        return;
+    }
 }
