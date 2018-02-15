@@ -85,13 +85,18 @@ class SkyApp {
 
         this.yaw = this.yaw.add( gml.fromRadians( -deltaX * PAN_PIXEL_TO_RADIAN ).negate() ).reduceToOneTurn();
 
-        this.pitch = this.pitch.add( gml.fromRadians( -deltaY * PAN_PIXEL_TO_RADIAN ) ).reduceToOneTurn();
+        let newPitch = this.pitch.add( gml.fromRadians( -deltaY * PAN_PIXEL_TO_RADIAN ) ).reduceToOneTurn()
 
-        /*
-        if ( this.pitch.toDegrees() > 40 ) {
-          this.pitch = gml.fromDegrees( 40 );
+        let deg = newPitch.toDegrees();
+        if ( deg > 90 && deg < 270 ) {
+          if ( Math.abs( 90 - deg ) < 90 ) {
+            newPitch = gml.fromDegrees( 90 );
+          } else {
+            newPitch = gml.fromDegrees( 270 );
+          }
         }
-         */
+
+        this.pitch = newPitch;
 
         this.dirty = true;
         ev.preventDefault();
