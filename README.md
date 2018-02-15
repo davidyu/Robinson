@@ -2,12 +2,15 @@
 
 A (n almost) real-time forward rendering engine implemented (almost) from scratch for pedagogical purposes.
 
-Currently, it targets modern web browsers using WebGL. Your browser will need the `EXT_shader_texture_lod` to
-display specular image-based lighting on certain materials.
+Currently, it targets modern web browsers using WebGL 2.0.
 
 [Lame demo](http://lewenyu.com/Robinson-web-samples/showcase/app.html)
 
 [![lame but live](screenshots/materials_showcase.jpg)](http://lewenyu.com/Robinson-web-samples/showcase/app.html)
+
+[Slightly cooler demo](http://lewenyu.com/Robinson-web-samples/sky/app.html)
+
+[![water](screenshots/ocean.jpg)](http://lewenyu.com/Robinson-web-samples/sky/app.html)
 
 Thanks goes out to all authors of art assets used in this project.
 
