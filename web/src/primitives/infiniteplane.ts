@@ -96,6 +96,15 @@ class InfinitePlane extends Primitive implements Renderable {
     }
   }
 
+  private pushMeshCoords( xs: number[], ys: number[], coords: number[] ) {
+    for ( let i = 0; i < xs.length; i++ ) {
+      for ( let j = 0; j < ys.length; j++ ) {
+        coords.push( xs[i] );
+        coords.push( ys[j] );
+      }
+    }
+  }
+
   // pushes indices for a subdivided quad
   private pushIndices( offset: number, cols: number, rows: number, planeVertexIndices: number[] ) {
     for ( let i = 0; i < rows - 1; i++ ) { // iterate over rows
@@ -124,6 +133,7 @@ class InfinitePlane extends Primitive implements Renderable {
       let vertices = [];
       let uvs = [];
       let planeVertexIndices = [];
+      let meshCoords = [];
 
       let centerSize = 2;
       // center quad
@@ -132,9 +142,14 @@ class InfinitePlane extends Primitive implements Renderable {
         let ys = this.subdivide(  centerSize / 2, -centerSize / 2, this.subdivs.v );
         let us = this.subdivide(  0,  1, this.subdivs.u );
         let vs = this.subdivide(  0,  1, this.subdivs.v );
+        let mxs = this.subdivide(  0,  1 << this.subdivs.u, this.subdivs.u );
+        let mys = this.subdivide(  0,  1 << this.subdivs.v, this.subdivs.v );
+
+        console.log( mxs );
 
         this.pushVertices( xs, ys, vertices );
         this.pushUVs( us, vs, uvs );
+        this.pushMeshCoords( mxs, mys, meshCoords );
         this.pushIndices( 0, xs.length, ys.length, planeVertexIndices );
       }
 
@@ -164,13 +179,16 @@ class InfinitePlane extends Primitive implements Renderable {
         {
           let xs = this.subdivide( outer_tl.x, inner_tl.x, 5 );
           let ys = this.subdivide( outer_tl.y, inner_tl.y, 5 );
-          let us = this.subdivide(  0,  1, 5 );
-          let vs = this.subdivide(  0,  1, 5 );
+          let us = this.subdivide( 0,  1, 5 );
+          let vs = this.subdivide( 0,  1, 5 );
+          let mxs = this.subdivide( 0,  1 << 5, 5 );
+          let mys = this.subdivide( 0,  1 << 5, 5 );
 
           let offset = vertices.length / 3;
 
           this.pushVertices( xs, ys, vertices );
           this.pushUVs( us, vs, uvs );
+          this.pushMeshCoords( mxs, mys, meshCoords );
           this.pushIndices( offset, xs.length, ys.length, planeVertexIndices );
         }
 
@@ -178,13 +196,16 @@ class InfinitePlane extends Primitive implements Renderable {
         {
           let xs = this.subdivide( inner_tl.x, inner_tl.x + size, 5 );
           let ys = this.subdivide( outer_tl.y, inner_tl.y, 5 );
-          let us = this.subdivide(  0,  1, 5 );
-          let vs = this.subdivide(  0,  1, 5 );
+          let us = this.subdivide( 0,  1, 5 );
+          let vs = this.subdivide( 0,  1, 5 );
+          let mxs = this.subdivide( 0,  1 << 5, 5 );
+          let mys = this.subdivide( 0,  1 << 5, 5 );
 
           let offset = vertices.length / 3;
 
           this.pushVertices( xs, ys, vertices );
           this.pushUVs( us, vs, uvs );
+          this.pushMeshCoords( mxs, mys, meshCoords );
           this.pushIndices( offset, xs.length, ys.length, planeVertexIndices );
         }
 
@@ -194,11 +215,14 @@ class InfinitePlane extends Primitive implements Renderable {
           let ys = this.subdivide( outer_tl.y, inner_tl.y, 5 );
           let us = this.subdivide(  0,  1, 5 );
           let vs = this.subdivide(  0,  1, 5 );
+          let mxs = this.subdivide(  0,  1 << 5, 5 );
+          let mys = this.subdivide(  0,  1 << 5, 5 );
 
           let offset = vertices.length / 3;
 
           this.pushVertices( xs, ys, vertices );
           this.pushUVs( us, vs, uvs );
+          this.pushMeshCoords( mxs, mys, meshCoords );
           this.pushIndices( offset, xs.length, ys.length, planeVertexIndices );
         }
 
@@ -208,11 +232,14 @@ class InfinitePlane extends Primitive implements Renderable {
           let ys = this.subdivide( outer_tl.y, inner_tl.y, 5 );
           let us = this.subdivide(  0,  1, 5 );
           let vs = this.subdivide(  0,  1, 5 );
+          let mxs = this.subdivide(  0,  1 << 5, 5 );
+          let mys = this.subdivide(  0,  1 << 5, 5 );
 
           let offset = vertices.length / 3;
 
           this.pushVertices( xs, ys, vertices );
           this.pushUVs( us, vs, uvs );
+          this.pushMeshCoords( mxs, mys, meshCoords );
           this.pushIndices( offset, xs.length, ys.length, planeVertexIndices );
         }
 
@@ -222,11 +249,14 @@ class InfinitePlane extends Primitive implements Renderable {
           let ys = this.subdivide( inner_tl.y, inner_tl.y - size, 5 );
           let us = this.subdivide(  0,  1, 5 );
           let vs = this.subdivide(  0,  1, 5 );
+          let mxs = this.subdivide(  0,  1 << 5, 5 );
+          let mys = this.subdivide(  0,  1 << 5, 5 );
 
           let offset = vertices.length / 3;
 
           this.pushVertices( xs, ys, vertices );
           this.pushUVs( us, vs, uvs );
+          this.pushMeshCoords( mxs, mys, meshCoords );
           this.pushIndices( offset, xs.length, ys.length, planeVertexIndices );
         }
 
@@ -236,11 +266,14 @@ class InfinitePlane extends Primitive implements Renderable {
           let ys = this.subdivide( inner_tl.y - size, inner_br.y, 5 );
           let us = this.subdivide(  0,  1, 5 );
           let vs = this.subdivide(  0,  1, 5 );
+          let mxs = this.subdivide(  0,  1 << 5, 5 );
+          let mys = this.subdivide(  0,  1 << 5, 5 );
 
           let offset = vertices.length / 3;
 
           this.pushVertices( xs, ys, vertices );
           this.pushUVs( us, vs, uvs );
+          this.pushMeshCoords( mxs, mys, meshCoords );
           this.pushIndices( offset, xs.length, ys.length, planeVertexIndices );
         }
 
@@ -250,11 +283,14 @@ class InfinitePlane extends Primitive implements Renderable {
           let ys = this.subdivide( inner_br.y, outer_br.y, 5 );
           let us = this.subdivide(  0,  1, 5 );
           let vs = this.subdivide(  0,  1, 5 );
+          let mxs = this.subdivide(  0,  1 << 5, 5 );
+          let mys = this.subdivide(  0,  1 << 5, 5 );
 
           let offset = vertices.length / 3;
 
           this.pushVertices( xs, ys, vertices );
           this.pushUVs( us, vs, uvs );
+          this.pushMeshCoords( mxs, mys, meshCoords );
           this.pushIndices( offset, xs.length, ys.length, planeVertexIndices );
         }
 
@@ -264,11 +300,14 @@ class InfinitePlane extends Primitive implements Renderable {
           let ys = this.subdivide( inner_br.y, outer_br.y, 5 );
           let us = this.subdivide(  0,  1, 5 );
           let vs = this.subdivide(  0,  1, 5 );
+          let mxs = this.subdivide(  0,  1 << 5, 5 );
+          let mys = this.subdivide(  0,  1 << 5, 5 );
 
           let offset = vertices.length / 3;
 
           this.pushVertices( xs, ys, vertices );
           this.pushUVs( us, vs, uvs );
+          this.pushMeshCoords( mxs, mys, meshCoords );
           this.pushIndices( offset, xs.length, ys.length, planeVertexIndices );
         }
 
@@ -278,11 +317,14 @@ class InfinitePlane extends Primitive implements Renderable {
           let ys = this.subdivide( inner_br.y, outer_br.y, 5 );
           let us = this.subdivide(  0,  1, 5 );
           let vs = this.subdivide(  0,  1, 5 );
+          let mxs = this.subdivide(  0,  1 << 5, 5 );
+          let mys = this.subdivide(  0,  1 << 5, 5 );
 
           let offset = vertices.length / 3;
 
           this.pushVertices( xs, ys, vertices );
           this.pushUVs( us, vs, uvs );
+          this.pushMeshCoords( mxs, mys, meshCoords );
           this.pushIndices( offset, xs.length, ys.length, planeVertexIndices );
         }
 
@@ -292,11 +334,14 @@ class InfinitePlane extends Primitive implements Renderable {
           let ys = this.subdivide( inner_br.y, outer_br.y, 5 );
           let us = this.subdivide(  0,  1, 5 );
           let vs = this.subdivide(  0,  1, 5 );
+          let mxs = this.subdivide(  0,  1 << 5, 5 );
+          let mys = this.subdivide(  0,  1 << 5, 5 );
 
           let offset = vertices.length / 3;
 
           this.pushVertices( xs, ys, vertices );
           this.pushUVs( us, vs, uvs );
+          this.pushMeshCoords( mxs, mys, meshCoords );
           this.pushIndices( offset, xs.length, ys.length, planeVertexIndices );
         }
 
@@ -306,11 +351,14 @@ class InfinitePlane extends Primitive implements Renderable {
           let ys = this.subdivide( inner_tl.y - size, inner_br.y, 5 );
           let us = this.subdivide(  0,  1, 5 );
           let vs = this.subdivide(  0,  1, 5 );
+          let mxs = this.subdivide(  0,  1 << 5, 5 );
+          let mys = this.subdivide(  0,  1 << 5, 5 );
 
           let offset = vertices.length / 3;
 
           this.pushVertices( xs, ys, vertices );
           this.pushUVs( us, vs, uvs );
+          this.pushMeshCoords( mxs, mys, meshCoords );
           this.pushIndices( offset, xs.length, ys.length, planeVertexIndices );
         }
 
@@ -320,11 +368,14 @@ class InfinitePlane extends Primitive implements Renderable {
           let ys = this.subdivide( inner_tl.y, inner_tl.y - size, 5 );
           let us = this.subdivide(  0,  1, 5 );
           let vs = this.subdivide(  0,  1, 5 );
+          let mxs = this.subdivide(  0,  1 << 5, 5 );
+          let mys = this.subdivide(  0,  1 << 5, 5 );
 
           let offset = vertices.length / 3;
 
           this.pushVertices( xs, ys, vertices );
           this.pushUVs( us, vs, uvs );
+          this.pushMeshCoords( mxs, mys, meshCoords );
           this.pushIndices( offset, xs.length, ys.length, planeVertexIndices );
         }
 
@@ -336,6 +387,7 @@ class InfinitePlane extends Primitive implements Renderable {
 
       this.renderData.vertices = new Float32Array( vertices );
       this.renderData.textureCoords = new Float32Array( uvs );
+      this.renderData.meshCoords = new Float32Array( meshCoords );
 
       let vertexNormals = [];
 

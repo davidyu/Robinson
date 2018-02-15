@@ -3,12 +3,14 @@ uniform float uTime;
 
 in vec4 vPosition;
 in vec4 vPosition_World;
+in vec2 vQuadCoord;
 in float vAmp;
 
 uniform highp mat4 uVMatrix;
 uniform highp mat3 uInverseViewMatrix;
 uniform highp mat3 uNormalMVMatrix;    // inverse model view matrix
 uniform float uCloudiness;
+uniform bool uDrawWireframe;
 
 uniform samplerCube environment;
 uniform float environmentMipMaps;
@@ -172,6 +174,12 @@ float foam( vec2 pos, float detailed_height )
 }
 
 void main( void ) {
+    vec2 vRel = fract( vQuadCoord );
+    if ( uDrawWireframe && any( lessThan( vec4( vRel, 1.0 - vRel ), vec4( 0.02 ) ) ) ) {
+        fragColor = vec4( 1.0, 0.0, 0.0, 1.0 );
+        return;
+    }
+
     float cached_height = height_detailed( vPosition_World.xz * sea_scale );
 
     float dist = length( cPosition_World - vPosition_World );

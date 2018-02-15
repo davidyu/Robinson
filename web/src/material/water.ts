@@ -8,6 +8,7 @@ class WaterMaterial extends Material {
   shininess: number;
   speed: number;
   screenspace: boolean;
+  wireframe: boolean;
 
   constructor( ambient: gml.Vec4 = new gml.Vec4( 0.5, 0.5, 0.5, 1 )
              , diffuse: gml.Vec4 = new gml.Vec4( 0.5, 0.5, 0.5, 1 )
@@ -23,6 +24,7 @@ class WaterMaterial extends Material {
     this.shininess = shininess;
     this.screenspace = screenspace;
     this.speed = 1.0;
+    this.wireframe = false;
   }
 }
 

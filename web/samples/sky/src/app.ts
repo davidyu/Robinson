@@ -48,6 +48,9 @@ class SkyApp {
     cloudinessSlider.oninput = changeCloudiness;
     cloudSpeedSlider.oninput = changeCloudSpeed;
 
+    let wireframeCheckbox = <HTMLInputElement> document.getElementById( "water-wireframe" );
+    wireframeCheckbox.onchange = changeWireframe;
+
     params.vp.addEventListener( 'mousedown', ev => {
       switch ( ev.button ) {
         case 0: // left
@@ -108,10 +111,17 @@ function changeCloudSpeed( e ) {
   scene.cloudSpeed = e.target.value / 2; // 1 to 50
 }
 
+function changeWireframe( e ) {
+  watermat.wireframe = e.target.checked;
+}
+
 function changeFrameLimit( e ) {
   switch ( e.target.value ) {
     case "adaptive":
       frameLimit = -1;
+      break;
+    case "30":
+      frameLimit = 30;
       break;
     case "60":
       frameLimit = 60;
@@ -132,6 +142,7 @@ var app: SkyApp = null;
 var scene: Scene = null;
 var lastFrame: number = null;
 var finishedDownloadingTexture = false;
+var watermat: WaterMaterial;
 
 function updateAndDraw( t: number ) {
   let dt = ( t - lastFrame ) / 1000.0;
@@ -197,17 +208,19 @@ function StartSky() {
 
       Scene.setActiveScene( scene );
 
+      watermat = new WaterMaterial( new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                  , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                  , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                  , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
+                                  , 1.53 );
+
       // ocean
       scene.addRenderable( new InfinitePlane( 12
                                        , 4
                                        , new gml.Vec4( 0, 0, 0, 1 )
                                        , { x: gml.fromDegrees( 0 ), y: gml.fromDegrees( 0 ), z: gml.fromDegrees( 0 ) }
                                        , { u: 7, v: 7 }
-                                       , new WaterMaterial( new gml.Vec4( 1.0, 1.0, 1.0, 1 )
-                                                          , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
-                                                          , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
-                                                          , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
-                                                          , 1.53 ) ) );
+                                       , watermat ) );
 
       lastFrame = performance.now();
 

@@ -165,6 +165,7 @@ class ShaderUniforms {
   aVertexPosition: number;
   aVertexNormal: number;
   aVertexTexCoord: number;
+  aMeshCoord: number;
   uModelView: WebGLUniformLocation;
   uView: WebGLUniformLocation;
   uModelToWorld: WebGLUniformLocation;
@@ -176,6 +177,7 @@ class ShaderUniforms {
   uCameraPos: WebGLUniformLocation;
   uEnvMap: WebGLUniformLocation;
   uVolume: WebGLUniformLocation;
+  uWireframe: WebGLUniformLocation;
   uProcSky: WebGLUniformLocation;
   uIrradianceMap: WebGLUniformLocation;
   uEnvironmentMipMaps: WebGLUniformLocation;
@@ -443,6 +445,11 @@ class Renderer {
     uniforms.aVertexPosition = gl.getAttribLocation( program, "aVertexPosition" );
     gl.enableVertexAttribArray( uniforms.aVertexPosition );
 
+    uniforms.aMeshCoord = gl.getAttribLocation( program, "aMeshCoord" );
+    if ( uniforms.aMeshCoord >= 0 ) {
+      gl.enableVertexAttribArray( uniforms.aMeshCoord );
+    }
+
     uniforms.aVertexNormal = gl.getAttribLocation( program, "aVertexNormal" );
     if ( uniforms.aVertexNormal >= 0 ) {
       gl.enableVertexAttribArray( uniforms.aVertexNormal );
@@ -464,6 +471,7 @@ class Renderer {
     uniforms.uCameraPos = gl.getUniformLocation( program, "cPosition_World" );
     uniforms.uEnvMap = gl.getUniformLocation( program, "environment" );
     uniforms.uVolume = gl.getUniformLocation( program, "volume" );
+    uniforms.uWireframe = gl.getUniformLocation( program, "uDrawWireframe" );
     uniforms.uProcSky = gl.getUniformLocation( program, "proceduralSky" );
     uniforms.uIrradianceMap = gl.getUniformLocation( program, "irradiance" );
     uniforms.uEnvironmentMipMaps = gl.getUniformLocation( program, "environmentMipMaps" );
@@ -642,6 +650,7 @@ class Renderer {
           let shaderVariables = this.programData[ this.currentProgram ].uniforms
           gl.uniform1f( shaderVariables.uTime, scene.time );
           gl.uniform1f( shaderVariables.uCloudiness, scene.cloudiness );
+          gl.uniform1i( shaderVariables.uWireframe, ( <WaterMaterial>p.material ).wireframe ? 1 : 0 ); 
         }
       } else if ( p.material instanceof NoiseMaterial ) {
         this.useProgram( gl, SHADER_PROGRAM.NOISE_WRITER );
@@ -693,6 +702,11 @@ class Renderer {
       gl.bindBuffer( gl.ARRAY_BUFFER, p.renderData.vertexBuffer );
       gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
+      if ( shaderVariables.aMeshCoord >= 0 && p.renderData.meshCoordsBuffer != null ) {
+        gl.bindBuffer( gl.ARRAY_BUFFER, p.renderData.meshCoordsBuffer );
+        gl.vertexAttribPointer( shaderVariables.aMeshCoord, 2, gl.FLOAT, false, 0, 0 );
+      }
+
       if ( shaderVariables.aVertexTexCoord >= 0 ) {
         gl.bindBuffer( gl.ARRAY_BUFFER, p.renderData.vertexTexCoordBuffer );
         gl.vertexAttribPointer( shaderVariables.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
@@ -740,6 +754,10 @@ class Renderer {
 
     if ( shaderVariables.aVertexTexCoord >= 0 ) {
       gl.enableVertexAttribArray( shaderVariables.aVertexTexCoord );
+    }
+
+    if ( shaderVariables.aMeshCoord >= 0 ) {
+      gl.enableVertexAttribArray( shaderVariables.aMeshCoord );
     }
 
     this.currentProgram = program;
