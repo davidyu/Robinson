@@ -155,7 +155,8 @@ float foam_detail( vec2 p )
 float foam( vec2 pos, float detailed_height )
 {
     // foaminess is modulated by height
-    float base_foaminess = detailed_height;
+    // smoothstep it so it's not really linear and unnatural looking
+    float base_foaminess = smoothstep( 0.45, 1.3, detailed_height );
 
     float detail = foam_detail( pos );
    
@@ -185,6 +186,7 @@ void main( void ) {
     float dist = length( cPosition_World - vPosition_World );
     vec3 view = normalize( -( vPosition.xyz / vPosition.w ) );
 
+    // EXPENSIVE - optimize
     vec3 normal = normalize( uNormalMVMatrix * get_normal( vPosition_World.xz * sea_scale, cached_height, dist * 0.001 ) );
 
     vec3 reflected = uInverseViewMatrix * ( -reflect( view, normal ) );
@@ -204,7 +206,8 @@ void main( void ) {
     color += engamma( vec4( sea_water_color * cached_height * 0.18 * atten, 1.0 ) );
 
     color += engamma( vec4( get_specular( normal, lightdir, -view, 100.0 ) ) );
-    
+   
+    // expensive - optimize
     color = mix( color, vec4( 1.0, 1.0, 1.0, 1.0 ), foam( vPosition_World.xz * sea_scale, cached_height ) );
 
     fragColor = degamma( color );

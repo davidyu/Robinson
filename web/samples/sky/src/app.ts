@@ -241,7 +241,7 @@ function StartSky() {
                                        , 4
                                        , new gml.Vec4( 0, 0, 0, 1 )
                                        , { x: gml.fromDegrees( 0 ), y: gml.fromDegrees( 0 ), z: gml.fromDegrees( 0 ) }
-                                       , { u: 7, v: 7 }
+                                       , { u: 6, v: 6 }
                                        , watermat ) );
 
       lastFrame = performance.now();
