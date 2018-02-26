@@ -145,8 +145,6 @@ class InfinitePlane extends Primitive implements Renderable {
         let mxs = this.subdivide(  0,  1 << this.subdivs.u, this.subdivs.u );
         let mys = this.subdivide(  0,  1 << this.subdivs.v, this.subdivs.v );
 
-        console.log( mxs );
-
         this.pushVertices( xs, ys, vertices );
         this.pushUVs( us, vs, uvs );
         this.pushMeshCoords( mxs, mys, meshCoords );
