@@ -209,6 +209,7 @@ class ShaderProgramData {
 class Renderer {
   viewportW: number;
   viewportH: number;
+  enableTracing: boolean;
 
   elementIndexExtension;
 
@@ -861,7 +862,7 @@ class Renderer {
         // 
         // GENERATE ENVIRONMENT MAP, IF NECESSARY
         if ( scene.hasEnvironment && scene.dynamicEnvironment ) {
-          console.time( "environment map" );
+          if ( this.enableTracing ) console.time( "environment map" );
           if ( scene.dynamicEnvironment ) {
             // render using specified shader
             // TODO: actually pass in shader into scene
@@ -870,7 +871,7 @@ class Renderer {
             // generate static cube map from face images - we only do this once
             scene.environmentMap.generateCubeMapFromSources( gl );
           }
-          console.timeEnd( "environment map" );
+          if ( this.enableTracing ) console.timeEnd( "environment map" );
         }
 
         //
@@ -896,16 +897,16 @@ class Renderer {
 
         // draw environment map
         if ( scene.hasEnvironment ) {
-          console.time( "environment" );
+          if ( this.enableTracing ) console.time( "environment" );
           this.renderSceneEnvironment( gl, scene, mvStack, this.viewportW, this.viewportH );
-          console.timeEnd( "environment" );
+          if ( this.enableTracing ) console.timeEnd( "environment" );
         }
 
         // draw scene
         gl.clear( gl.DEPTH_BUFFER_BIT );
-        console.time( "render scene" );
+        if ( this.enableTracing ) console.time( "render scene" );
         this.renderScene( gl, scene, mvStack, PASS.STANDARD_FORWARD );
-        console.timeEnd( "render scene" );
+        if ( this.enableTracing ) console.timeEnd( "render scene" );
       }
     }
   }

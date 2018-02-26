@@ -49,6 +49,7 @@ class SkyApp {
 
     cloudinessSlider.oninput = changeCloudiness;
     cloudSpeedSlider.oninput = changeCloudSpeed;
+    cloudSpeedSlider.onchange = changeFinished;
 
     let wireframeCheckbox = <HTMLInputElement> document.getElementById( "water-wireframe" );
     wireframeCheckbox.onchange = changeWireframe;
@@ -57,6 +58,8 @@ class SkyApp {
     showFPSCheckbox.onchange = changeShowFPS;
 
     this.FPSContainer = <HTMLDivElement> document.getElementById( "fps-indicator" );
+
+    document.body.onmouseup = changeFinished;
 
     params.vp.addEventListener( 'mousedown', ev => {
       switch ( ev.button ) {
@@ -114,13 +117,19 @@ class SkyApp {
 }
 
 var frameLimit: number = -1;
+var stoptime: boolean = false;
 
 function changeCloudiness( e ) {
   scene.cloudiness = e.target.value / 100;
 }
 
 function changeCloudSpeed( e ) {
+  stoptime = true;
   scene.cloudSpeed = e.target.value / 30; // 1 to 3.33ish
+}
+
+function changeFinished( e ) {
+  stoptime = false;
 }
 
 function changeWireframe( e ) {
@@ -174,7 +183,9 @@ function updateAndDraw( t: number ) {
 
   lastFrame = t;
 
-  scene.time += dt;
+  if ( !stoptime ) {
+    scene.time += dt;
+  }
 
   if ( app.dirty ) {
     // rebuild camera
@@ -250,7 +261,7 @@ function StartSky() {
       let cloudSpeedSlider = <HTMLInputElement> document.getElementById( "wind-slider" );
 
       cloudinessSlider.value = ( scene.cloudiness * 100 ).toString();
-      cloudSpeedSlider.value = ( scene.cloudSpeed * 2 ).toString();
+      cloudSpeedSlider.value = ( scene.cloudSpeed * 30 ).toString();
 
       window.requestAnimationFrame( updateAndDraw );
 

@@ -109,7 +109,7 @@ void main() {
     float calmness = uCloudSpeed / 3.334; // bootstrap on cloud speed; it is normalized between 1 and 3.333 repeating
     sea_speed = 2.0;
     sea_choppiness = mix( 3.0, 4.0, calmness );
-    sea_frequency = mix( 0.09, 0.12, calmness );
+    sea_frequency = mix( 0.09, 0.11, calmness );
     sea_amplitude = mix( 0.3, 0.6, calmness );
     sea_scale = 0.6;
 
