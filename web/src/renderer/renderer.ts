@@ -650,6 +650,7 @@ class Renderer {
           let shaderVariables = this.programData[ this.currentProgram ].uniforms
           gl.uniform1f( shaderVariables.uTime, scene.time );
           gl.uniform1f( shaderVariables.uCloudiness, scene.cloudiness );
+          gl.uniform1f( shaderVariables.uCloudSpeed, scene.cloudSpeed );
           gl.uniform1i( shaderVariables.uWireframe, ( <WaterMaterial>p.material ).wireframe ? 1 : 0 ); 
         }
       } else if ( p.material instanceof NoiseMaterial ) {

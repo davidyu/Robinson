@@ -13,6 +13,7 @@ uniform highp mat3 uNormalMVMatrix;    // inverse model view matrix
 
 uniform mediump float uTime;
 uniform mediump vec4 cPosition_World;
+uniform mediump float uCloudSpeed;
 
 out mediump vec3  vDirection;
 out mediump vec4  vPosition;
@@ -105,10 +106,11 @@ float height( vec2 p )
 }
 
 void main() {
+    float calmness = uCloudSpeed / 3.334; // bootstrap on cloud speed; it is normalized between 1 and 3.333 repeating
     sea_speed = 2.0;
-    sea_choppiness = 4.0;
-    sea_frequency = 0.1;
-    sea_amplitude = 0.6;
+    sea_choppiness = mix( 3.0, 4.0, calmness );
+    sea_frequency = mix( 0.09, 0.12, calmness );
+    sea_amplitude = mix( 0.3, 0.6, calmness );
     sea_scale = 0.6;
 
     vPosition = vec4( aVertexPosition, 1.0 );

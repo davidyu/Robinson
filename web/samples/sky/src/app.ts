@@ -120,7 +120,7 @@ function changeCloudiness( e ) {
 }
 
 function changeCloudSpeed( e ) {
-  scene.cloudSpeed = e.target.value / 2; // 1 to 50
+  scene.cloudSpeed = e.target.value / 30; // 1 to 3.33ish
 }
 
 function changeWireframe( e ) {
