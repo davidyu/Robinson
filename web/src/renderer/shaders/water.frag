@@ -19,11 +19,11 @@ const   vec3  sun_light_dir = normalize( vec3( 0.0, 1.0, 0.4 ) );  // radius of 
 const   vec3  sea_base_color  = vec3( 0.1,0.19,0.22 );
 const   vec3  sea_water_color = vec3( 0.8,0.9,0.6 );
 
-const float sea_speed = 2.0;
-const float sea_choppiness = 4.0;
-const float sea_frequency = 0.1;
-const float sea_amplitude = 0.6;
-const float sea_scale = 0.6;
+flat in float sea_speed;
+flat in float sea_choppiness;
+flat in float sea_frequency;
+flat in float sea_amplitude;
+flat in float sea_scale;
 
 out vec4 fragColor;
 

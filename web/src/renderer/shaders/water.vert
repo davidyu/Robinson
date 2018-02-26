@@ -20,11 +20,12 @@ out mediump vec4  vPosition_World;
 out mediump float vAmp;
 out mediump vec2  vQuadCoord;
 
-const float sea_speed = 2.0;
-const float sea_choppiness = 4.0;
-const float sea_frequency = 0.1;
-const float sea_amplitude = 0.6;
-const float sea_scale = 0.6;
+// these are constants for all intents and purposes
+flat out float sea_speed;
+flat out float sea_choppiness;
+flat out float sea_frequency;
+flat out float sea_amplitude;
+flat out float sea_scale;
 
 // based on Shadertoy "Seascape" entry by TDM
 
@@ -104,6 +105,12 @@ float height( vec2 p )
 }
 
 void main() {
+    sea_speed = 2.0;
+    sea_choppiness = 4.0;
+    sea_frequency = 0.1;
+    sea_amplitude = 0.6;
+    sea_scale = 0.6;
+
     vPosition = vec4( aVertexPosition, 1.0 );
 
     // transform from local to world
