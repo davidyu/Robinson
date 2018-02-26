@@ -183,7 +183,7 @@ class Noise {
     for ( let z = 0; z < size; z++ ) {
       for ( let y = 0; y < size; y++ ) {
         for ( let x = 0; x < size; x++ ) {
-          let n = this.perlin3( x * 1.001, y * 1.001, z * 1.001, size - 1 );
+          let n = this.perlin3( x * 1.0005, y * 1.0005, z * 1.0005, size - 1 );
           rgb.push( n * 255 ); // R
           rgb.push( n * 255 ); // G
           rgb.push( n * 255 ); // B

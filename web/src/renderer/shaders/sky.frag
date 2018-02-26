@@ -27,12 +27,17 @@ out vec4 fragColor;
 
 #define PI 3.14159
 
-#define WORLEY_SAMPLE_MAX 12.0
+#define WORLEY_SAMPLE_MAX 64
 float worley(vec3 x) {
     return texture( uWorleyNoise, fract( x / vec3( WORLEY_SAMPLE_MAX ) ) ).r;
 }
 
-#define PERLIN_SAMPLE_MAX 128
+#define BILLOW_SAMPLE_MAX 8
+float billows(vec3 x) {
+    return texture( uWorleyNoise, fract( x / vec3( BILLOW_SAMPLE_MAX ) ) ).r;
+}
+
+#define PERLIN_SAMPLE_MAX 50
 float pnoise( vec3 x ) {
     return texture( uPerlinNoise, fract( x / vec3( PERLIN_SAMPLE_MAX ) ) ).r;
 }
@@ -42,15 +47,18 @@ float sample_cloud( vec3 x ) {
     float a = 0.5;
     vec3 shift = vec3( 100 );
     const int NUM_OCTAVES = 4;
+    float wispiness = min( uCloudiness, 0.4 );
+    float base_shape = min( uCloudiness, 0.5 );
     for (int i = 0; i < NUM_OCTAVES; ++i) {
-        v += mix( 0.2, 0.4, uCloudiness ) * a * worley( x ); // macro, billow-y shapes
-        v += mix( 0.2, 0.4, uCloudiness ) * a * pnoise( x ); // add wispiness
+        v += mix( 0.1, 0.5, base_shape ) * a * worley( x ); // macro, billow-y shapes
+        v += mix( 0.0, 0.2, uCloudiness ) * a * billows( x ); // micro, billow-y shapes
+        v += mix( 0.3, 0.6, wispiness ) * a * pnoise( x ); // add wispiness
         x = x * 2.3 + shift;
-        a *= 0.5;
+        a *= 0.45;
 	}
 
     // smoothstep parameter carefully tuned to look cloudlike
-    return smoothstep( 0.15, 0.55, v );
+    return smoothstep( 0.15, 0.95, v );
 }
 
 vec3 sun( vec3 v ) {

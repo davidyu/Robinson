@@ -77,8 +77,9 @@ class NoiseApp {
 
     let noise = new Noise();
 
-    let data = noise.worley3TextureDataPacked( 64 );
-    this.noiseMat = new VolumeMaterial( noise.textureFromPackedData( gl, data, 64 ) );
+    // let data = noise.worley3TextureDataPacked( 64 );
+    let data = noise.perlin3TextureDataPacked( 128 );
+    this.noiseMat = new VolumeMaterial( noise.textureFromPackedData( gl, data, 128 ) );
     this.textureDataDownloadElement.href = window.URL.createObjectURL( new Blob( [ data ], { type: 'application/octet-stream' } ) );
     this.textureDataDownloadElement.download = "noise.blob";
 

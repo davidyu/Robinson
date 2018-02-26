@@ -30,7 +30,7 @@ enum SHADER_PROGRAM {
   SKYBOX,
   SKY,
   WATER,
-  WATER_SS,
+  WATER_SCREENSPACE,
   CUBE_SH,
   NOISE_WRITER,
   VOLUME_VIEWER,
@@ -377,9 +377,9 @@ class Renderer {
       success = false;
     }
 
-    this.programData[ SHADER_PROGRAM.WATER_SS ] = new ShaderProgramData( sr.files[ SHADERTYPE.SS_QUAD_VERT ].source, sr.files[ SHADERTYPE.WATER_SS_FRAG ].source );
-    this.programData[ SHADER_PROGRAM.WATER_SS ].program = waterSSProgram;
-    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.WATER_SS );
+    this.programData[ SHADER_PROGRAM.WATER_SCREENSPACE ] = new ShaderProgramData( sr.files[ SHADERTYPE.SS_QUAD_VERT ].source, sr.files[ SHADERTYPE.WATER_SS_FRAG ].source );
+    this.programData[ SHADER_PROGRAM.WATER_SCREENSPACE ].program = waterSSProgram;
+    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.WATER_SCREENSPACE );
 
     let noiseWriterProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SS_QUAD_VERT ].source
                                                       , sr.files[ SHADERTYPE.NOISE_WRITER_FRAG ].source );
@@ -640,7 +640,7 @@ class Renderer {
         gl.uniform1f ( shaderVariables.uMaterial.fresnel, cooktorrance.fresnel );
       } else if ( p.material instanceof WaterMaterial ) {
         if ( ( <WaterMaterial>p.material ).screenspace ) {
-          this.useProgram( gl, SHADER_PROGRAM.WATER_SS );
+          this.useProgram( gl, SHADER_PROGRAM.WATER_SCREENSPACE );
           let shaderVariables = this.programData[ this.currentProgram ].uniforms
           gl.uniform1f( shaderVariables.uTime, scene.time );
           gl.uniform1f( shaderVariables.uCloudiness, scene.cloudiness );
