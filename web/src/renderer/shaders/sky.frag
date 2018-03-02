@@ -27,7 +27,7 @@ out vec4 fragColor;
 
 #define PI 3.14159
 
-#define WORLEY_SAMPLE_MAX 64
+#define WORLEY_SAMPLE_MAX 50
 float worley(vec3 x) {
     return texture( uWorleyNoise, fract( x / vec3( WORLEY_SAMPLE_MAX ) ) ).r;
 }
@@ -48,17 +48,17 @@ float sample_cloud( vec3 x ) {
     vec3 shift = vec3( 100 );
     const int NUM_OCTAVES = 4;
     float wispiness = min( uCloudiness, 0.4 );
-    float base_shape = min( uCloudiness, 0.5 );
+    float base_shape = min( uCloudiness, 0.7 );
     for (int i = 0; i < NUM_OCTAVES; ++i) {
         v += mix( 0.1, 0.5, base_shape ) * a * worley( x ); // macro, billow-y shapes
-        v += mix( 0.0, 0.2, uCloudiness ) * a * billows( x ); // micro, billow-y shapes
+        // v += mix( 0.0, 0.2, uCloudiness ) * a * billows( x ); // micro, billow-y shapes
         v += mix( 0.3, 0.6, wispiness ) * a * pnoise( x ); // add wispiness
         x = x * 2.3 + shift;
         a *= 0.45;
 	}
 
     // smoothstep parameter carefully tuned to look cloudlike
-    return smoothstep( 0.15, 0.95, v );
+    return smoothstep( 0.15, 1.00, v );
 }
 
 vec3 sun( vec3 v ) {
@@ -93,11 +93,11 @@ vec4 clouds( vec3 v )
     // this doesn't seem to save any frames, though
     if ( dot( vec3( 0.0, 1.0, 0.0 ), v ) < 0.0 ) return acc;
 
-    const int samples = 32;
+    const int samples = 64;
     for ( int i = 0; i < samples; i++ ) {
         float d = ( float( i ) * 12.0 + 200.0 - cPosition_World.y ) / v.y;
         vec3 cloudPos = cloud_scale * ( cPosition_World.xyz + d * v + ofs );
-        float cloud_sample = uCloudiness * sample_cloud( cloudPos );
+        float cloud_sample = sample_cloud( cloudPos );
 
         vec3 cloud_color = mix( vec3( 1.0, 1.0, 1.0 ), cloud_base_color, cloud_sample );
 

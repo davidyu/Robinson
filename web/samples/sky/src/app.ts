@@ -59,6 +59,9 @@ class SkyApp {
 
     this.FPSContainer = <HTMLDivElement> document.getElementById( "fps-indicator" );
 
+    let playbackButton = <HTMLDivElement> document.getElementById( "toggle-playback" );
+    playbackButton.onclick = togglePlayback;
+
     document.body.onmouseup = changeFinished;
 
     params.vp.addEventListener( 'mousedown', ev => {
@@ -118,18 +121,23 @@ class SkyApp {
 
 var frameLimit: number = -1;
 var stoptime: boolean = false;
+var lastAdjusted: string = ""; // need this
 
 function changeCloudiness( e ) {
   scene.cloudiness = e.target.value / 100;
 }
 
 function changeCloudSpeed( e ) {
+  lastAdjusted = "cloudspeed";
   stoptime = true;
   scene.cloudSpeed = e.target.value / 30; // 1 to 3.33ish
 }
 
 function changeFinished( e ) {
-  stoptime = false;
+  if ( lastAdjusted == "cloudspeed" ) {
+    stoptime = false;
+  }
+  lastAdjusted = "";
 }
 
 function changeWireframe( e ) {
@@ -141,6 +149,15 @@ function changeShowFPS( e ) {
     app.FPSContainer.style.visibility = "visible";
   } else {
     app.FPSContainer.style.visibility = "hidden";
+  }
+}
+
+function togglePlayback( e ) {
+  stoptime = !stoptime;
+  if ( stoptime ) {
+    e.target.value = '\u25B6';//"&#9654;";
+  } else {
+    e.target.value = '\u25AE\u25AE';//"&#9646;";
   }
 }
 
