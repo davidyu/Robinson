@@ -158,7 +158,7 @@ float heightMapTracing(vec3 ori, vec3 dir, out vec3 p) {
     float hm = height( ori + dir * tm );
    
     float tmid = 0.0;
-    for ( int i = 0; i < 8; i++ ) {
+    for ( int i = 0; i < 8; i++ ) { // 8 iterations
         tmid = mix( tm,tx, hm / ( hm-hx) );
         p = ori + dir * tmid; 
                   

@@ -155,9 +155,9 @@ function changeShowFPS( e ) {
 function togglePlayback( e ) {
   stoptime = !stoptime;
   if ( stoptime ) {
-    e.target.value = '\u25B6';//"&#9654;";
+    e.target.value = '\u25B6';
   } else {
-    e.target.value = '\u25AE\u25AE';//"&#9646;";
+    e.target.value = '\u275A\u275A';
   }
 }
 
@@ -220,14 +220,14 @@ function updateAndDraw( t: number ) {
     app.camera = new Camera( rotPos, rotAim, rotUp, rotRight );
     app.renderer.setCamera( app.camera );
     app.renderer.update();
-    app.dirty = false;
   }
 
   // this is way too slow
-  if ( finishedDownloadingTexture ) {
+  if ( ( !stoptime || app.dirty ) && finishedDownloadingTexture ) {
     app.renderer.dirty = true;
     app.renderer.render();
   }
+  app.dirty = false;
 
   app.FPSContainer.innerHTML = "FPS: " + Math.round( 1.0 / dt );
 

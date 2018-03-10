@@ -98,6 +98,14 @@
       font-size: 11px;
       vertical-align: top;
     }
+
+    .timer-control {
+      background:none!important;
+      color:inherit;
+      border:none;
+      padding:0!important;
+      font: inherit;
+    }
   </style>
   <script src="./app.js" type="text/javascript"></script>
   <script src="./ace.js" type="text/javascript"></script>
@@ -141,7 +149,8 @@
             <div id="parameter-editor" class="tab-content" style="display:flex;">
                 <div id="options-container">
                     <div class="option">
-                      <input id="toggle-playback" type="button" value="&#9646;&#9646;" />
+                      <label>Time</label>
+                      <input id="toggle-playback" class="timer-control" type="button" value="&#10074;&#10074;" />
                     </div>
                     <div class="option">
                       <label>Limit FPS</label>

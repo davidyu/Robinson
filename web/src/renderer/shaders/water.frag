@@ -197,7 +197,7 @@ void main( void ) {
     vec4 refracted = engamma( vec4( sea_base_color + diffuse( normal, lightdir, 80.0 ) * sea_water_color * 0.12, 1.0 ) ); 
 
     float fresnel = 1.0 - max( dot(-normal,-view), 0.0 );
-    fresnel = pow(fresnel,3.0) * 0.65;
+    fresnel = pow(fresnel,3.0) * 0.45;
     
     vec4 color = mix( refracted, ibl_specular, fresnel );
 

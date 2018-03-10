@@ -23,6 +23,8 @@ const   float cloud_scale = 0.0015;
 const   vec3  cloud_base_color = vec3( 0.3, 0.4, 0.5 );
 const   vec3  cloud_top_color  = vec3( 1.0 );
 
+const   vec3  sea_color_mixed  = mix( vec3( 0.1,0.19,0.22 ), vec3( 0.8,0.9,0.6 ), 0.5 );
+
 out vec4 fragColor;
 
 #define PI 3.14159
@@ -131,7 +133,7 @@ void main() {
     vec3 eye = normalize( vDirection );
 
     // we only care about the range of values from sky_horizon_offset to 1.0
-    float sky_h = clamp( eye.y, sky_horizon_offset, 1.0 );
+    float sky_h = clamp( abs( eye.y ), sky_horizon_offset, 1.0 );
 
     // transform from [sky_horizon_offset, 1.0] to [0, 1.0]
     sky_h = ( sky_h - sky_horizon_offset ) / ( 1.0 - sky_horizon_offset );
@@ -148,11 +150,15 @@ void main() {
     sky = desaturate( sky, 0.5 * uCloudiness * uCloudiness ); // desaturate with cloudiness
     sky *= ( 1.0 - 0.5 * uCloudiness * uCloudiness ); // darken with cloudiness
 
-    sky += sun( eye );
-    vec4 cl = clouds( eye );
+    if ( eye.y > sky_horizon_offset ) {
+        sky += sun( eye );
+        vec4 cl = clouds( eye );
 
-    float t = pow( 1.0 - 0.7 * vDirection.y, 15.0 ); // what is t?
-    sky = mix( sky, cl.rgb, cl.a * ( 1.0 - t ) );
+        float t = pow( 1.0 - 0.7 * vDirection.y, 15.0 ); // what is t?
+        sky = mix( sky, cl.rgb, cl.a * ( 1.0 - t ) );
+    } else {
+        sky = mix( sky, sea_color_mixed, 0.5 );
+    }
 
     fragColor = vec4( sky.r, sky.g, sky.b, 1.0 );
 }
