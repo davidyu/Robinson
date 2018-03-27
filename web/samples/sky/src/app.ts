@@ -166,6 +166,9 @@ function changeFrameLimit( e ) {
     case "adaptive":
       frameLimit = -1;
       break;
+    case "15":
+      frameLimit = 15;
+      break;
     case "30":
       frameLimit = 30;
       break;
@@ -227,6 +230,7 @@ function updateAndDraw( t: number ) {
     app.renderer.dirty = true;
     app.renderer.render();
   }
+
   app.dirty = false;
 
   app.FPSContainer.innerHTML = "FPS: " + Math.round( 1.0 / dt );
