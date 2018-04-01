@@ -188,6 +188,7 @@ class ShaderUniforms {
   uLights: ShaderLightProperties[];
   uNoiseLayer: WebGLUniformLocation;
   uPerlinNoise: WebGLUniformLocation;
+  uSparseWorleyNoise: WebGLUniformLocation;
   uWorleyNoise: WebGLUniformLocation;
 
   constructor() {}
@@ -481,6 +482,7 @@ class Renderer {
     uniforms.uCloudSpeed = gl.getUniformLocation( program, "uCloudSpeed" );
     uniforms.uNoiseLayer = gl.getUniformLocation( program, "uNoiseLayer" );
     uniforms.uPerlinNoise = gl.getUniformLocation( program, "uPerlinNoise" );
+    uniforms.uSparseWorleyNoise = gl.getUniformLocation( program, "uSparseWorleyNoise" );
     uniforms.uWorleyNoise = gl.getUniformLocation( program, "uWorleyNoise" );
 
     uniforms.uMaterial = new ShaderMaterialProperties();

@@ -190,6 +190,7 @@ function changeFrameLimit( e ) {
 var app: SkyApp = null;
 var scene: Scene = null;
 var lastFrame: number = null;
+var texturesDownloaded: number = 0;
 var finishedDownloadingTexture = false;
 var watermat: WaterMaterial;
 
@@ -256,8 +257,13 @@ function StartSky() {
       let noise = new Noise();
 
       scene = new Scene( null, null, true, true, [ noise.perlin3Texture( gl, 128 ), noise.textureFromOfflinePackedData( gl, "worley.blob", 64, ( texture ) => {
-        finishedDownloadingTexture = true;
+        texturesDownloaded++;
+        finishedDownloadingTexture = texturesDownloaded == 2;
         scene.noiseVolumes[1] = texture;
+      } ), noise.textureFromOfflinePackedData( gl, "sparse_worley.blob", 64, ( texture ) => {
+        texturesDownloaded++;
+        finishedDownloadingTexture = texturesDownloaded == 2;
+        scene.noiseVolumes[2] = texture;
       } ) ] );
 
       Scene.setActiveScene( scene );

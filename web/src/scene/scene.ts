@@ -302,6 +302,9 @@ class Scene {
       gl.uniform1i( variables.uWorleyNoise, 2 );
       gl.activeTexture( gl.TEXTURE2 );
       gl.bindTexture( gl.TEXTURE_3D, this.noiseVolumes[1] );
+      gl.uniform1i( variables.uSparseWorleyNoise, 3 );
+      gl.activeTexture( gl.TEXTURE3 );
+      gl.bindTexture( gl.TEXTURE_3D, this.noiseVolumes[2] );
     }
 
     gl.drawElements( gl.TRIANGLES, this.fullscreen.renderData.indices.length, gl.UNSIGNED_INT, 0 );

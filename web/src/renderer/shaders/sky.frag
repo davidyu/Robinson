@@ -7,6 +7,7 @@ uniform vec4 cPosition_World;
 uniform float uTime;
 uniform sampler3D uPerlinNoise;
 uniform sampler3D uWorleyNoise;
+uniform sampler3D uSparseWorleyNoise;
 uniform float uCloudiness;
 uniform float uCloudSpeed;
 
@@ -29,17 +30,17 @@ out vec4 fragColor;
 
 #define PI 3.14159
 
-#define WORLEY_SAMPLE_MAX 8
+#define WORLEY_SAMPLE_MAX 32
 float worley(vec3 x) {
-    return texture( uWorleyNoise, fract( x / vec3( WORLEY_SAMPLE_MAX ) ) ).r;
+    return texture( uSparseWorleyNoise, fract( x / vec3( WORLEY_SAMPLE_MAX ) ) ).r;
 }
 
-#define BILLOW_SAMPLE_MAX 32
+#define BILLOW_SAMPLE_MAX 50
 float billows(vec3 x) {
     return texture( uWorleyNoise, fract( x / vec3( BILLOW_SAMPLE_MAX ) ) ).r;
 }
 
-#define PERLIN_SAMPLE_MAX 64
+#define PERLIN_SAMPLE_MAX 90
 float pnoise( vec3 x ) {
     return texture( uPerlinNoise, fract( x / vec3( PERLIN_SAMPLE_MAX ) ) ).r;
 }
@@ -47,34 +48,21 @@ float pnoise( vec3 x ) {
 float sample_cloud( vec3 pos ) {
     vec3 x = pos;
     float v = 0.0;
-    float a = 0.6;
+    float a = 0.5;
     vec3 shift = vec3( 100 );
     const int NUM_OCTAVES = 4;
     
-    float wispiness = min( uCloudiness, 0.3 );
-    float base_shape = min( uCloudiness, 1.0 );
-    
     for (int i = 0; i < NUM_OCTAVES; ++i) {
-        v += base_shape * a * worley( x ); // macro, billow-y shapes
-        //v += mix( 0.0, 0.2, uCloudiness ) * a * billows( x ); // micro, billow-y shapes
-        //v += mix( 0.2, 0.4, wispiness ) * a * pnoise( x ); // add wispiness
+        float base_shape = worley( x );
+        float billows = billows( x );
+        float wispy = pnoise( x );
+        base_shape += wispy * 0.07;
+        v += uCloudiness * a * base_shape * ( 1. + uCloudiness * 3.0 * billows + wispy ); // macro, billow-y shapes
         x = x * 2.3 + shift;
         a *= 0.45;
 	}
 	
-	x = pos;
-	shift = vec3( 100 );
-	a = 0.5;
-	
-	for (int i = 0; i < NUM_OCTAVES; ++i) {
-        //v += mix( 0.0, 0.2, uCloudiness ) * a * billows( x ); // micro, billow-y shapes
-        v += wispiness * a * pnoise( x ); // add wispiness
-        x = x * 2.3 + shift;
-        a *= 0.45;
-	}
-
-    // smoothstep parameter carefully tuned to look cloudlike
-    return smoothstep( 0.15, 1.00, v );
+    return smoothstep( 0.0, 1., v );
 }
 
 vec3 sun( vec3 v ) {
