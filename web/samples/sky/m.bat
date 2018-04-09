@@ -9,4 +9,7 @@
 @call rm files.txt
 
 xcopy /iy ..\..\dist\shaders %DIST%\shaders\ > NUL
+xcopy /iy ..\..\dist\lib %DIST% > NUL
+
+xcopy /y data %DIST%\ > NUL
 xcopy /y app.html %DIST%\ > NUL

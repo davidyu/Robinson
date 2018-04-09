@@ -13,5 +13,8 @@
 @call rm src.txt
 @popd
 
+@rem copy libraries
+@call xcopy /iy %SRC%\lib\*.js %DIST%\lib > NUL
+
 @rem shaders test
 @call make_shaders
