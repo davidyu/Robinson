@@ -16,7 +16,7 @@ in vec3 vDirection;
 const   vec3  sun_light_dir = normalize( vec3( 0.0, 1.0, 0.4 ) );
 const   float sun_flare_size = 0.5;
 
-const   float sky_saturation = 0.7;       // how blue should the sky be (if we look straight up)
+const   float sky_saturation = 0.45;       // how blue should the sky be (if we look straight up)
 const   float sky_horizon_offset = -0.3;  // between -1 and 1, moves horizon down if negative, moves horizon up if positive 
 
 const   float cloud_scale = 0.0015;
@@ -24,7 +24,10 @@ const   float cloud_scale = 0.0015;
 const   vec3  cloud_base_color = vec3( 0.3, 0.4, 0.5 );
 const   vec3  cloud_top_color  = vec3( 1.0 );
 
-const   vec3  sea_color_mixed  = mix( vec3( 0.1,0.19,0.22 ), vec3( 0.8,0.9,0.6 ), 0.5 );
+const   vec3  sea_base_color  = vec3( 0.1,0.27,0.3 );
+const   vec3  sea_water_color = vec3( 0.8,0.9,0.6 );
+
+const   vec3  sea_color_mixed  = mix( sea_base_color, sea_water_color, 0.5 );
 
 out vec4 fragColor;
 

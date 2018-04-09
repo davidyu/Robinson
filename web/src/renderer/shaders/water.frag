@@ -16,7 +16,8 @@ uniform samplerCube environment;
 uniform float environmentMipMaps;
 
 const   vec3  sun_light_dir = normalize( vec3( 0.0, 1.0, 0.4 ) );  // radius of sun sphere
-const   vec3  sea_base_color  = vec3( 0.1,0.19,0.22 );
+
+const   vec3  sea_base_color  = vec3( 0.1,0.27,0.3 );
 const   vec3  sea_water_color = vec3( 0.8,0.9,0.6 );
 
 flat in float sea_speed;
