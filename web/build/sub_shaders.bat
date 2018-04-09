@@ -5,9 +5,9 @@
 @xcopy /y   %TEST%\package.json %DIST%\test > NUL
 @xcopy /eiy %SRC%\renderer\shaders\* %DIST%\test > NUL
 @pushd %DIST%\test
-@call npm install
+@call npm install --silent > NUL
 @popd
 
 @pushd %DIST%\test
-@call node compileshader.js
+@call node_modules\.bin\karma start
 @popd
