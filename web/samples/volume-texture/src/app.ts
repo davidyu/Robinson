@@ -77,9 +77,9 @@ class NoiseApp {
 
     let noise = new Noise();
 
-    let data = noise.worley3TextureDataPacked( 64 );
+    let data = noise.worley3TextureDataPacked( 128 );
     // let data = noise.perlin3TextureDataPacked( 128 );
-    this.noiseMat = new VolumeMaterial( noise.textureFromPackedData( gl, data, 64 ) );
+    this.noiseMat = new VolumeMaterial( noise.textureFromPackedData( gl, data, 128 ) );
     this.textureDataDownloadElement.href = window.URL.createObjectURL( new Blob( [ data ], { type: 'application/octet-stream' } ) );
     this.textureDataDownloadElement.download = "noise.blob";
 
@@ -92,7 +92,7 @@ class NoiseApp {
 
       let reader = new FileReader();
       reader.addEventListener( "loadend", () => {
-        let texture = noise.textureFromPackedData( gl, new Uint8Array( reader.result ), 64 );
+        let texture = noise.textureFromPackedData( gl, new Uint8Array( reader.result ), 128 );
         this.noiseMat.volumeTexture = texture;
         console.log( reader.result.size );
       } );
@@ -131,7 +131,7 @@ function StartNoiseWriter() {
 
     shaderRepo = new ShaderRepository( ( repo ) => {
       app = new NoiseApp( params, repo );
-      scene = new Scene( null, null, false, false );
+      scene = new Scene( null, null, false, false, null );
       Scene.setActiveScene( scene );
 
       // noise test ss quad

@@ -68,7 +68,10 @@ class Noise {
   // doesn't take a seed because I don't have a PRNG
   seedWorley() {
     this.worleyFeaturePoints = [];
-    let numFP = 16; // 128 for packed, 16 for sparse
+    let numFP = 8; // 256 for packed, 16 for sparse
+
+    // if sparse, make it very dark
+    let sparse = true;
 
     for ( let i = 0; i < numFP; i++ ) {
       let featurePointX = Math.random();
@@ -127,7 +130,11 @@ class Noise {
       }
     }
 
-    this.worleyApproxMaxDist = 1.0 / 5.04;
+    this.worleyApproxMaxDist = 1.0 / ( <any> Math ).cbrt( numFP );
+
+    if ( sparse ) {
+      this.worleyApproxMaxDist *= 0.6; // not mathematically correct, but make max dist really large
+    }
   }
 
   fade( t: number ) {
