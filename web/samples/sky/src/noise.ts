@@ -13,6 +13,11 @@ interface Packed3ChannelTextureData {
   b: PackedTextureData;
 }
 
+
+function isPowerOfTwo( x: number ): boolean {
+  return ( x & ( x - 1 ) ) == 0;
+}
+
 class Noise {
   perm: number[];
   grad3: gml.Vec3[];
@@ -305,7 +310,56 @@ class Noise {
   }
 
   composeFromPackedData( gl: WebGL2RenderingContext, packed: Packed3ChannelTextureData ): WebGLTexture {
-    return null;
+    let unpacked = [];
+
+    if ( !isPowerOfTwo( packed.r.size ) || !isPowerOfTwo( packed.g.size ) || !isPowerOfTwo( packed.b.size ) ) debugger;
+
+    let size = Math.max( packed.r.size, packed.g.size, packed.b.size );
+    let scale = { r: packed.r.size / size, g: packed.g.size / size, b: packed.b.size / size };
+
+    for ( let z = 0; z < size; z++ ) {
+      for ( let y = 0; y < size; y++ ) {
+        for ( let x = 0; x < size; x++ ) {
+          let index = z * size * size + y * size + x;
+          let x_r = Math.floor( scale.r * x );
+          let y_r = Math.floor( scale.r * y );
+          let z_r = Math.floor( scale.r * z );
+          let size_r = scale.r * size;
+
+          let x_g = Math.floor( scale.g * x );
+          let y_g = Math.floor( scale.g * y );
+          let z_g = Math.floor( scale.g * z );
+          let size_g = scale.g * size;
+
+          let x_b = Math.floor( scale.b * x );
+          let y_b = Math.floor( scale.b * y );
+          let z_b = Math.floor( scale.b * z );
+          let size_b = scale.b * size;
+
+          let r_index = z_r * size_r * size_r + y_r * size_r + x_r; 
+          let g_index = z_g * size_g * size_g + y_g * size_g + x_g; 
+          let b_index = z_b * size_b * size_b + y_b * size_b + x_b; 
+
+          unpacked.push( packed.r.data[ r_index ] );
+          unpacked.push( packed.g.data[ g_index ] );
+          unpacked.push( packed.b.data[ b_index ] );
+        }
+      }
+    }
+
+    let noiseTexture = gl.createTexture();
+
+    gl.bindTexture( gl.TEXTURE_3D, noiseTexture );
+
+    // no mips
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_BASE_LEVEL, 0 );
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MAX_LEVEL, 0 );
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
+    gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+    gl.texImage3D   ( gl.TEXTURE_3D, 0, gl.RGB, size, size, size, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array( unpacked ) );
+    gl.bindTexture  ( gl.TEXTURE_3D, null );
+
+    return noiseTexture;
   }
 
   textureFromOfflinePackedData( gl: WebGL2RenderingContext, path: string, size: number, loadDoneCallback:( texture: WebGLTexture ) => void ): WebGLTexture {

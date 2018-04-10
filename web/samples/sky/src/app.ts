@@ -246,6 +246,7 @@ function updateAndDraw( t: number ) {
  // download the two textures we care about, then build them, then inject into scene
 function composeNoiseTextures( gl ) {
   let texture = noise.composeFromPackedData( gl, { r: { data: perlin_data, size: 128 }, g: { data: worley_data, size: 64 }, b: { data: sparse_data, size: 64 } } );
+  scene.noiseVolume = texture;
 }
 
 function StartSky() {
