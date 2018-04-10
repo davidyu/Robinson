@@ -189,9 +189,13 @@ function changeFrameLimit( e ) {
 
 var app: SkyApp = null;
 var scene: Scene = null;
+var noise: Noise = null;
 var lastFrame: number = null;
 var texturesDownloaded: number = 0;
 var finishedDownloadingTexture = false;
+var worley_data = null;
+var sparse_data = null;
+var perlin_data = null;
 var watermat: WaterMaterial;
 
 function updateAndDraw( t: number ) {
@@ -239,6 +243,11 @@ function updateAndDraw( t: number ) {
   window.requestAnimationFrame( updateAndDraw );
 }
 
+ // download the two textures we care about, then build them, then inject into scene
+function composeNoiseTextures( gl ) {
+  let texture = noise.composeFromPackedData( gl, { r: { data: perlin_data, size: 128 }, g: { data: worley_data, size: 64 }, b: { data: sparse_data, size: 64 } } );
+}
+
 function StartSky() {
   if ( app == null ) {
     var params : SkyAppParams = {
@@ -254,17 +263,47 @@ function StartSky() {
 
       app.editor.install();
 
-      let noise = new Noise();
+      noise = new Noise();
 
-      scene = new Scene( null, null, true, true, [ noise.perlin3Texture( gl, 128 ), noise.textureFromOfflinePackedData( gl, "worley.blob", 64, ( texture ) => {
+      // download two blob files
+      var worley_req = new XMLHttpRequest();
+      worley_req.addEventListener( "load", evt => {
         texturesDownloaded++;
         finishedDownloadingTexture = texturesDownloaded == 2;
-        scene.noiseVolumes[1] = texture;
-      } ), noise.textureFromOfflinePackedData( gl, "sparse_worley.blob", 64, ( texture ) => {
+        worley_data = new Uint8Array( worley_req.response );
+        if ( finishedDownloadingTexture ) {
+          composeNoiseTextures( gl );
+        }
+      } );
+      worley_req.open( "GET", "worley.blob", true );
+      worley_req.responseType = "arraybuffer";
+      worley_req.send();
+
+      var sparse_req = new XMLHttpRequest();
+      sparse_req.addEventListener( "load", evt => {
+        sparse_data = new Uint8Array( sparse_req.response );
         texturesDownloaded++;
         finishedDownloadingTexture = texturesDownloaded == 2;
-        scene.noiseVolumes[2] = texture;
-      } ) ] );
+        if ( finishedDownloadingTexture ) {
+          composeNoiseTextures( gl );
+        }
+      } );
+      sparse_req.open( "GET", "sparse_worley.blob", true );
+      sparse_req.responseType = "arraybuffer";
+      sparse_req.send();
+
+      perlin_data = noise.perlin3TextureDataPacked( 128 );
+
+      let emptyTexture = gl.createTexture();
+      gl.bindTexture( gl.TEXTURE_3D, emptyTexture );
+
+      // no mips, 1x1x1...
+      gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_BASE_LEVEL, 0 );
+      gl.texParameteri( gl.TEXTURE_3D, gl.TEXTURE_MAX_LEVEL, 0 );
+      gl.texImage3D   ( gl.TEXTURE_3D, 0, gl.RGB, 1, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array( [ 0, 0, 0 ] ) );
+      gl.bindTexture  ( gl.TEXTURE_3D, null );
+
+      scene = new Scene( null, null, true, true, emptyTexture );
 
       Scene.setActiveScene( scene );
 

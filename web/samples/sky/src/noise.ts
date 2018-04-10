@@ -2,6 +2,17 @@
 // Source:
 //  https://github.com/josephg/noisejs/blob/master/perlin.js
 
+interface PackedTextureData {
+  data: Uint8Array;
+  size: number;
+}
+
+interface Packed3ChannelTextureData {
+  r: PackedTextureData;
+  g: PackedTextureData;
+  b: PackedTextureData;
+}
+
 class Noise {
   perm: number[];
   grad3: gml.Vec3[];
@@ -178,6 +189,22 @@ class Noise {
     return noiseTexture;
   }
 
+  perlin3TextureDataPacked( size: number ): Uint8Array {
+    let rgb = [];
+    for ( let z = 0; z < size; z++ ) {
+      for ( let y = 0; y < size; y++ ) {
+        for ( let x = 0; x < size; x++ ) {
+          let n = this.perlin3( x * 1.0005, y * 1.0005, z * 1.0005, size - 1 );
+          rgb.push( n * 255 ); // R
+          rgb.push( n * 255 ); // G
+          rgb.push( n * 255 ); // B
+        }
+      }
+    }
+
+    return new Uint8Array( rgb );
+  }
+
   perlin3Texture( gl: WebGL2RenderingContext, size: number ): WebGLTexture {
     let rgb = [];
     for ( let z = 0; z < size; z++ ) {
@@ -275,6 +302,10 @@ class Noise {
     let nearest = this.worleyFeaturePointKDTree.findNearest( pt, Number.MAX_VALUE );
     return nearest;
      */
+  }
+
+  composeFromPackedData( gl: WebGL2RenderingContext, packed: Packed3ChannelTextureData ): WebGLTexture {
+    return null;
   }
 
   textureFromOfflinePackedData( gl: WebGL2RenderingContext, path: string, size: number, loadDoneCallback:( texture: WebGLTexture ) => void ): WebGLTexture {
