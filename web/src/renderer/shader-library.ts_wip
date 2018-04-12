@@ -1,0 +1,31 @@
+// uniforms should have three sections:
+// - light uniforms
+// - unstructured uniforms
+// attribute locations
+// - attribute locations
+interface ShaderUniformsV2: { [ name: string ]: WebGLUniformLocation | WebGLUniformLocation }
+interface ShaderVertexAttributes: { [ name: string ]: GLint /* number */ }
+
+/***
+ * A compiled program along with its uniforms and metadata about its sources
+ */
+class CompiledProgramData {
+  program: WebGLProgram;
+  uniforms: ShaderUniformsV2; // can we maybe have a inheritance chain set up on this????
+  sourceVSFilename: string;
+  sourceFSFilename: string;
+  constructor( vs: string, fs: string ) {
+    this.sourceVSFilename = vert;
+    this.sourceFSFilename = frag;
+    this.program = null;
+    this.uniforms = {};
+  }
+}
+
+class ShaderLibrary {
+  // the contents of the shader (.vert or .frag) files we load/edit at runtime
+  sources  : { [ filename: string ] : string };
+
+  // the actual compiled shader programs, and their uniforms
+  programs : { [ name: string ] : CompiledProgramData };
+};

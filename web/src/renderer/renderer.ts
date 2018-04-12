@@ -208,13 +208,13 @@ class ShaderProgramData {
 }
 
 class Renderer {
+  enableTracing: boolean; // for debugging
+
   viewportW: number;
   viewportH: number;
-  enableTracing: boolean;
 
   elementIndexExtension;
-
-  shaderLODExtension; // TODO deleteme
+  shaderLODExtension;
 
   camera: Camera;
   context: WebGLRenderingContext & WebGL2RenderingContext;

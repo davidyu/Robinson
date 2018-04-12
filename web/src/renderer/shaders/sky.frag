@@ -59,9 +59,9 @@ float sample_cloud( vec3 pos ) {
         // float base_shape = worley( x );
         // float billows = billows( x );
         // float wispy = pnoise( x );
-        float wispy = texture( uPerlinNoise, fract( x / vec3( 128 ) ) ).r;
-        float billows = texture( uPerlinNoise, fract( x / vec3( 128 ) ) ).g;
-        float base_shape = texture( uPerlinNoise, fract( x / vec3( 128 ) ) ).b;
+        float wispy = texture( uPerlinNoise, fract( x / vec3( 90 ) ) ).r;
+        float billows = texture( uPerlinNoise, fract( x / vec3( 90 ) ) ).g;
+        float base_shape = texture( uPerlinNoise, fract( x / vec3( 90 ) ) ).b;
         base_shape += wispy * 0.07;
         v += uCloudiness * a * base_shape * ( 1. + uCloudiness * 3.0 * billows + wispy ); // macro, billow-y shapes
         x = x * 2.3 + shift;

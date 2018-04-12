@@ -199,14 +199,23 @@ var perlin_data = null;
 var watermat: WaterMaterial;
 
 function updateAndDraw( t: number ) {
-  let dt = ( t - lastFrame ) / 1000.0;
+  // request another refresh
+  requestAnimationFrame( updateAndDraw );
 
-  if ( frameLimit != -1 && dt < 1.0 / frameLimit ) {
-    window.requestAnimationFrame( updateAndDraw );
+  let dtInMillis = t - lastFrame;
+  let dt = dtInMillis / 1000.0;
+
+  let interval = 1000.0 / frameLimit;
+
+  if ( frameLimit != -1 && dtInMillis < interval ) {
     return;
   }
 
   lastFrame = t;
+
+  if ( frameLimit != -1 ) {
+    lastFrame -= ( dtInMillis % interval );
+  }
 
   if ( !stoptime ) {
     scene.time += dt;
@@ -230,7 +239,6 @@ function updateAndDraw( t: number ) {
     app.renderer.update();
   }
 
-  // this is way too slow
   if ( ( !stoptime || app.dirty ) && finishedDownloadingTexture ) {
     app.renderer.dirty = true;
     app.renderer.render();
@@ -239,8 +247,6 @@ function updateAndDraw( t: number ) {
   app.dirty = false;
 
   app.FPSContainer.innerHTML = "FPS: " + Math.round( 1.0 / dt );
-
-  window.requestAnimationFrame( updateAndDraw );
 }
 
  // download the two textures we care about, then build them, then inject into scene
@@ -328,9 +334,9 @@ function StartSky() {
       let cloudSpeedSlider = <HTMLInputElement> document.getElementById( "wind-slider" );
 
       cloudinessSlider.value = ( scene.cloudiness * 100 ).toString();
-      cloudSpeedSlider.value = ( scene.cloudSpeed * 30 ).toString();
+      cloudSpeedSlider.value = ( scene.cloudSpeed * 50 ).toString();
 
-      window.requestAnimationFrame( updateAndDraw );
+      updateAndDraw( performance.now() );
 
       // screenspace ocean
       /*

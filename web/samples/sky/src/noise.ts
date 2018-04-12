@@ -201,8 +201,6 @@ class Noise {
         for ( let x = 0; x < size; x++ ) {
           let n = this.perlin3( x * 1.0005, y * 1.0005, z * 1.0005, size - 1 );
           rgb.push( n * 255 ); // R
-          rgb.push( n * 255 ); // G
-          rgb.push( n * 255 ); // B
         }
       }
     }
