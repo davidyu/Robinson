@@ -19,6 +19,7 @@ enum SHADERTYPE {
   WATER_SS_FRAG,
   NOISE_WRITER_FRAG,
   VOLUME_VIEWER_FRAG,
+  POST_PROCESS_FRAG,
 };
 
 enum SHADER_PROGRAM {
@@ -34,6 +35,7 @@ enum SHADER_PROGRAM {
   CUBE_SH,
   NOISE_WRITER,
   VOLUME_VIEWER,
+  POST_PROCESS,
 };
 
 enum PASS {
@@ -92,6 +94,7 @@ class ShaderRepository {
     this.asyncLoadShader( "water_screenspace.frag"    , SHADERTYPE.WATER_SS_FRAG                 , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "noise_writer.frag"         , SHADERTYPE.NOISE_WRITER_FRAG             , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "volume_viewer.frag"        , SHADERTYPE.VOLUME_VIEWER_FRAG            , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "post-process.frag"         , SHADERTYPE.POST_PROCESS_FRAG             , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
   }
 
   asyncLoadShader( name: string, stype: SHADERTYPE, loaded: ( stype: SHADERTYPE, contents: string ) => void ) {
@@ -190,6 +193,8 @@ class ShaderUniforms {
   uPerlinNoise: WebGLUniformLocation;
   uSparseWorleyNoise: WebGLUniformLocation;
   uWorleyNoise: WebGLUniformLocation;
+  uColor: WebGLUniformLocation;
+  uDepth: WebGLUniformLocation;
 
   constructor() {}
 }
@@ -245,7 +250,7 @@ class Renderer {
   constructor( viewportElement: HTMLCanvasElement, sr: ShaderRepository, backgroundColor: gml.Vec4 = new gml.Vec4( 0, 0, 0, 1 ) ) {
     this.repo = sr;
 
-    var gl = viewportElement.getContext( "webgl2" ) as any;
+    var gl = viewportElement.getContext( "webgl2", { antialias: true } ) as any;
 
     gl.viewport( 0, 0, viewportElement.width, viewportElement.height );
     
@@ -406,6 +411,18 @@ class Renderer {
     this.programData[ SHADER_PROGRAM.VOLUME_VIEWER ].program = volumeViewerProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.VOLUME_VIEWER );
 
+    let postProcessProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SS_QUAD_VERT ].source
+                                                      , sr.files[ SHADERTYPE.POST_PROCESS_FRAG ].source );
+
+    if ( postProcessProgram == null ) {
+      alert( "post process compilation failed. Please check the log for details." );
+      success = false;
+    }
+
+    this.programData[ SHADER_PROGRAM.POST_PROCESS ] = new ShaderProgramData( sr.files[ SHADERTYPE.SS_QUAD_VERT ].source, sr.files[ SHADERTYPE.POST_PROCESS_FRAG ].source );
+    this.programData[ SHADER_PROGRAM.POST_PROCESS ].program = postProcessProgram;
+    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.POST_PROCESS );
+
     let cubeMapSHProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.PASSTHROUGH_VERT ].source
                                                     , sr.files[ SHADERTYPE.CUBE_SH_FRAG ].source );
 
@@ -484,6 +501,8 @@ class Renderer {
     uniforms.uPerlinNoise = gl.getUniformLocation( program, "uPerlinNoise" );
     uniforms.uSparseWorleyNoise = gl.getUniformLocation( program, "uSparseWorleyNoise" );
     uniforms.uWorleyNoise = gl.getUniformLocation( program, "uWorleyNoise" );
+    uniforms.uColor = gl.getUniformLocation( program, "screen_color" );
+    uniforms.uDepth = gl.getUniformLocation( program, "screen_depth" );
 
     uniforms.uMaterial = new ShaderMaterialProperties();
     uniforms.uMaterial.ambient = gl.getUniformLocation( program, "mat.ambient" );
@@ -596,6 +615,32 @@ class Renderer {
       gl.activeTexture( gl.TEXTURE0 );
       gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environmentMap.cubeMapTexture );
     }
+
+    gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_INT, 0 );
+  }
+
+  renderPostProcessedImage( gl: WebGL2RenderingContext, color, depth ) {
+    let fullscreen = new Quad();
+    fullscreen.rebuildRenderData( gl );
+
+    this.useProgram( gl, SHADER_PROGRAM.POST_PROCESS );
+
+    let shaderVariables = this.programData[ this.currentProgram ].uniforms;
+
+    gl.bindBuffer( gl.ARRAY_BUFFER, fullscreen.renderData.vertexBuffer );
+    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indexBuffer );
+    gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
+
+    gl.bindBuffer( gl.ARRAY_BUFFER, fullscreen.renderData.vertexTexCoordBuffer );
+    gl.vertexAttribPointer( shaderVariables.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
+
+    gl.uniform1i( shaderVariables.uColor, 0 );
+    gl.activeTexture( gl.TEXTURE0 );
+    gl.bindTexture( gl.TEXTURE_2D, color );
+
+    gl.uniform1i( shaderVariables.uDepth, 1 );
+    gl.activeTexture( gl.TEXTURE1 );
+    gl.bindTexture( gl.TEXTURE_2D, depth );
 
     gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_INT, 0 );
   }
@@ -779,14 +824,6 @@ class Renderer {
     gl.uniformMatrix3fv( shaderVariables.uNormalModelView, false, gml.Mat3.identity().m );
     gl.uniformMatrix4fv( shaderVariables.uPerspective, false, gml.Mat4.identity().m );
     
-    gl.bindBuffer( gl.ARRAY_BUFFER, fullscreen.renderData.vertexBuffer );
-
-    gl.bindBuffer( gl.ARRAY_BUFFER, fullscreen.renderData.vertexTexCoordBuffer );
-    gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.textureCoords, gl.STATIC_DRAW );
-    gl.vertexAttribPointer( shaderVariables.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
-
-    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indexBuffer );
-
     if ( scene.environmentMap != null ) {
       gl.uniform1i( shaderVariables.uEnvMap, 0 ); // tells GL to look at texture slot 0
       gl.activeTexture( gl.TEXTURE0 );
@@ -891,9 +928,31 @@ class Renderer {
           mvStack.push( gml.Mat4.identity() );
         }
 
-        // 
-        // RENDER TO SCREEN
-        gl.bindFramebuffer( gl.FRAMEBUFFER, null );
+        //
+        // RENDER TO POST-PROCESS FRAMEBUFFER
+        //
+
+        let postProcessColorTexture = gl.createTexture();
+        gl.bindTexture( gl.TEXTURE_2D, postProcessColorTexture );
+        gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
+        gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
+        gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
+        gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.viewportW, this.viewportH, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+
+        let postProcessDepthTexture = gl.createTexture();
+        gl.bindTexture( gl.TEXTURE_2D, postProcessDepthTexture );
+        gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
+        gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
+        gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
+        gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
+        gl.texImage2D( gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT16, this.viewportW, this.viewportH, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null );
+
+        let postProcessFramebuffer = gl.createFramebuffer();             // renderbuffer for depth buffer in framebuffer
+        gl.bindFramebuffer( gl.FRAMEBUFFER, postProcessFramebuffer );    // so we can create storage for the depthBuffer
+        gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, postProcessColorTexture, 0 );
+        gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, postProcessDepthTexture, 0 );
+
         gl.viewport( 0, 0, this.viewportW, this.viewportH );
         gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
@@ -909,6 +968,17 @@ class Renderer {
         if ( this.enableTracing ) console.time( "render scene" );
         this.renderScene( gl, scene, mvStack, PASS.STANDARD_FORWARD );
         if ( this.enableTracing ) console.timeEnd( "render scene" );
+
+        // 
+        // RENDER POST-PROCESSED IMAGE TO SCREEN
+        if ( this.enableTracing ) console.time( "post processing" );
+
+        gl.bindFramebuffer( gl.FRAMEBUFFER, null );
+
+        gl.viewport( 0, 0, this.viewportW, this.viewportH );
+        gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+
+        this.renderPostProcessedImage( gl, postProcessColorTexture, postProcessDepthTexture );
       }
     }
   }

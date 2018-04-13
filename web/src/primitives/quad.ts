@@ -64,10 +64,10 @@ class Quad extends Primitive implements Renderable {
       this.renderData.vertices = new Float32Array( vertices );
 
       var uvs = [
-        0.0, 0.0,
-        1.0, 0.0,
-        1.0, 1.0,
         0.0, 1.0,
+        1.0, 1.0,
+        1.0, 0.0,
+        0.0, 0.0,
       ];
 
       this.renderData.textureCoords = new Float32Array( uvs );

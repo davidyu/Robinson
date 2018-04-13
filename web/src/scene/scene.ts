@@ -131,7 +131,7 @@ class Scene {
     this.dynamicEnvironment = dynamicEnvironment;
     this.noiseVolume = noiseVolume;
     this.cloudiness = 0.25;
-    this.cloudSpeed = 1.5;
+    this.cloudSpeed = 2.3;
   }
 
   public addRenderable( renderable: Renderable ) {

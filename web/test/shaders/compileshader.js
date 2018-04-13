@@ -52,6 +52,7 @@ var sources = [
   new ProgramSource( 'screenspacequad.vert' , 'water_screenspace.frag', false ) ,
   new ProgramSource( 'screenspacequad.vert' , 'noise_writer.frag'     , false ) ,
   new ProgramSource( 'screenspacequad.vert' , 'volume_viewer.frag'    , false ) ,
+  new ProgramSource( 'screenspacequad.vert' , 'post-process.frag'     , false ) ,
   new ProgramSource( 'passthrough.vert'     , 'cube-sh.frag'          , false ) ,
 ];
 

@@ -334,7 +334,7 @@ function StartSky() {
       let cloudSpeedSlider = <HTMLInputElement> document.getElementById( "wind-slider" );
 
       cloudinessSlider.value = ( scene.cloudiness * 100 ).toString();
-      cloudSpeedSlider.value = ( scene.cloudSpeed * 50 ).toString();
+      cloudSpeedSlider.value = ( scene.cloudSpeed * 30 ).toString();
 
       updateAndDraw( performance.now() );
 
