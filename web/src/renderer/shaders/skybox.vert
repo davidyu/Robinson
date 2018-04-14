@@ -12,6 +12,6 @@ void main() {
     // note that this vector is in world space, not view space
     vDirection = uInverseViewMatrix * ( uInverseProjectionMatrix * vec4( aVertexPosition, 1.0 ) ).xyz;
 
-    // assume the quad verts provided cover full-screen; no processing necessary.
-    gl_Position = vec4( aVertexPosition, 1.0 );
+    // assume the quad covers the entire screen; move the skybox quad close to the far clip plane
+    gl_Position = vec4( aVertexPosition.xy, 0.9999999, 1.0 );
 }

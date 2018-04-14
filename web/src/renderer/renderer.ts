@@ -183,7 +183,6 @@ class ShaderUniforms {
   uWireframe: WebGLUniformLocation;
   uProcSky: WebGLUniformLocation;
   uIrradianceMap: WebGLUniformLocation;
-  uEnvironmentMipMaps: WebGLUniformLocation;
   uTime: WebGLUniformLocation;
   uCloudiness: WebGLUniformLocation;
   uCloudSpeed: WebGLUniformLocation;
@@ -493,7 +492,6 @@ class Renderer {
     uniforms.uWireframe = gl.getUniformLocation( program, "uDrawWireframe" );
     uniforms.uProcSky = gl.getUniformLocation( program, "proceduralSky" );
     uniforms.uIrradianceMap = gl.getUniformLocation( program, "irradiance" );
-    uniforms.uEnvironmentMipMaps = gl.getUniformLocation( program, "environmentMipMaps" );
     uniforms.uTime = gl.getUniformLocation( program, "uTime" );
     uniforms.uCloudiness = gl.getUniformLocation( program, "uCloudiness" );
     uniforms.uCloudSpeed = gl.getUniformLocation( program, "uCloudSpeed" );
@@ -577,15 +575,15 @@ class Renderer {
     }
   }
 
-  renderSceneEnvironment( gl: WebGL2RenderingContext, scene: Scene, mvStack: gml.Mat4[], viewportW, viewportH, perspective: gml.Mat4 = null ) {
+  renderSceneSkybox( gl: WebGL2RenderingContext, scene: Scene, mvStack: gml.Mat4[], viewportW, viewportH, perspective: gml.Mat4 = null ) {
     if ( perspective == null ) {
-      perspective = gml.makePerspective( gml.fromDegrees( 45 ), viewportW / viewportH, 0.1, 100.0 );
+      perspective = gml.makePerspective( gml.fromDegrees( 45 ), viewportW / viewportH, 0.1, 1000.0 );
     }
 
     if ( scene.environmentMap != null ) {
       this.useProgram( gl, SHADER_PROGRAM.SKYBOX );
     } else {
-      this.useProgram( gl, SHADER_PROGRAM.SKY );
+      this.useProgram( gl, SHADER_PROGRAM.SKY ); // this shader program automatically moves our quad near the far clip plane, so we don't need to transform it ourselves here
     }
 
     let shaderVariables = this.programData[ this.currentProgram ].uniforms;
@@ -598,6 +596,8 @@ class Renderer {
 
     let inverseViewMatrix = mvStack[ mvStack.length - 1 ].invert().mat3;
     gl.uniformMatrix3fv( shaderVariables.uInverseView, false, inverseViewMatrix.m );
+
+    gl.uniformMatrix4fv( shaderVariables.uModelToWorld, false, fullscreen.transform.m );
 
     if ( this.camera != null ) {
       gl.uniform4fv( shaderVariables.uCameraPos, this.camera.matrix.translation.negate().v );
@@ -959,12 +959,11 @@ class Renderer {
         // draw environment map
         if ( scene.hasEnvironment ) {
           if ( this.enableTracing ) console.time( "environment" );
-          this.renderSceneEnvironment( gl, scene, mvStack, this.viewportW, this.viewportH );
+          this.renderSceneSkybox( gl, scene, mvStack, this.viewportW, this.viewportH );
           if ( this.enableTracing ) console.timeEnd( "environment" );
         }
 
         // draw scene
-        gl.clear( gl.DEPTH_BUFFER_BIT );
         if ( this.enableTracing ) console.time( "render scene" );
         this.renderScene( gl, scene, mvStack, PASS.STANDARD_FORWARD );
         if ( this.enableTracing ) console.timeEnd( "render scene" );
@@ -974,9 +973,7 @@ class Renderer {
         if ( this.enableTracing ) console.time( "post processing" );
 
         gl.bindFramebuffer( gl.FRAMEBUFFER, null );
-
         gl.viewport( 0, 0, this.viewportW, this.viewportH );
-        gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
         this.renderPostProcessedImage( gl, postProcessColorTexture, postProcessDepthTexture );
       }
