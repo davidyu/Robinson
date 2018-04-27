@@ -6,6 +6,7 @@ interface SkyAppParams {
 
 class SkyApp {
   editor: ShaderEditor;
+  dbg: Debugger;
   renderer: Renderer;
   camera: Camera;
   dirty: boolean;
@@ -26,6 +27,7 @@ class SkyApp {
   constructor( params: SkyAppParams, shaderRepo: ShaderRepository ) {
     this.renderer = new Renderer( params.vp, shaderRepo );
     this.editor = new ShaderEditor( this.renderer );
+    this.dbg = new Debugger( this.renderer );
     this.orbitCenter = params.orbitCenter;
     this.orbitDistance = params.orbitDistance;
     this.yaw = gml.fromDegrees( 140 );
@@ -34,6 +36,20 @@ class SkyApp {
     this.dirty = true;
     this.dragStart = new gml.Vec2( 0, 0 );
     this.lastMousePos = new gml.Vec2( 0, 0 );
+
+    {
+      let baseAim = new gml.Vec4( 0, 0, -1, 0 );
+      let rotY = gml.Mat4.rotateY( this.yaw );
+      let rotRight = rotY.transform( gml.Vec4.right );
+
+      let rotX = gml.Mat4.rotate( rotRight, this.pitch );
+      let rotAim = rotX.transform( rotY.transform( baseAim ) ).normalized;
+      let rotUp = rotRight.cross( rotAim );
+
+      let rotPos = this.orbitCenter.add( rotAim.negate().multiply( this.orbitDistance ) );
+
+      this.camera = new Camera( rotPos, rotAim, rotUp, rotRight );
+    }
 
     let options: NodeListOf<HTMLSelectElement> = document.getElementsByTagName( "select" );
     let frameLimiterOption: HTMLSelectElement = null;
@@ -46,10 +62,12 @@ class SkyApp {
 
     let cloudinessSlider = <HTMLInputElement> document.getElementById( "cloud-slider" );
     let cloudSpeedSlider = <HTMLInputElement> document.getElementById( "wind-slider" );
+    let focalDistanceSlider = <HTMLInputElement> document.getElementById( "focal-distance" );
 
     cloudinessSlider.oninput = changeCloudiness;
     cloudSpeedSlider.oninput = changeCloudSpeed;
     cloudSpeedSlider.onchange = changeFinished;
+    focalDistanceSlider.onchange = changeFocalDistance;
 
     let wireframeCheckbox = <HTMLInputElement> document.getElementById( "water-wireframe" );
     wireframeCheckbox.onchange = changeWireframe;
@@ -131,6 +149,10 @@ function changeCloudSpeed( e ) {
   lastAdjusted = "cloudspeed";
   stoptime = true;
   scene.cloudSpeed = e.target.value / 30; // 1 to 3.33ish
+}
+
+function changeFocalDistance( e ) {
+
 }
 
 function changeFinished( e ) {
@@ -240,7 +262,6 @@ function updateAndDraw( t: number ) {
   }
 
   if ( ( !stoptime || app.dirty ) && finishedDownloadingTexture ) {
-    app.renderer.dirty = true;
     app.renderer.render();
   }
 
@@ -269,6 +290,7 @@ function StartSky() {
       let gl = app.renderer.context;
 
       app.editor.install();
+      app.dbg.install();
 
       noise = new Noise();
 
@@ -332,9 +354,11 @@ function StartSky() {
 
       let cloudinessSlider = <HTMLInputElement> document.getElementById( "cloud-slider" );
       let cloudSpeedSlider = <HTMLInputElement> document.getElementById( "wind-slider" );
+      let focalDistanceSlider = <HTMLInputElement> document.getElementById( "focal-distance" );
 
       cloudinessSlider.value = ( scene.cloudiness * 100 ).toString();
       cloudSpeedSlider.value = ( scene.cloudSpeed * 30 ).toString();
+      focalDistanceSlider.value = ( app.camera.focalDistance * 1000 ).toString();
 
       updateAndDraw( performance.now() );
 

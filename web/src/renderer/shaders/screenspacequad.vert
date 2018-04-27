@@ -3,8 +3,8 @@
 in highp vec3 aVertexPosition;
 in mediump vec2 aVertexTexCoord;
 
-uniform highp mat4   uInverseProjectionMatrix;
-uniform highp mat3   uInverseViewMatrix;
+uniform highp mat4 uInverseProjectionMatrix;
+uniform highp mat3 uInverseViewMatrix;
 
 out mediump vec3 vDirection;
 out mediump vec3 vPosition;

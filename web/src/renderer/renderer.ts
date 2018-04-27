@@ -20,6 +20,7 @@ enum SHADERTYPE {
   NOISE_WRITER_FRAG,
   VOLUME_VIEWER_FRAG,
   POST_PROCESS_FRAG,
+  DEPTH_TEXTURE_FRAG
 };
 
 enum SHADER_PROGRAM {
@@ -36,6 +37,7 @@ enum SHADER_PROGRAM {
   NOISE_WRITER,
   VOLUME_VIEWER,
   POST_PROCESS,
+  RENDER_DEPTH_TEXTURE,
 };
 
 enum PASS {
@@ -95,6 +97,7 @@ class ShaderRepository {
     this.asyncLoadShader( "noise_writer.frag"         , SHADERTYPE.NOISE_WRITER_FRAG             , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "volume_viewer.frag"        , SHADERTYPE.VOLUME_VIEWER_FRAG            , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
     this.asyncLoadShader( "post-process.frag"         , SHADERTYPE.POST_PROCESS_FRAG             , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
+    this.asyncLoadShader( "depth-texture.frag"        , SHADERTYPE.DEPTH_TEXTURE_FRAG            , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } ); 
   }
 
   asyncLoadShader( name: string, stype: SHADERTYPE, loaded: ( stype: SHADERTYPE, contents: string ) => void ) {
@@ -223,14 +226,12 @@ class Renderer {
   camera: Camera;
   context: WebGLRenderingContext & WebGL2RenderingContext;
 
+  // TODO move me into debug module
+  visualizeDepthBuffer: boolean;
+
   // shader programs
   // the currently enabled program
   currentProgram: SHADER_PROGRAM;
-
-  // shadow frame buffer
-  depthTextureExtension;
-  shadowDepthTexture: WebGLTexture;
-  shadowFramebuffer: WebGLFramebuffer;
 
   // procedural environment map generation
   environmentMapFramebuffer: WebGLFramebuffer;
@@ -241,8 +242,6 @@ class Renderer {
   envMapSHFrameBuffer: WebGLFramebuffer;
 
   programData: ShaderProgramData[];
-
-  dirty: boolean; // UNUSED
 
   repo: ShaderRepository;
 
@@ -422,6 +421,18 @@ class Renderer {
     this.programData[ SHADER_PROGRAM.POST_PROCESS ].program = postProcessProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.POST_PROCESS );
 
+    let depthTextureProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SS_QUAD_VERT ].source
+                                                       , sr.files[ SHADERTYPE.DEPTH_TEXTURE_FRAG ].source );
+
+    if ( depthTextureProgram == null ) {
+      alert( "depth texture compilation failed. Please check the log for details." );
+      success = false;
+    }
+
+    this.programData[ SHADER_PROGRAM.RENDER_DEPTH_TEXTURE ] = new ShaderProgramData( sr.files[ SHADERTYPE.SS_QUAD_VERT ].source, sr.files[ SHADERTYPE.DEPTH_TEXTURE_FRAG ].source );
+    this.programData[ SHADER_PROGRAM.RENDER_DEPTH_TEXTURE ].program = postProcessProgram;
+    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.RENDER_DEPTH_TEXTURE );
+
     let cubeMapSHProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.PASSTHROUGH_VERT ].source
                                                     , sr.files[ SHADERTYPE.CUBE_SH_FRAG ].source );
 
@@ -433,6 +444,8 @@ class Renderer {
     this.programData[ SHADER_PROGRAM.CUBE_SH ] = new ShaderProgramData( sr.files[ SHADERTYPE.PASSTHROUGH_VERT ].source, sr.files[ SHADERTYPE.CUBE_SH_FRAG ].source );
     this.programData[ SHADER_PROGRAM.CUBE_SH ].program = cubeMapSHProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.CUBE_SH );
+
+    this.visualizeDepthBuffer = false;
 
     {
       /*
@@ -577,7 +590,7 @@ class Renderer {
 
   renderSceneSkybox( gl: WebGL2RenderingContext, scene: Scene, mvStack: gml.Mat4[], viewportW, viewportH, perspective: gml.Mat4 = null ) {
     if ( perspective == null ) {
-      perspective = gml.makePerspective( gml.fromDegrees( 45 ), viewportW / viewportH, 0.1, 1000.0 );
+      perspective = gml.makePerspective( gml.fromDegrees( 55 ), viewportW / viewportH, 0.1, 1000.0 );
     }
 
     if ( scene.environmentMap != null ) {
@@ -619,7 +632,31 @@ class Renderer {
     gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_INT, 0 );
   }
 
-  renderPostProcessedImage( gl: WebGL2RenderingContext, color, depth ) {
+  renderDepthBuffer( gl: WebGL2RenderingContext, depth, mvStack: gml.Mat4[] ) {
+    let fullscreen = new Quad();
+    fullscreen.rebuildRenderData( gl );
+
+    this.useProgram( gl, SHADER_PROGRAM.RENDER_DEPTH_TEXTURE );
+
+    let shaderVariables = this.programData[ this.currentProgram ].uniforms;
+
+    gl.bindBuffer( gl.ARRAY_BUFFER, fullscreen.renderData.vertexBuffer );
+    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indexBuffer );
+    gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
+
+    gl.bindBuffer( gl.ARRAY_BUFFER, fullscreen.renderData.vertexTexCoordBuffer );
+    gl.vertexAttribPointer( shaderVariables.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
+
+    gl.uniformMatrix4fv( shaderVariables.uView, false, mvStack[ mvStack.length - 1 ].m );
+
+    gl.uniform1i( shaderVariables.uDepth, 1 );
+    gl.activeTexture( gl.TEXTURE1 );
+    gl.bindTexture( gl.TEXTURE_2D, depth );
+
+    gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_INT, 0 );
+  }
+
+  renderPostProcessedImage( gl: WebGL2RenderingContext, color, depth, mvStack: gml.Mat4[] ) {
     let fullscreen = new Quad();
     fullscreen.rebuildRenderData( gl );
 
@@ -634,6 +671,8 @@ class Renderer {
     gl.bindBuffer( gl.ARRAY_BUFFER, fullscreen.renderData.vertexTexCoordBuffer );
     gl.vertexAttribPointer( shaderVariables.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
 
+    gl.uniformMatrix4fv( shaderVariables.uView, false, mvStack[ mvStack.length - 1 ].m );
+
     gl.uniform1i( shaderVariables.uColor, 0 );
     gl.activeTexture( gl.TEXTURE0 );
     gl.bindTexture( gl.TEXTURE_2D, color );
@@ -646,7 +685,7 @@ class Renderer {
   }
 
   renderScene( gl: WebGL2RenderingContext, scene: Scene, mvStack: gml.Mat4[], pass: PASS ) {
-    let perspective = gml.makePerspective( gml.fromDegrees( 45 ), 640.0/480.0, 0.1, 1000.0 );
+    let perspective = gml.makePerspective( gml.fromDegrees( 55 ), this.viewportW / this.viewportH, 0.1, 1000.0 );
 
     scene.renderables.forEach( ( p, i ) => {
       if ( p.material instanceof BlinnPhongMaterial ) {
@@ -923,6 +962,7 @@ class Renderer {
 
         var mvStack: gml.Mat4[] = [];
         if ( this.camera != null ) {
+          // THIS MIGHT BE WRONG...maybe we're not negating the z???
           mvStack.push( this.camera.matrix );
         } else {
           mvStack.push( gml.Mat4.identity() );
@@ -975,7 +1015,12 @@ class Renderer {
         gl.bindFramebuffer( gl.FRAMEBUFFER, null );
         gl.viewport( 0, 0, this.viewportW, this.viewportH );
 
-        this.renderPostProcessedImage( gl, postProcessColorTexture, postProcessDepthTexture );
+        // for debugging, coppy depth texture...
+        if ( this.visualizeDepthBuffer ) {
+          this.renderDepthBuffer( gl, postProcessDepthTexture, mvStack );
+        } else {
+          this.renderPostProcessedImage( gl, postProcessColorTexture, postProcessDepthTexture, mvStack );
+        }
       }
     }
   }

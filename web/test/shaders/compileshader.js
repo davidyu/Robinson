@@ -41,18 +41,19 @@ function ProgramSource( vs, fs, shouldPrependUtils ) {
 }
 
 var sources = [
-  new ProgramSource( 'basic.vert'           , 'lambert.frag'          , true ) ,
-  new ProgramSource( 'basic.vert'           , 'blinn-phong.frag'      , true ) ,
-  new ProgramSource( 'basic.vert'           , 'oren-nayar.frag'       , true ) ,
-  new ProgramSource( 'basic.vert'           , 'cook-torrance.frag'    , true ) ,
+  new ProgramSource( 'basic.vert'           , 'lambert.frag'          , true  ) ,
+  new ProgramSource( 'basic.vert'           , 'blinn-phong.frag'      , true  ) ,
+  new ProgramSource( 'basic.vert'           , 'oren-nayar.frag'       , true  ) ,
+  new ProgramSource( 'basic.vert'           , 'cook-torrance.frag'    , true  ) ,
   new ProgramSource( 'debug.vert'           , 'debug.frag'            , false ) ,
   new ProgramSource( 'skybox.vert'          , 'skybox.frag'           , false ) ,
   new ProgramSource( 'skybox.vert'          , 'sky.frag'              , false ) ,
-  new ProgramSource( 'water.vert'           , 'water.frag'            , true ) ,
+  new ProgramSource( 'water.vert'           , 'water.frag'            , true  ) ,
   new ProgramSource( 'screenspacequad.vert' , 'water_screenspace.frag', false ) ,
   new ProgramSource( 'screenspacequad.vert' , 'noise_writer.frag'     , false ) ,
   new ProgramSource( 'screenspacequad.vert' , 'volume_viewer.frag'    , false ) ,
   new ProgramSource( 'screenspacequad.vert' , 'post-process.frag'     , false ) ,
+  new ProgramSource( 'screenspacequad.vert' , 'depth-texture.frag'    , false ) ,
   new ProgramSource( 'passthrough.vert'     , 'cube-sh.frag'          , false ) ,
 ];
 

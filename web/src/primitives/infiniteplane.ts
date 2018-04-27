@@ -5,14 +5,12 @@ class InfinitePlane extends Primitive implements Renderable {
   renderData: RenderData;
   material: Material;
   subdivs: Subdivisions;
-  planesize: number;
   layers: number;
 
   constructor( size: number = 1, layers: number = 3, position: gml.Vec4 = gml.Vec4.origin, rotation: EulerAngleGroup = null, subdivisions: Subdivisions = { u: 0, v: 0 }, mat: Material = new BlinnPhongMaterial() ) {
     super();
     this.subdivs = subdivisions;
     this.transform = gml.Mat4.identity();
-    this.planesize = 10000; // Not quite infinite :) but very large.
     this.layers = layers;
 
     if ( rotation != null ) {

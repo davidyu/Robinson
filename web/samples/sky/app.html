@@ -10,7 +10,8 @@
     }
 
     #viewport-container {
-      flex: 0 1 auto; /* grow to fit the size of my content */
+      flex: 0 1 auto;       /* grow to fit the size of my content */
+      padding-bottom: 20px; /* some breathing room beneath the viewport */
     }
 
     #editor-container {
@@ -19,7 +20,7 @@
       display: flex;     /* for my children, the tabs and the tab-contents */
     }
 
-    #options-container {
+    .options-container {
       padding: 20px;
     }
 
@@ -75,7 +76,7 @@
       vertical-align: middle;
     }
 
-    #options-container label {
+    .options-container label {
       font-size: 12px;
       display: inline-block;
       width: 120px;
@@ -144,10 +145,14 @@
                 <input type="radio" id="tab-2" name="tab-group-1" onchange="changeTab('shader-editor')">
                 <label for="tab-2">Shaders</label>
             </div>
+            <div class="tab">
+                <input type="radio" id="tab-3" name="tab-group-1" onchange="changeTab('debugger')">
+                <label for="tab-3">Debugger</label>
+            </div>
         </div>
         <div class="tab-contents">
             <div id="parameter-editor" class="tab-content" style="display:flex;">
-                <div id="options-container">
+                <div class="options-container">
                     <div class="option">
                       <label>Time</label>
                       <input id="toggle-playback" class="timer-control" type="button" value="&#10074;&#10074;" />
@@ -180,9 +185,14 @@
                       <label>Wind</label>
                       <input id="wind-slider" type="range" min="0" max="100" step="1" />
                     </div>
+                    <div class="option">
+                      <label>DOF focal distance</label>
+                      <input id="focal-distance" type="range" min="0" max="100" step="1" />
+                    </div>
                 </div>
             </div>
             <div id="shader-editor" class="tab-content"></div>
+            <div id="debugger" class="tab-content"></div>
         </div>
     </div>
   </div>

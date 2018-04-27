@@ -197,9 +197,11 @@ class ShaderEditor {
   }
 
   prettifyEnum( input: string ): string {
-    let output = input.replace( "_", " " );
+    let output = input.replace( /_/g, " " );
     output = output.toLowerCase();
+    console.log( output );
     output = output.replace( /\b\w/g, l => l.toUpperCase() );
+    console.log( output );
     return output;
   }
 }
