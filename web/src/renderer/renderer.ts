@@ -430,7 +430,7 @@ class Renderer {
     }
 
     this.programData[ SHADER_PROGRAM.RENDER_DEPTH_TEXTURE ] = new ShaderProgramData( sr.files[ SHADERTYPE.SS_QUAD_VERT ].source, sr.files[ SHADERTYPE.DEPTH_TEXTURE_FRAG ].source );
-    this.programData[ SHADER_PROGRAM.RENDER_DEPTH_TEXTURE ].program = postProcessProgram;
+    this.programData[ SHADER_PROGRAM.RENDER_DEPTH_TEXTURE ].program = depthTextureProgram;
     this.cacheLitShaderProgramLocations( SHADER_PROGRAM.RENDER_DEPTH_TEXTURE );
 
     let cubeMapSHProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.PASSTHROUGH_VERT ].source
