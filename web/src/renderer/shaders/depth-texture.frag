@@ -13,6 +13,11 @@ const float zFar  = 1000.0;
 
 out vec4 fragColor;
 
+vec4 degamma( vec4 linear ) {
+    const float screenGamma = 2.2;
+    return pow( linear, vec4( 1.0 / screenGamma ) );
+}
+
 float linearize(float depth)
 {
     return (2.0 * zNear) / (zFar + zNear - depth * (zFar - zNear));
@@ -21,5 +26,5 @@ float linearize(float depth)
 void main()
 {
     float depth = linearize( texture( screen_depth, vTexCoord ).x );
-    fragColor = vec4( depth, depth, depth, 1.0 );
+    fragColor = degamma( vec4( depth, depth, depth, 1.0 ) );
 }
