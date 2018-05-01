@@ -1,4 +1,4 @@
-.PHONY: folders debug clean release shaders page update art
+.PHONY: folders debug clean release shaders page update art dependencies
 SHELL = /bin/bash
 
 SRC=src
@@ -8,16 +8,15 @@ PUBLIC_DIST=../../../../Robinson-web-samples
 
 SAMPLE_NAME=$(shell basename $(shell pwd))
 
-debug: folders shaders update page art
+debug: folders shaders update page art dependencies
 	sh files.sh debug
 	tsc @files.txt --target ES5 --sourceMap --out $(DIST)/app.js
 	rm files.txt
-	if [ -f $(DIST)/robinson.js ]; then rm $(DIST)/robinson.js && touch $(DIST)/robinson.js; fi;
 
 clean:
 	rm -rf $(DIST)
 
-release: clean folders shaders update page art
+release: clean folders shaders update page art dependencies
 	pushd ../../ && make lib && popd
 	cp ../../dist/robinson.d.ts .
 	cp ../../dist/robinson.js $(DIST)/
@@ -25,6 +24,9 @@ release: clean folders shaders update page art
 	tsc @files.txt --target ES5 --out $(DIST)/app.js
 	rm files.txt robinson.d.ts
 	if [ -d $(PUBLIC_DIST) ]; then mkdir -p $(PUBLIC_DIST)/$(SAMPLE_NAME) && cp -rf $(DIST)/* $(PUBLIC_DIST)/$(SAMPLE_NAME)/; fi;
+
+dependencies:
+	cp -rf ../../dist/lib/*.js $(DIST)/
 
 shaders:
 	cp -rf ../../dist/shaders $(DIST)/

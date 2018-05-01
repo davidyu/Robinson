@@ -10,6 +10,7 @@ interface AppParams {
 
 class ShowcaseApp {
   renderer: Renderer;
+  editor: ShaderEditor;
   camera: Camera;
 
   // camera building parameters
@@ -22,6 +23,7 @@ class ShowcaseApp {
 
   constructor( params: AppParams, shaderRepo: ShaderRepository ) {
     this.renderer = new Renderer( params.vp, shaderRepo, new gml.Vec4( 0.8, 0.8, 0.8, 1 ) );
+    this.editor = new ShaderEditor( this.renderer );
     this.orbitCenter = params.orbitCenter;
     this.orbitDistance = params.orbitDistance;
     this.yaw = gml.fromDegrees( 180 );
@@ -89,7 +91,11 @@ function StartApp() {
       orbitDistance: 10
     };
 
-    shaderRepo = new ShaderRepository( ( repo ) => { app = new ShowcaseApp( params, repo ); } );
+    shaderRepo = new ShaderRepository( ( repo ) => {
+      app = new ShowcaseApp( params, repo );
+
+      app.editor.install();
+    } );
 
     environmentMap = new CubeMap( "./posx.jpg"
                                 , "./negx.jpg"
@@ -97,15 +103,17 @@ function StartApp() {
                                 , "./negy.jpg"
                                 , "./posz.jpg"
                                 , "./negz.jpg"
-                                , () => { app.dirty = true; } );
-
+                                , () => { app.dirty = true; }
+                                , false );
+    
     irradianceMap = new CubeMap( "./irradiance_posx.jpg"
                                , "./irradiance_negx.jpg"
                                , "./irradiance_posy.jpg"
                                , "./irradiance_negy.jpg"
                                , "./irradiance_posz.jpg"
                                , "./irradiance_negz.jpg"
-                               , () => { app.dirty = true; } );
+                               , () => { app.dirty = true; }
+                               , false );
 
     var testScene = new Scene( environmentMap, irradianceMap );
     Scene.setActiveScene( testScene );

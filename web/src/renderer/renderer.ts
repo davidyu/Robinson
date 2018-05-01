@@ -931,15 +931,9 @@ class Renderer {
       // DRAW
       var scene = Scene.getActiveScene();
       if ( scene ) {
-        //
-        // SET UP ENVIRONMENT MAP
-        let cubeMapTexture = null;
-        if ( scene.environmentMap != null && scene.environmentMap.loaded && scene.environmentMap.cubeMapTexture == null ) {
-        }
-
         // 
         // GENERATE ENVIRONMENT MAP, IF NECESSARY
-        if ( scene.hasEnvironment && scene.dynamicEnvironment ) {
+        if ( scene.hasEnvironment ) {
           if ( this.enableTracing ) console.time( "environment map" );
           if ( scene.dynamicEnvironment ) {
             // render using specified shader

@@ -75,7 +75,7 @@ class CubeMap {
     this.bindCubeMapFace( gl, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, this.faces[ CUBEMAPTYPE.NEG_Z ] );
 
     gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-    gl.bindTexture( gl.TEXTURE_CUBE_MAP, 0 );
+    gl.bindTexture( gl.TEXTURE_CUBE_MAP, null );
   }
 
   bindCubeMapFace( gl: WebGLRenderingContext, face: number, image: HTMLImageElement ) {
@@ -121,13 +121,13 @@ class Scene {
   // cached render objects
   fullscreen: Quad;
 
-  constructor( environmentMap: CubeMap, irradianceMap: CubeMap, hasEnvironment: boolean = false, dynamicEnvironment: boolean = false, noiseVolume ) {
+  constructor( environmentMap: CubeMap, irradianceMap: CubeMap, hasEnvironment: boolean = false, dynamicEnvironment: boolean = false, noiseVolume = null ) {
     this.renderables = [];
     this.lights = [];
     this.environmentMap = environmentMap;
     this.irradianceMap = irradianceMap;
     this.time = 0;
-    this.hasEnvironment = hasEnvironment;
+    this.hasEnvironment = hasEnvironment || this.environmentMap != null;
     this.dynamicEnvironment = dynamicEnvironment;
     this.noiseVolume = noiseVolume;
     this.cloudiness = 0.25;
