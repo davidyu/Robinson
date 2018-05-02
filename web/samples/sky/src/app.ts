@@ -361,7 +361,7 @@ function StartSky() {
 
       cloudinessSlider.value = ( scene.cloudiness * 100 ).toString();
       cloudSpeedSlider.value = ( scene.cloudSpeed * 30 ).toString();
-      focalDistanceSlider.value = ( app.camera.focalDistance * 1000 ).toString();
+      focalDistanceSlider.value = ( ( app.camera.focalDistance / 0.3 ) * 100 ).toString();
 
       updateAndDraw( performance.now() );
 

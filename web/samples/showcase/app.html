@@ -18,6 +18,37 @@
       display: flex;     /* for my children, the tabs and the tab-contents */
     }
 
+    .tabs {
+      flex: 0 1 auto; /* I should grow to fit content in me */
+      clear: both;
+    }
+
+    .tab {
+      float: left;
+    }
+
+    .tab [type=radio] {
+      display: none;   
+    }
+
+    [type=radio] ~ label {
+      background: #eee; 
+      padding: 10px; 
+      border: 1px solid #ccc; 
+      margin-left: -1px;  /* hides the adjacent 1px border */
+      margin-bottom: -1px; /* hides bottom border when this is checked */
+      left: 10px; 
+      position: relative;
+      display: inline-block; /* give the labels proper heights */
+      cursor: pointer;
+    }
+
+    [type=radio]:checked ~ label {
+      background: white;
+      border-bottom: 1px solid white;
+      z-index: 2;
+    }
+
     .tab-contents {
       clear: both;
       flex: 1 1 auto; /* I should fill out the remaining height in my parent element */
@@ -45,7 +76,7 @@
   <div class="main-container">
     <div class="viewport-container">
       <!-- stacked div 1, single pane viewport -->
-      <canvas id="big-viewport" width="640" height="480">
+      <canvas id="big-viewport" width="848" height="480">
         Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
       </canvas>
       <center>
@@ -55,6 +86,12 @@
       </center>
     </div>
     <div id="editor-container">
+      <div class="tabs">
+          <div class="tab">
+              <input type="radio" id="tab-2" name="tab-group-1" onchange="changeTab('shader-editor')" checked>
+              <label for="tab-2">Shaders</label>
+          </div>
+      </div>
       <div class="tab-contents">
         <div id="shader-editor" class="tab-content" style="display:flex;"></div>
       </div>
