@@ -67,7 +67,7 @@ class SkyApp {
     cloudinessSlider.oninput = changeCloudiness;
     cloudSpeedSlider.oninput = changeCloudSpeed;
     cloudSpeedSlider.onchange = changeFinished;
-    focalDistanceSlider.onchange = changeFocalDistance;
+    focalDistanceSlider.oninput = changeFocalDistance;
 
     let wireframeCheckbox = <HTMLInputElement> document.getElementById( "water-wireframe" );
     wireframeCheckbox.onchange = changeWireframe;
@@ -152,7 +152,10 @@ function changeCloudSpeed( e ) {
 }
 
 function changeFocalDistance( e ) {
-
+  lastAdjusted = "focaldist";
+  let f = e.target.value / 100;
+  // fudge for our app: transform from 0 to 1 to 0 to 0.3
+  app.camera.focalDistance = 0.3 * f;
 }
 
 function changeFinished( e ) {

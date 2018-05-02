@@ -197,6 +197,7 @@ class ShaderUniforms {
   uWorleyNoise: WebGLUniformLocation;
   uColor: WebGLUniformLocation;
   uDepth: WebGLUniformLocation;
+  uFocus: WebGLUniformLocation;
 
   constructor() {}
 }
@@ -514,6 +515,7 @@ class Renderer {
     uniforms.uWorleyNoise = gl.getUniformLocation( program, "uWorleyNoise" );
     uniforms.uColor = gl.getUniformLocation( program, "screen_color" );
     uniforms.uDepth = gl.getUniformLocation( program, "screen_depth" );
+    uniforms.uFocus = gl.getUniformLocation( program, "focus" );
 
     uniforms.uMaterial = new ShaderMaterialProperties();
     uniforms.uMaterial.ambient = gl.getUniformLocation( program, "mat.ambient" );
@@ -590,7 +592,7 @@ class Renderer {
 
   renderSceneSkybox( gl: WebGL2RenderingContext, scene: Scene, mvStack: gml.Mat4[], viewportW, viewportH, perspective: gml.Mat4 = null ) {
     if ( perspective == null ) {
-      perspective = gml.makePerspective( gml.fromDegrees( 55 ), viewportW / viewportH, 0.1, 1000.0 );
+      perspective = gml.makePerspective( gml.fromDegrees( 45 ), viewportW / viewportH, 0.1, 1000.0 );
     }
 
     if ( scene.environmentMap != null ) {
@@ -681,11 +683,15 @@ class Renderer {
     gl.activeTexture( gl.TEXTURE1 );
     gl.bindTexture( gl.TEXTURE_2D, depth );
 
+    if ( this.camera != null ) {
+      gl.uniform1f( shaderVariables.uFocus, this.camera.focalDistance );
+    }
+
     gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_INT, 0 );
   }
 
   renderScene( gl: WebGL2RenderingContext, scene: Scene, mvStack: gml.Mat4[], pass: PASS ) {
-    let perspective = gml.makePerspective( gml.fromDegrees( 55 ), this.viewportW / this.viewportH, 0.1, 1000.0 );
+    let perspective = gml.makePerspective( gml.fromDegrees( 45 ), this.viewportW / this.viewportH, 0.1, 1000.0 );
 
     scene.renderables.forEach( ( p, i ) => {
       if ( p.material instanceof BlinnPhongMaterial ) {
@@ -982,10 +988,12 @@ class Renderer {
         gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
         gl.texImage2D( gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT16, this.viewportW, this.viewportH, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null );
 
-        let postProcessFramebuffer = gl.createFramebuffer();             // renderbuffer for depth buffer in framebuffer
-        gl.bindFramebuffer( gl.FRAMEBUFFER, postProcessFramebuffer );    // so we can create storage for the depthBuffer
+        let postProcessFramebuffer = gl.createFramebuffer();
+        gl.bindFramebuffer( gl.FRAMEBUFFER, postProcessFramebuffer );
         gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, postProcessColorTexture, 0 );
         gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, postProcessDepthTexture, 0 );
+
+        gl.renderbufferStorageMultisample( gl.RENDERBUFFER, 4, gl.RGBA, this.viewportW, this.viewportH );
 
         gl.viewport( 0, 0, this.viewportW, this.viewportH );
         gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );

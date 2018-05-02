@@ -1,13 +1,11 @@
 class Camera {
   // note: this matrix is stored in a column major layout, because we are targeting WebGL.
   public matrix: gml.Mat4;
-
-  // DOF
   public focalDistance: number;
 
   constructor( position: gml.Vec4, aim: gml.Vec4, up: gml.Vec4, right: gml.Vec4 ) {
     this.matrix = gml.makeLookAt( position, aim, up, right );
-    this.focalDistance = 0.0;
+    this.focalDistance = 0.025;
   }
 
   public get pos(): gml.Vec4 {
