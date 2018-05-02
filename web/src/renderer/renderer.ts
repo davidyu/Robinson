@@ -993,8 +993,6 @@ class Renderer {
         gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, postProcessColorTexture, 0 );
         gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, postProcessDepthTexture, 0 );
 
-        gl.renderbufferStorageMultisample( gl.RENDERBUFFER, 4, gl.RGBA, this.viewportW, this.viewportH );
-
         gl.viewport( 0, 0, this.viewportW, this.viewportH );
         gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
