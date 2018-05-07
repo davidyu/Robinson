@@ -1005,16 +1005,19 @@ class Renderer {
 
         // 
         // RENDER POST-PROCESSED IMAGE TO SCREEN
-        if ( this.enableTracing ) console.time( "post processing" );
 
         gl.bindFramebuffer( gl.FRAMEBUFFER, null );
         gl.viewport( 0, 0, this.viewportW, this.viewportH );
 
         // for debugging, coppy depth texture...
         if ( this.visualizeDepthBuffer ) {
+          if ( this.enableTracing ) console.time( "render depth buffer" );
           this.renderDepthBuffer( gl, this.postProcessDepthTexture, mvStack );
+          if ( this.enableTracing ) console.timeEnd( "render depth buffer" );
         } else {
+          if ( this.enableTracing ) console.time( "post processing" );
           this.renderPostProcessedImage( gl, this.postProcessColorTexture, this.postProcessDepthTexture, mvStack );
+          if ( this.enableTracing ) console.timeEnd( "post processing" );
         }
       }
     }
