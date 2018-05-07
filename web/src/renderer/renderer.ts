@@ -242,6 +242,10 @@ class Renderer {
   envMapSHTexture: WebGLTexture;
   envMapSHFrameBuffer: WebGLFramebuffer;
 
+  postProcessColorTexture: WebGLTexture;
+  postProcessDepthTexture: WebGLTexture;
+  postProcessFramebuffer: WebGLFramebuffer;
+
   programData: ShaderProgramData[];
 
   repo: ShaderRepository;
@@ -472,6 +476,9 @@ class Renderer {
     this.fullscreenQuad = new Quad();
     this.fullscreenQuad.rebuildRenderData( gl );
 
+    this.postProcessColorTexture = gl.createTexture();
+    this.postProcessDepthTexture = gl.createTexture();
+    this.postProcessFramebuffer = gl.createFramebuffer();
   }
 
   cacheLitShaderProgramLocations( sp: SHADER_PROGRAM ) {
@@ -963,26 +970,23 @@ class Renderer {
         // RENDER TO POST-PROCESS FRAMEBUFFER
         //
 
-        let postProcessColorTexture = gl.createTexture();
-        gl.bindTexture( gl.TEXTURE_2D, postProcessColorTexture );
+        gl.bindTexture( gl.TEXTURE_2D, this.postProcessColorTexture );
         gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
         gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
         gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
         gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.viewportW, this.viewportH, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 
-        let postProcessDepthTexture = gl.createTexture();
-        gl.bindTexture( gl.TEXTURE_2D, postProcessDepthTexture );
+        gl.bindTexture( gl.TEXTURE_2D, this.postProcessDepthTexture );
         gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
         gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
         gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
         gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
         gl.texImage2D( gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT16, this.viewportW, this.viewportH, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null );
 
-        let postProcessFramebuffer = gl.createFramebuffer();
-        gl.bindFramebuffer( gl.FRAMEBUFFER, postProcessFramebuffer );
-        gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, postProcessColorTexture, 0 );
-        gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, postProcessDepthTexture, 0 );
+        gl.bindFramebuffer( gl.FRAMEBUFFER, this.postProcessFramebuffer );
+        gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.postProcessColorTexture, 0 );
+        gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.postProcessDepthTexture, 0 );
 
         gl.viewport( 0, 0, this.viewportW, this.viewportH );
         gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
@@ -1008,9 +1012,9 @@ class Renderer {
 
         // for debugging, coppy depth texture...
         if ( this.visualizeDepthBuffer ) {
-          this.renderDepthBuffer( gl, postProcessDepthTexture, mvStack );
+          this.renderDepthBuffer( gl, this.postProcessDepthTexture, mvStack );
         } else {
-          this.renderPostProcessedImage( gl, postProcessColorTexture, postProcessDepthTexture, mvStack );
+          this.renderPostProcessedImage( gl, this.postProcessColorTexture, this.postProcessDepthTexture, mvStack );
         }
       }
     }
