@@ -246,6 +246,8 @@ class Renderer {
 
   repo: ShaderRepository;
 
+  fullscreenQuad: Quad;
+
   constructor( viewportElement: HTMLCanvasElement, sr: ShaderRepository, backgroundColor: gml.Vec4 = new gml.Vec4( 0, 0, 0, 1 ) ) {
     this.repo = sr;
 
@@ -466,6 +468,10 @@ class Renderer {
       gl.framebufferRenderbuffer( gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, sb );
       */
     }
+
+    this.fullscreenQuad = new Quad();
+    this.fullscreenQuad.rebuildRenderData( gl );
+
   }
 
   cacheLitShaderProgramLocations( sp: SHADER_PROGRAM ) {
@@ -603,16 +609,13 @@ class Renderer {
 
     let shaderVariables = this.programData[ this.currentProgram ].uniforms;
 
-    let fullscreen = new Quad();
-    fullscreen.rebuildRenderData( gl );
-
     let inverseProjectionMatrix = perspective.invert();
     gl.uniformMatrix4fv( shaderVariables.uInverseProjection, false, inverseProjectionMatrix.m );
 
     let inverseViewMatrix = mvStack[ mvStack.length - 1 ].invert().mat3;
     gl.uniformMatrix3fv( shaderVariables.uInverseView, false, inverseViewMatrix.m );
 
-    gl.uniformMatrix4fv( shaderVariables.uModelToWorld, false, fullscreen.transform.m );
+    gl.uniformMatrix4fv( shaderVariables.uModelToWorld, false, this.fullscreenQuad.transform.m );
 
     if ( this.camera != null ) {
       gl.uniform4fv( shaderVariables.uCameraPos, this.camera.matrix.translation.negate().v );
@@ -620,10 +623,10 @@ class Renderer {
 
     gl.uniform1f( shaderVariables.uTime, scene.time );
 
-    gl.bindBuffer( gl.ARRAY_BUFFER, fullscreen.renderData.vertexBuffer );
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.fullscreenQuad.renderData.vertexBuffer );
     gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
-    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indexBuffer );
+    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.fullscreenQuad.renderData.indexBuffer );
 
     if ( this.currentProgram == SHADER_PROGRAM.SKYBOX ) {
       gl.uniform1i( shaderVariables.uEnvMap, 0 );
@@ -631,22 +634,19 @@ class Renderer {
       gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environmentMap.cubeMapTexture );
     }
 
-    gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_INT, 0 );
+    gl.drawElements( gl.TRIANGLES, this.fullscreenQuad.renderData.indices.length, gl.UNSIGNED_INT, 0 );
   }
 
   renderDepthBuffer( gl: WebGL2RenderingContext, depth, mvStack: gml.Mat4[] ) {
-    let fullscreen = new Quad();
-    fullscreen.rebuildRenderData( gl );
-
     this.useProgram( gl, SHADER_PROGRAM.RENDER_DEPTH_TEXTURE );
 
     let shaderVariables = this.programData[ this.currentProgram ].uniforms;
 
-    gl.bindBuffer( gl.ARRAY_BUFFER, fullscreen.renderData.vertexBuffer );
-    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indexBuffer );
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.fullscreenQuad.renderData.vertexBuffer );
+    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.fullscreenQuad.renderData.indexBuffer );
     gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
-    gl.bindBuffer( gl.ARRAY_BUFFER, fullscreen.renderData.vertexTexCoordBuffer );
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.fullscreenQuad.renderData.vertexTexCoordBuffer );
     gl.vertexAttribPointer( shaderVariables.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
 
     gl.uniformMatrix4fv( shaderVariables.uView, false, mvStack[ mvStack.length - 1 ].m );
@@ -655,22 +655,19 @@ class Renderer {
     gl.activeTexture( gl.TEXTURE1 );
     gl.bindTexture( gl.TEXTURE_2D, depth );
 
-    gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_INT, 0 );
+    gl.drawElements( gl.TRIANGLES, this.fullscreenQuad.renderData.indices.length, gl.UNSIGNED_INT, 0 );
   }
 
   renderPostProcessedImage( gl: WebGL2RenderingContext, color, depth, mvStack: gml.Mat4[] ) {
-    let fullscreen = new Quad();
-    fullscreen.rebuildRenderData( gl );
-
     this.useProgram( gl, SHADER_PROGRAM.POST_PROCESS );
 
     let shaderVariables = this.programData[ this.currentProgram ].uniforms;
 
-    gl.bindBuffer( gl.ARRAY_BUFFER, fullscreen.renderData.vertexBuffer );
-    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indexBuffer );
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.fullscreenQuad.renderData.vertexBuffer );
+    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.fullscreenQuad.renderData.indexBuffer );
     gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
-    gl.bindBuffer( gl.ARRAY_BUFFER, fullscreen.renderData.vertexTexCoordBuffer );
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.fullscreenQuad.renderData.vertexTexCoordBuffer );
     gl.vertexAttribPointer( shaderVariables.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
 
     gl.uniformMatrix4fv( shaderVariables.uView, false, mvStack[ mvStack.length - 1 ].m );
@@ -687,7 +684,7 @@ class Renderer {
       gl.uniform1f( shaderVariables.uFocus, this.camera.focalDistance );
     }
 
-    gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_INT, 0 );
+    gl.drawElements( gl.TRIANGLES, this.fullscreenQuad.renderData.indices.length, gl.UNSIGNED_INT, 0 );
   }
 
   renderScene( gl: WebGL2RenderingContext, scene: Scene, mvStack: gml.Mat4[], pass: PASS ) {
@@ -860,9 +857,6 @@ class Renderer {
   renderIrradianceFromScene( gl: WebGL2RenderingContext, scene: Scene, pass: IRRADIANCE_PASS ) {
     this.useProgram( gl, SHADER_PROGRAM.CUBE_SH );
 
-    let fullscreen = new Quad();
-    fullscreen.rebuildRenderData( gl );
-
     let shaderVariables = this.programData[ this.currentProgram ].uniforms;
 
     gl.uniformMatrix4fv( shaderVariables.uModelView, false, gml.Mat4.identity().m );
@@ -875,31 +869,28 @@ class Renderer {
       gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environmentMap.cubeMapTexture );
     }
 
-    gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
+    gl.drawElements( gl.TRIANGLES, this.fullscreenQuad.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
   }
 
   renderFullScreenTexture( gl: WebGL2RenderingContext, texture: WebGLTexture ) {
     // this.useProgram( gl, SHADER_PROGRAM.UNLIT );
 
-    let fullscreen = new Quad();
-    fullscreen.rebuildRenderData( gl );
-
     let shaderVariables = this.programData[ this.currentProgram ].uniforms;
 
-    gl.bindBuffer( gl.ARRAY_BUFFER, fullscreen.renderData.vertexBuffer );
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.fullscreenQuad.renderData.vertexBuffer );
     gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
-    gl.bindBuffer( gl.ARRAY_BUFFER, fullscreen.renderData.vertexTexCoordBuffer );
-    gl.bufferData( gl.ARRAY_BUFFER, fullscreen.renderData.textureCoords, gl.STATIC_DRAW );
+    gl.bindBuffer( gl.ARRAY_BUFFER, this.fullscreenQuad.renderData.vertexTexCoordBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, this.fullscreenQuad.renderData.textureCoords, gl.STATIC_DRAW );
     gl.vertexAttribPointer( shaderVariables.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
 
-    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, fullscreen.renderData.indexBuffer );
+    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.fullscreenQuad.renderData.indexBuffer );
 
     gl.uniform1i( shaderVariables.uMaterial.colorMap, 0 );
     gl.activeTexture( gl.TEXTURE0 );
     gl.bindTexture( gl.TEXTURE_2D, texture );
 
-    gl.drawElements( gl.TRIANGLES, fullscreen.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
+    gl.drawElements( gl.TRIANGLES, this.fullscreenQuad.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
   }
 
   renderIrradiance() {
