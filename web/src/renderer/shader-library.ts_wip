@@ -11,7 +11,7 @@ interface ShaderVertexAttributes: { [ name: string ]: GLint /* number */ }
  */
 class CompiledProgramData {
   program: WebGLProgram;
-  uniforms: ShaderUniformsV2; // can we maybe have a inheritance chain set up on this????
+  uniforms: ShaderUniformsV2;
   sourceVSFilename: string;
   sourceFSFilename: string;
   constructor( vs: string, fs: string ) {
@@ -28,4 +28,48 @@ class ShaderLibrary {
 
   // the actual compiled shader programs, and their uniforms
   programs : { [ name: string ] : CompiledProgramData };
+
+  // the list of ongoing/unresolved shader download requests
+  outgoingRequests: XMLHttpRequest[];
+
+  // CALLBACKS
+
+  // this is called when all shaders have been loaded
+  allShadersLoaded: ( ShaderLibrary ) => void; 
+  // this is called when a particular shader has been loaded
+  shaderLoaded    : ( ShaderLibrary, string, string ) => void;  // ( lib, filename, source )
+
+  constructor() {
+    this.allShadersLoaded = null;
+    this.shaderLoaded = null;
+    this.outgoingRequests = [];
+  }
+
+  loadShader( name: string ) {
+    var req = new XMLHttpRequest();
+
+    req.addEventListener( "load", evt => { 
+      this.sources[ name ] = req.responseText;
+      if ( this.shaderLoaded != null ) {
+        this.shaderLoaded( this, name, req.responseText );
+      }
+
+      // remove me from the outgoing request list
+      this.outgoingRequests = this.outgoingRequests.filter( r => r != req );
+
+      if ( this.outgoingRequests.length == 0 && this.allShadersLoaded != null ) {
+        this.allShadersLoaded( this );
+      }
+    } );
+
+    req.open( "GET", "./shaders/" + name, true );
+
+    this.outgoingRequests.push( req );
+
+    req.send();
+  }
+
+  compileProgram( vsFilename: string, fsFilename: string, programName: string ): CompiledProgramData {
+    // do something
+  }
 };
