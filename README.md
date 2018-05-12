@@ -1,6 +1,8 @@
 # Robinson
 
-A (n almost) real-time forward rendering engine implemented (almost) from scratch for pedagogical purposes.
+A (n almost) real-time forward rendering framework implemented for pedagogical purposes.
+
+The renderer supports basic geometric primitives, and some basic shaders and is fairly extendable.
 
 Currently, it targets modern web browsers using WebGL 2.0.
 
@@ -19,7 +21,7 @@ With the exception of art assets, everything in this project is licensed under M
 ```
 The MIT License (MIT)
 
-Copyright (c) 2015 David Yu
+Copyright (c) 2015 - 2018 David Yu
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
