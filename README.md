@@ -2,7 +2,7 @@
 
 A (n almost) real-time forward rendering framework implemented for pedagogical purposes.
 
-The renderer supports basic geometric primitives, and some basic shaders and is fairly extendable.
+The renderer supports basic geometric primitives, some basic shaders and is fairly extendable.
 
 Currently, it targets modern web browsers using WebGL 2.0.
 
