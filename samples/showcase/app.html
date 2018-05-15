@@ -1,5 +1,7 @@
+<!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8"/>
   <style>
     .main-container {
       display: flex;
@@ -66,15 +68,24 @@
       margin: auto;
     }
   </style>
-  <script src="./vendor/mousetrap.js" type="text/javascript"></script>
   <script src="./vendor/hammer.min.js" type="text/javascript"></script>
   <script src="./app.js" type="text/javascript"></script>
   <script src="./ace.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    function changeTab( tabId ) {
+        var tabs = document.getElementsByClassName( "tab-content" );
+        for ( var i = 0; i < tabs.length; i++ ) {
+            tabs[i].removeAttribute( "style" ); // by default, these are display:none, so removing the style override hides them
+        }
+
+        document.getElementById( tabId ).style.display = "flex"; // show the one we selected
+    }
+  </script>
   <title>Material Showcase</title>
 </head>
 <body onload="StartApp()">
   <div class="main-container">
-    <div class="viewport-container">
+    <div id="viewport-container">
       <!-- stacked div 1, single pane viewport -->
       <canvas id="big-viewport" width="848" height="480">
         Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
