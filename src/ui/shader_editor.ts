@@ -18,6 +18,9 @@ class ShaderEditor {
   vertexEditSessions  : AceAjax.IEditSession[];
   fragmentEditSessions: AceAjax.IEditSession[];
 
+  hiddenShaders: SHADER_PROGRAM[]; // for temporary tidy purposes, allow user-definable list of shaders to hide in the editor
+  visibleShaders: SHADER_PROGRAM[];
+
   constructor( renderer: Renderer ) {
     this.renderer = renderer;
 
@@ -46,6 +49,8 @@ class ShaderEditor {
     this.fragmentShaderEditor.session.setMode( "ace/mode/glsl" );
     this.fragmentShaderEditor.$blockScrolling = Infinity;
 
+    this.hiddenShaders = [];
+
     // create stylesheet dynamically
     // this should probably just be put in a CSS file somewhere so it's overrideable
     // but for now, since we really don't care about customizability of the editor, just
@@ -66,6 +71,10 @@ class ShaderEditor {
     stylesheet.insertRule( ".selected        { background-color: #0079e8; color: #fff }" );
     stylesheet.insertRule( ".shader-text     { border-left: 1px #ccc solid; width: 50%; height: 100%; margin: 0; padding: 0; }" );
     stylesheet.insertRule( ".shader-text-con { float: left; flex-grow: 1; display: flex; }" );
+  }
+
+  hideShader( program: SHADER_PROGRAM ) {
+    this.hiddenShaders.push( program );
   }
 
   rebuildSelectedShader( session: AceAjax.IEditSession ) {
@@ -157,9 +166,14 @@ class ShaderEditor {
     this.vertexEditSessions = [];
     this.fragmentEditSessions = [];
 
+    this.visibleShaders = []; // rebuild this list each time
+
     for ( var programName in SHADER_PROGRAM ) {
       if ( isNaN( <any> programName ) ) {
+        // skip hidden shaders
         let index = parseInt( SHADER_PROGRAM[ programName ] );
+        if ( this.hiddenShaders.indexOf( <SHADER_PROGRAM> index ) != -1 ) continue;
+        this.visibleShaders.push( <SHADER_PROGRAM> index );
 
         let vertexSession = ace.createEditSession( this.renderer.programData[ index ].vert, <any> "ace/mode/glsl" );
         vertexSession.on( "change", ( e ) => {

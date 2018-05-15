@@ -31,6 +31,16 @@ class ShowcaseApp {
     this.renderer.setCamera( this.camera );
     this.dirty = true;
 
+    this.editor.hideShader( SHADER_PROGRAM.DEBUG );
+    this.editor.hideShader( SHADER_PROGRAM.SKY );
+    this.editor.hideShader( SHADER_PROGRAM.WATER );
+    this.editor.hideShader( SHADER_PROGRAM.WATER_SCREENSPACE );
+    this.editor.hideShader( SHADER_PROGRAM.CUBE_SH );
+    this.editor.hideShader( SHADER_PROGRAM.NOISE_WRITER );
+    this.editor.hideShader( SHADER_PROGRAM.VOLUME_VIEWER );
+    this.editor.hideShader( SHADER_PROGRAM.POST_PROCESS );
+    this.editor.hideShader( SHADER_PROGRAM.RENDER_DEPTH_TEXTURE );
+
     // camera parameters - save camera distance from target
     // construct location along viewing sphere
 

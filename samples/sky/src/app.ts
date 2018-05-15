@@ -37,6 +37,17 @@ class SkyApp {
     this.dragStart = new gml.Vec2( 0, 0 );
     this.lastMousePos = new gml.Vec2( 0, 0 );
 
+    this.editor.hideShader( SHADER_PROGRAM.DEBUG );
+    this.editor.hideShader( SHADER_PROGRAM.LAMBERT );
+    this.editor.hideShader( SHADER_PROGRAM.OREN_NAYAR );
+    this.editor.hideShader( SHADER_PROGRAM.BLINN_PHONG );
+    this.editor.hideShader( SHADER_PROGRAM.COOK_TORRANCE );
+    this.editor.hideShader( SHADER_PROGRAM.WATER_SCREENSPACE );
+    this.editor.hideShader( SHADER_PROGRAM.CUBE_SH );
+    this.editor.hideShader( SHADER_PROGRAM.NOISE_WRITER );
+    this.editor.hideShader( SHADER_PROGRAM.VOLUME_VIEWER );
+    this.editor.hideShader( SHADER_PROGRAM.RENDER_DEPTH_TEXTURE );
+
     {
       let baseAim = new gml.Vec4( 0, 0, -1, 0 );
       let rotY = gml.Mat4.rotateY( this.yaw );
