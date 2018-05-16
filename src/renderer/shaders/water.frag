@@ -8,7 +8,7 @@ in float vAmp;
 
 uniform highp mat4 uVMatrix;
 uniform highp mat3 uInverseViewMatrix;
-uniform highp mat3 uNormalMVMatrix;    // inverse model view matrix
+uniform highp mat3 uNormalMVMatrix;
 uniform float uCloudiness;
 uniform bool uDrawWireframe;
 
@@ -34,39 +34,27 @@ float diffuse( vec3 normal, vec3 light, float p ) {
 }
 
 // based on Shadertoy "Seascape" entry by TDM
+// hash, waveheight, octave, height_detailed, get_normal all more or less unchanged from "Seascape" demo
+// here's a great ShaderToy entry that documents each of these functions:
+// https://www.shadertoy.com/view/llsXD2
 
-// bteitler: A 2D hash function for use in noise generation that returns range [0 .. 1].  You could
-// use any hash function of choice, just needs to deterministic and return
-// between 0 and 1, and also behave randomly.  Googling "GLSL hash function" returns almost exactly 
-// this function: http://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl
-// Performance is a real consideration of hash functions since ray-marching is already so heavy.
+// hash function, produces a pseudorandom number from 0 to 1 given a vec2
+// see http://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl
 float hash( vec2 p ) {
     float h = dot(p,vec2(127.1,311.7));	
     return fract(sin(h)*83758.5453123);
 }
 
-// bteitler: A 2D psuedo-random wave / terrain function.  This is actually a poor name in my opinion,
-// since its the "hash" function that is really the noise, and this function is smoothly interpolating
-// between noisy points to create a continuous surface.
-float noise( in vec2 p ) {
+// smoothly interpolate between pseudorandom numbers based on p
+// to produce smooth wave-like heightfields
+float waveheight( in vec2 p ) {
     vec2 i = floor( p );
     vec2 f = fract( p );	
 
-    // bteitler: This is equivalent to the "smoothstep" interpolation function.
-    // This is a smooth wave function with input between 0 and 1
-    // (since it is taking the fractional part of <p>) and gives an output
-    // between 0 and 1 that behaves and looks like a wave.  This is far from obvious, but we can graph it to see
-    // Wolfram link: http://www.wolframalpha.com/input/?i=plot+x*x*%283.0-2.0*x%29+from+x%3D0+to+1
-    // This is used to interpolate between random points.  Any smooth wave function that ramps up from 0 and
-    // and hit 1.0 over the domain 0 to 1 would work.  For instance, sin(f * PI / 2.0) gives similar visuals.
-    // This function is nice however because it does not require an expensive sine calculation.
+    // see http://www.wolframalpha.com/input/?i=plot+x*x*%283.0-2.0*x%29+from+x%3D0+to+1
     vec2 u = f*f*(3.0-2.0*f);
 
-    // bteitler: This very confusing looking mish-mash is simply pulling deterministic random values (between 0 and 1)
-    // for 4 corners of the grid square that <p> is inside, and doing 2D interpolation using the <u> function
-    // (remember it looks like a nice wave!) 
-    // The grid square has points defined at integer boundaries.  For example, if <p> is (4.3, 2.1), we will 
-    // evaluate at points (4, 2), (5, 2), (4, 3), (5, 3), and then interpolate x using u(.3) and y using u(.1).
+    // interpolate between psuedorandom points
     return -1.0+2.0*mix( 
                 mix( hash( i + vec2(0.0,0.0) ), 
                      hash( i + vec2(1.0,0.0) ), 
@@ -79,7 +67,7 @@ float noise( in vec2 p ) {
 
 float octave( vec2 uv, float choppiness )
 {
-    uv += noise( uv );
+    uv += waveheight( uv );
     vec2 wave  = 1.0 - abs( sin( uv ) );
     vec2 wave2 = abs( cos( uv ) );
     wave = mix( wave, wave2, wave ); // ????????????????????
@@ -165,7 +153,7 @@ float foam( vec2 pos, float detailed_height )
     // poke some holes in foam to simulate appearance of bubbles
     // first term is large bubbles (to reduce noticeable artifacting at close range, we reduce large bubble alpha)
     // second term is tiny bubbles (no noticeable artifacting unless at a particular distance, but that's a sampling artifact)
-    float fizziness = clamp( abs( noise( pos * 25.0 ) ) * 0.04 + abs( noise( pos * 380.0 ) ) * 0.2, 0.0, 1.0 );
+    float fizziness = clamp( abs( waveheight( pos * 25.0 ) ) * 0.04 + abs( waveheight( pos * 380.0 ) ) * 0.2, 0.0, 1.0 );
 
     // the smoothstep is actually quite important in producing the end result. We purposefully (artistically :) pick
     // a range in the produced noise that looks reasonably passable as foam
