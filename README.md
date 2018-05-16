@@ -2,9 +2,9 @@
 
 A real-time forward rendering framework for pedagogical purposes.
 
-The renderer supports basic geometric primitives, a couple of basic shaders and is fairly extendable.
+The renderer supports basic geometric primitives, a couple of basic shaders and is fairly extendable. A live shader editor is also included for ease of shader prototyping.
 
-Currently, it targets modern web browsers using WebGL 2.0.
+Currently, it targets modern web browsers using WebGL 2.0. [Check if your browser is supported](https://www.caniuse.com/#search=webgl%202).
 
 [Lame demo](http://davidyu.github.io/Robinson-web-samples/showcase/app.html)
 
