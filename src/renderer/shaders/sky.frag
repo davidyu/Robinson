@@ -5,9 +5,7 @@ precision mediump sampler3D;
 
 uniform vec4 cPosition_World;
 uniform float uTime;
-uniform sampler3D uPerlinNoise;
-uniform sampler3D uWorleyNoise;
-uniform sampler3D uSparseWorleyNoise;
+uniform sampler3D uCombinedNoiseVolume;
 uniform float uCloudiness;
 uniform float uCloudSpeed;
 
@@ -31,23 +29,6 @@ const   vec3  sea_color_mixed  = mix( sea_base_color, sea_water_color, 0.5 );
 
 out vec4 fragColor;
 
-#define PI 3.14159
-
-#define WORLEY_SAMPLE_MAX 32
-float worley(vec3 x) {
-    return texture( uSparseWorleyNoise, fract( x / vec3( WORLEY_SAMPLE_MAX ) ) ).r;
-}
-
-#define BILLOW_SAMPLE_MAX 50
-float billows(vec3 x) {
-    return texture( uWorleyNoise, fract( x / vec3( BILLOW_SAMPLE_MAX ) ) ).r;
-}
-
-#define PERLIN_SAMPLE_MAX 90
-float pnoise( vec3 x ) {
-    return texture( uPerlinNoise, fract( x / vec3( PERLIN_SAMPLE_MAX ) ) ).r;
-}
-
 float sample_cloud( vec3 pos ) {
     vec3 x = pos;
     float v = 0.0;
@@ -56,12 +37,9 @@ float sample_cloud( vec3 pos ) {
     const int NUM_OCTAVES = 4;
     
     for (int i = 0; i < NUM_OCTAVES; ++i) {
-        // float base_shape = worley( x );
-        // float billows = billows( x );
-        // float wispy = pnoise( x );
-        float wispy = texture( uPerlinNoise, fract( x / vec3( 90 ) ) ).r;
-        float billows = texture( uPerlinNoise, fract( x / vec3( 90 ) ) ).g;
-        float base_shape = texture( uPerlinNoise, fract( x / vec3( 90 ) ) ).b;
+        float wispy = texture( uCombinedNoiseVolume, fract( x / vec3( 90 ) ) ).r;
+        float billows = texture( uCombinedNoiseVolume, fract( x / vec3( 90 ) ) ).g;
+        float base_shape = texture( uCombinedNoiseVolume, fract( x / vec3( 90 ) ) ).b;
         base_shape += wispy * 0.07;
         v += uCloudiness * a * base_shape * ( 1. + uCloudiness * 3.0 * billows + wispy ); // macro, billow-y shapes
         x = x * 2.3 + shift;
@@ -83,6 +61,8 @@ vec3 sun( vec3 v ) {
  * q: the cosine (dot product) between incident (light to cloud pos) and scattered (cloud to eye pos) ray
  *
  */ 
+
+#define PI 3.14159
 float hg( float q )
 {
     float g = 0.5;

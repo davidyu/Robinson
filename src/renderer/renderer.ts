@@ -192,9 +192,7 @@ class ShaderUniforms {
   uMaterial: ShaderMaterialProperties;
   uLights: ShaderLightProperties[];
   uNoiseLayer: WebGLUniformLocation;
-  uPerlinNoise: WebGLUniformLocation;
-  uSparseWorleyNoise: WebGLUniformLocation;
-  uWorleyNoise: WebGLUniformLocation;
+  uCombinedNoiseVolume: WebGLUniformLocation;
   uColor: WebGLUniformLocation;
   uDepth: WebGLUniformLocation;
   uFocus: WebGLUniformLocation;
@@ -523,9 +521,7 @@ class Renderer {
     uniforms.uCloudiness = gl.getUniformLocation( program, "uCloudiness" );
     uniforms.uCloudSpeed = gl.getUniformLocation( program, "uCloudSpeed" );
     uniforms.uNoiseLayer = gl.getUniformLocation( program, "uNoiseLayer" );
-    uniforms.uPerlinNoise = gl.getUniformLocation( program, "uPerlinNoise" );
-    uniforms.uSparseWorleyNoise = gl.getUniformLocation( program, "uSparseWorleyNoise" );
-    uniforms.uWorleyNoise = gl.getUniformLocation( program, "uWorleyNoise" );
+    uniforms.uCombinedNoiseVolume = gl.getUniformLocation( program, "uCombinedNoiseVolume" );
     uniforms.uColor = gl.getUniformLocation( program, "screen_color" );
     uniforms.uDepth = gl.getUniformLocation( program, "screen_depth" );
     uniforms.uFocus = gl.getUniformLocation( program, "focus" );

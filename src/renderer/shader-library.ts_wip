@@ -3,7 +3,7 @@
 // - unstructured uniforms
 // attribute locations
 // - attribute locations
-interface ShaderUniformsV2: { [ name: string ]: WebGLUniformLocation | WebGLUniformLocation }
+interface ShaderUniformsV2: { [ name: string ]: WebGLUniformLocation }
 interface ShaderVertexAttributes: { [ name: string ]: GLint /* number */ }
 
 /***
@@ -69,7 +69,43 @@ class ShaderLibrary {
     req.send();
   }
 
-  compileProgram( vsFilename: string, fsFilename: string, programName: string ): CompiledProgramData {
-    // do something
+  compileProgram( gl: WebGLRenderingContext & WebGL2RenderingContext, vsFilename: string, fsFilename: string, programName: string ): CompiledProgramData {
+    if ( gl ) {
+      var vertexShader = gl.createShader( gl.VERTEX_SHADER );
+      gl.shaderSource( vertexShader, vs );
+      gl.compileShader( vertexShader );
+
+      if ( !suppressErrors && !gl.getShaderParameter( vertexShader, gl.COMPILE_STATUS ) ) {
+        console.log( "An error occurred compiling the vertex shader: " + gl.getShaderInfoLog( vertexShader ) );
+        return null;
+      }
+
+      var fragmentShader = gl.createShader( gl.FRAGMENT_SHADER );
+      gl.shaderSource( fragmentShader, fs );
+      gl.compileShader( fragmentShader );
+
+      if ( !suppressErrors && !gl.getShaderParameter( fragmentShader, gl.COMPILE_STATUS ) ) {
+        console.log( "An error occurred compiling the fragment shader: " + gl.getShaderInfoLog( fragmentShader ) );
+        return null;
+      }
+
+      // Create the shader program
+      var program = gl.createProgram();
+      gl.attachShader( program, vertexShader );
+      gl.attachShader( program, fragmentShader );
+
+      // force aVertexPosition to be bound to 0 to avoid perf penalty
+      // gl.bindAttribLocation( program, 0, "aVertexPosition" );
+      gl.linkProgram( program );
+
+      if ( !gl.getProgramParameter( program, gl.LINK_STATUS ) ) {
+        console.log( "Unable to initialize the shader program: " + gl.getProgramInfoLog( program ) );
+        console.log( "Problematic vertex shader:\n" + vs );
+        console.log( "Problematic fragment shader:\n" + fs );
+      }
+
+      return program;
+    }
+    return null;
   }
 };
