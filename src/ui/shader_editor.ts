@@ -160,6 +160,9 @@ class ShaderEditor {
     let container = document.getElementById( "shader-editor" );
 
     this.selectedShaderIndex = <SHADER_PROGRAM> 0;
+
+    if ( this.renderer.context == null ) return;
+
     this.vertexShaderEditor.setValue( this.renderer.programData[ 0 ].vert, -1 );
     this.fragmentShaderEditor.setValue( this.renderer.programData[ 0 ].frag, -1 ); 
 

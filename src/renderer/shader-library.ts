@@ -3,8 +3,8 @@
 // - unstructured uniforms
 // attribute locations
 // - attribute locations
-interface ShaderUniformsV2: { [ name: string ]: WebGLUniformLocation }
-interface ShaderVertexAttributes: { [ name: string ]: GLint /* number */ }
+interface ShaderUniformsV2 { [ name: string ]: WebGLUniformLocation }
+interface ShaderVertexAttributes { [ name: string ]: GLint }
 
 /***
  * A compiled program along with its uniforms and metadata about its sources
@@ -15,8 +15,8 @@ class CompiledProgramData {
   sourceVSFilename: string;
   sourceFSFilename: string;
   constructor( vs: string, fs: string ) {
-    this.sourceVSFilename = vert;
-    this.sourceFSFilename = frag;
+    this.sourceVSFilename = vs;
+    this.sourceFSFilename = fs;
     this.program = null;
     this.uniforms = {};
   }
@@ -37,7 +37,7 @@ class ShaderLibrary {
   // this is called when all shaders have been loaded
   allShadersLoaded: ( ShaderLibrary ) => void; 
   // this is called when a particular shader has been loaded
-  shaderLoaded    : ( ShaderLibrary, string, string ) => void;  // ( lib, filename, source )
+  shaderLoaded    : ( lib: ShaderLibrary, filename: string, source: string ) => void;  // ( lib, filename, source )
 
   constructor() {
     this.allShadersLoaded = null;
@@ -69,10 +69,10 @@ class ShaderLibrary {
     req.send();
   }
 
-  compileProgram( gl: WebGLRenderingContext & WebGL2RenderingContext, vsFilename: string, fsFilename: string, programName: string ): CompiledProgramData {
+  compileProgram( gl: WebGLRenderingContext & WebGL2RenderingContext, vsFilename: string, fsFilename: string, programName: string, suppressErrors: boolean = false ): CompiledProgramData {
     if ( gl ) {
       var vertexShader = gl.createShader( gl.VERTEX_SHADER );
-      gl.shaderSource( vertexShader, vs );
+      gl.shaderSource( vertexShader, vsFilename );
       gl.compileShader( vertexShader );
 
       if ( !suppressErrors && !gl.getShaderParameter( vertexShader, gl.COMPILE_STATUS ) ) {
@@ -81,7 +81,7 @@ class ShaderLibrary {
       }
 
       var fragmentShader = gl.createShader( gl.FRAGMENT_SHADER );
-      gl.shaderSource( fragmentShader, fs );
+      gl.shaderSource( fragmentShader, fsFilename );
       gl.compileShader( fragmentShader );
 
       if ( !suppressErrors && !gl.getShaderParameter( fragmentShader, gl.COMPILE_STATUS ) ) {
@@ -100,11 +100,14 @@ class ShaderLibrary {
 
       if ( !gl.getProgramParameter( program, gl.LINK_STATUS ) ) {
         console.log( "Unable to initialize the shader program: " + gl.getProgramInfoLog( program ) );
-        console.log( "Problematic vertex shader:\n" + vs );
-        console.log( "Problematic fragment shader:\n" + fs );
+        console.log( "Problematic vertex shader:\n" + vsFilename );
+        console.log( "Problematic fragment shader:\n" + fsFilename );
       }
 
-      return program;
+      let out = new CompiledProgramData( vsFilename, fsFilename );
+      out.program = program;
+
+      return out;
     }
     return null;
   }

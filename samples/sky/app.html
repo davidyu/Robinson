@@ -127,11 +127,14 @@
     <div id="viewport-container">
       <!-- stacked div 1, single pane viewport -->
       <canvas id="big-viewport" width="848" height="480">
-        Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
       </canvas>
       <center>
         <p>
           Water rendering heavvily based on the <a target="_blank" href="https://www.shadertoy.com/view/Ms2SD1">Seascape Shadertoy entry by TDM &#10697;</a>
+        </p>
+        <p id="nosupport" style="visibility:hidden">
+        Your browser doesn't appear to support WebGL 2, or it is disabled. <a href="https://browserleaks.com/webgl">See here for details.</a><br/>
+        <a href="https://caniuse.com/#feat=webgl2">Browsers that current support WebGL 2 are: Chrome (65 or above) and Firefox (59 and above)</a>.
         </p>
       </center>
       <div id="viewport-overlay" style="width:848px">

@@ -303,6 +303,12 @@ function StartSky() {
 
       let gl = app.renderer.context;
 
+      if ( gl == null ) {
+        let label = document.getElementById( "nosupport" );
+        label.style.visibility = "visible";
+        return;
+      }
+
       app.editor.install();
       app.dbg.install();
 

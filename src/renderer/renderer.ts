@@ -255,6 +255,8 @@ class Renderer {
 
     var gl = viewportElement.getContext( "webgl2", { antialias: true } ) as any;
 
+    if ( !gl ) return;
+
     gl.viewport( 0, 0, viewportElement.width, viewportElement.height );
     
     this.viewportW = viewportElement.width;
