@@ -6,7 +6,7 @@ module.exports = function( config ) {
       { pattern: '*.vert', served: true, included: false },
       { pattern: '*.frag', served: true, included: false }
     ],
-    browsers: [ 'Chrome' ],
+    browsers: [ 'ChromeHeadless' ],
     singleRun: true
   } );
 };
