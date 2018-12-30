@@ -43,7 +43,8 @@ autobuild:
 	@date +%x\ %H:%M:%S
 	@echo "-----------------------------"
 	@make app
-	@echo -e "\033[0;32mSUCCESS!\033[0m"
+	@echo -e "\033[0;32mSUCCESS\033[0m $$(date +%x\ %H:%M:%S)"
+	
 
 # Color codes
 # Black        0;30     Dark Gray     1;30
