@@ -270,23 +270,39 @@ class Renderer {
       lib.sources[ "water.frag" ] = lib.sources[ "utils.frag" ] + lib.sources[ "water.frag" ];
       lib.sources[ "water-screenspace.frag" ] = lib.sources[ "utils.frag" ] + lib.sources[ "water-screenspace.frag" ];
 
-      lib.compileProgram( gl, "debug.vert", "debug.frag", "debug" );
-      lib.compileProgram( gl, "basic.vert", "blinn-phong.frag", "blinn-phong" );
-      lib.compileProgram( gl, "basic.vert", "lambert.frag", "lambert" );
-      lib.compileProgram( gl, "basic.vert", "oren-nayar.frag", "oren-nayar" );
-      if ( this.shaderLODExtension != null ) {
-        lib.compileProgram( gl, "basic.vert", "cook-torrance.frag", "cook-torrance" );
-      } else {
-        lib.compileProgram( gl, "basic.vert", "cook-torrance-legacy.frag", "cook-torrance" );
+      // compile and cache things
+      let shader = null;
+
+      shader = lib.compileProgram( gl, "debug.vert", "debug.frag", "debug" );
+      if ( shader != null ) {
+        shader.attributes[ "aVertexColor" ] = gl.getAttribLocation( shader.program, "aVertexColor" );
+        shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+        shader.attributes[ "aVertexNormal" ] = gl.getAttribLocation( shader.program, "aVertexNormal" );
+        shader.uniforms[ "uMVMatrix" ] = gl.getUniformLocation( shader.program, "uMVMatrix" );
+        shader.uniforms[ "uPMatrix" ] = gl.getUniformLocation( shader.program, "uPMatrix" );
+        shader.uniforms[ "uNormalWorldMatrix" ] = gl.getUniformLocation( shader.program, "uNormalWorldMatrix" );
+        shader.setup = ( gl, attributes, uniforms ) => {
+          gl.enableVertexAttribArray( attributes.aVertexPosition );
+          gl.enableVertexAttribArray( attributes.aVertexNormal );
+          gl.disableVertexAttribArray( 2 );
+        };
       }
-      lib.compileProgram( gl, "skybox.vert", "skybox.frag", "skybox" );
-      lib.compileProgram( gl, "skybox.vert", "sky.frag", "sky" );
-      lib.compileProgram( gl, "water.vert", "water.frag", "water" );
-      lib.compileProgram( gl, "screenspacequad.vert", "water_screenspace.frag", "water-screenspace" );
-      lib.compileProgram( gl, "screenspacequad.vert", "noise_writer.frag", "noisewriter" );
-      lib.compileProgram( gl, "screenspacequad.vert", "volume_viewer.frag", "volumeviewer" );
-      lib.compileProgram( gl, "screenspacequad.vert", "depth-texture.frag", "render-depthtexture" );
-      lib.compileProgram( gl, "passthrough.vert", "cube-sh.frag", "cube-spherical-harmonics" );
+      shader = lib.compileProgram( gl, "basic.vert", "blinn-phong.frag", "blinn-phong" );
+      shader = lib.compileProgram( gl, "basic.vert", "lambert.frag", "lambert" );
+      shader = lib.compileProgram( gl, "basic.vert", "oren-nayar.frag", "oren-nayar" );
+      if ( this.shaderLODExtension != null ) {
+        shader = lib.compileProgram( gl, "basic.vert", "cook-torrance.frag", "cook-torrance" );
+      } else {
+        shader = lib.compileProgram( gl, "basic.vert", "cook-torrance-legacy.frag", "cook-torrance" );
+      }
+      shader = lib.compileProgram( gl, "skybox.vert", "skybox.frag", "skybox" );
+      shader = lib.compileProgram( gl, "skybox.vert", "sky.frag", "sky" );
+      shader = lib.compileProgram( gl, "water.vert", "water.frag", "water" );
+      shader = lib.compileProgram( gl, "screenspacequad.vert", "water_screenspace.frag", "water-screenspace" );
+      shader = lib.compileProgram( gl, "screenspacequad.vert", "noise_writer.frag", "noisewriter" );
+      shader = lib.compileProgram( gl, "screenspacequad.vert", "volume_viewer.frag", "volumeviewer" );
+      shader = lib.compileProgram( gl, "screenspacequad.vert", "depth-texture.frag", "render-depthtexture" );
+      shader = lib.compileProgram( gl, "passthrough.vert", "cube-sh.frag", "cube-spherical-harmonics" );
     }
 
     this.repoV2.loadShader( "basic.vert" );
@@ -764,7 +780,9 @@ class Renderer {
         gl.uniform4fv( shaderVariables.uMaterial.emissive, blinnphong.emissive.v );
         gl.uniform1f ( shaderVariables.uMaterial.shininess, blinnphong.shininess );
       } else if ( p.material instanceof DebugMaterial ) {
-        this.useProgram( gl, SHADER_PROGRAM.DEBUG );
+        let shader = this.repoV2.programs[ "debug" ];
+        gl.useProgram( shader.program );
+        shader.setup( gl, shader.attributes, shader.uniforms );
       } else if ( p.material instanceof OrenNayarMaterial ) {
         this.useProgram( gl, SHADER_PROGRAM.OREN_NAYAR );
 

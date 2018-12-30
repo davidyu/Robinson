@@ -12,13 +12,17 @@ interface ShaderVertexAttributes { [ name: string ]: GLint }
 class CompiledProgramData {
   program: WebGLProgram;
   uniforms: ShaderUniformsV2;
+  attributes: ShaderVertexAttributes;
   sourceVSFilename: string;
   sourceFSFilename: string;
+  setup: ( gl: WebGLRenderingContext & WebGL2RenderingContext, attributes: ShaderVertexAttributes, uniforms: ShaderUniformsV2 ) => void;
   constructor( vs: string, fs: string ) {
     this.sourceVSFilename = vs;
     this.sourceFSFilename = fs;
     this.program = null;
     this.uniforms = {};
+    this.attributes = {};
+    this.setup = null;
   }
 }
 
@@ -114,6 +118,8 @@ class ShaderLibrary {
 
       let out = new CompiledProgramData( vsFilename, fsFilename );
       out.program = program;
+
+      this.programs[ programName ] = out;
 
       return out;
     }
