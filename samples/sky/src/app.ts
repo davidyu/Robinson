@@ -62,7 +62,7 @@ class SkyApp {
       this.camera = new Camera( rotPos, rotAim, rotUp, rotRight );
     }
 
-    let options: NodeListOf<HTMLSelectElement> = document.getElementsByTagName( "select" );
+    let options: HTMLCollectionOf<HTMLSelectElement> = document.getElementsByTagName( "select" );
     let frameLimiterOption: HTMLSelectElement = null;
 
     for ( let i = 0; i < options.length; i++ ) {
