@@ -9,7 +9,7 @@ LIBFLAGS=--target ES5 --sourceMap --removeComments --lib webgl2
 DECFLAGS=--target ES5 --declaration
 
 app: folders dependencies shaders
-	@pushd $(SRC) >/dev/null; find . -name "*.ts" -type f -not -path "*/dist/*" >src.txt; tsc @src.txt --target ES5 --sourceMap --out ../dist/app.js; rm src.txt; popd > /dev/null
+	@pushd $(SRC) >/dev/null && find . -name "*.ts" -type f -not -path "*/dist/*" >src.txt && tsc @src.txt --target ES5 --sourceMap --out ../dist/app.js && rm src.txt && popd > /dev/null
 
 dependencies: folders
 	@cp $(SRC)/lib/*.js $(DIST)/lib
