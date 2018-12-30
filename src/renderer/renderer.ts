@@ -214,6 +214,8 @@ class ShaderProgramData {
 }
 
 class Renderer {
+  repoV2: ShaderLibrary;
+
   enableTracing: boolean; // for debugging
 
   viewportW: number;
@@ -252,10 +254,64 @@ class Renderer {
 
   constructor( viewportElement: HTMLCanvasElement, sr: ShaderRepository, backgroundColor: gml.Vec4 = new gml.Vec4( 0, 0, 0, 1 ) ) {
     this.repo = sr;
+    this.repoV2 = new ShaderLibrary();
 
     var gl = viewportElement.getContext( "webgl2", { antialias: true } ) as any;
 
     if ( !gl ) return;
+
+    this.repoV2.allShadersLoaded = ( lib: ShaderLibrary ): void => {
+      // augment source files TODO preprocessor directives
+      lib.sources[ "blinn-phong.frag" ] = lib.sources[ "utils.frag" ] + lib.sources[ "blinn-phong.frag" ];
+      lib.sources[ "lambert.frag" ] = lib.sources[ "utils.frag" ] + lib.sources[ "lambert.frag" ];
+      lib.sources[ "oren-nayar.frag" ] = lib.sources[ "utils.frag" ] + lib.sources[ "oren-nayar.frag" ];
+      lib.sources[ "cook-torrance.frag" ] = lib.sources[ "utils.frag" ] + lib.sources[ "cook-torrance.frag" ];
+      lib.sources[ "cook-torrance-legacy.frag" ] = lib.sources[ "utils.frag" ] + lib.sources[ "cook-torrance-legacy.frag" ];
+      lib.sources[ "water.frag" ] = lib.sources[ "utils.frag" ] + lib.sources[ "water.frag" ];
+      lib.sources[ "water-screenspace.frag" ] = lib.sources[ "utils.frag" ] + lib.sources[ "water-screenspace.frag" ];
+
+      lib.compileProgram( gl, "debug.vert", "debug.frag", "debug" );
+      lib.compileProgram( gl, "basic.vert", "blinn-phong.frag", "blinn-phong" );
+      lib.compileProgram( gl, "basic.vert", "lambert.frag", "lambert" );
+      lib.compileProgram( gl, "basic.vert", "oren-nayar.frag", "oren-nayar" );
+      if ( this.shaderLODExtension != null ) {
+        lib.compileProgram( gl, "basic.vert", "cook-torrance.frag", "cook-torrance" );
+      } else {
+        lib.compileProgram( gl, "basic.vert", "cook-torrance-legacy.frag", "cook-torrance" );
+      }
+      lib.compileProgram( gl, "skybox.vert", "skybox.frag", "skybox" );
+      lib.compileProgram( gl, "skybox.vert", "sky.frag", "sky" );
+      lib.compileProgram( gl, "water.vert", "water.frag", "water" );
+      lib.compileProgram( gl, "screenspacequad.vert", "water_screenspace.frag", "water-screenspace" );
+      lib.compileProgram( gl, "screenspacequad.vert", "noise_writer.frag", "noisewriter" );
+      lib.compileProgram( gl, "screenspacequad.vert", "volume_viewer.frag", "volumeviewer" );
+      lib.compileProgram( gl, "screenspacequad.vert", "depth-texture.frag", "render-depthtexture" );
+      lib.compileProgram( gl, "passthrough.vert", "cube-sh.frag", "cube-spherical-harmonics" );
+    }
+
+    this.repoV2.loadShader( "basic.vert" );
+    this.repoV2.loadShader( "debug.vert" );
+    this.repoV2.loadShader( "passthrough.vert" );
+    this.repoV2.loadShader( "lambert.frag" );
+    this.repoV2.loadShader( "blinn-phong.frag" );
+    this.repoV2.loadShader( "debug.frag" );
+    this.repoV2.loadShader( "oren-nayar.frag" );
+    this.repoV2.loadShader( "cook-torrance.frag" );
+    this.repoV2.loadShader( "cook-torrance-legacy.frag" );
+    this.repoV2.loadShader( "utils.frag" );
+    this.repoV2.loadShader( "skybox.vert" );
+    this.repoV2.loadShader( "skybox.frag" );
+    this.repoV2.loadShader( "sky.frag" );
+    this.repoV2.loadShader( "cube-sh.frag" );
+    this.repoV2.loadShader( "water.vert" );
+    this.repoV2.loadShader( "water.frag" );
+    this.repoV2.loadShader( "screenspacequad.vert" );
+    this.repoV2.loadShader( "water_screenspace.frag" );
+    this.repoV2.loadShader( "noise_writer.frag" );
+    this.repoV2.loadShader( "volume_viewer.frag" );
+    this.repoV2.loadShader( "post-process.frag" );
+    this.repoV2.loadShader( "depth-texture.frag" ); 
+
 
     gl.viewport( 0, 0, viewportElement.width, viewportElement.height );
     

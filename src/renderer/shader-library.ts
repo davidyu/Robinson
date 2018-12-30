@@ -43,16 +43,18 @@ class ShaderLibrary {
     this.allShadersLoaded = null;
     this.shaderLoaded = null;
     this.outgoingRequests = [];
+    this.sources = {};
+    this.programs = {};
   }
 
-  loadShader( name: string ) {
+  loadShader( filename: string ) {
     var req = new XMLHttpRequest();
 
-    req.addEventListener( "load", evt => { 
-      this.sources[ name ] = req.responseText;
+    req.addEventListener( "load", evt => {
       if ( this.shaderLoaded != null ) {
-        this.shaderLoaded( this, name, req.responseText );
+        this.shaderLoaded( this, filename, req.responseText );
       }
+      this.sources[ filename ] = req.responseText;
 
       // remove me from the outgoing request list
       this.outgoingRequests = this.outgoingRequests.filter( r => r != req );
@@ -62,7 +64,7 @@ class ShaderLibrary {
       }
     } );
 
-    req.open( "GET", "./shaders/" + name, true );
+    req.open( "GET", "./shaders/" + filename, true );
 
     this.outgoingRequests.push( req );
 
@@ -71,21 +73,27 @@ class ShaderLibrary {
 
   compileProgram( gl: WebGLRenderingContext & WebGL2RenderingContext, vsFilename: string, fsFilename: string, programName: string, suppressErrors: boolean = false ): CompiledProgramData {
     if ( gl ) {
-      var vertexShader = gl.createShader( gl.VERTEX_SHADER );
-      gl.shaderSource( vertexShader, vsFilename );
+      let vertexShader = gl.createShader( gl.VERTEX_SHADER );
+      let vertexShaderSource = this.sources[ vsFilename ];
+      let fragmentShaderSource = this.sources[ fsFilename ];
+
+      console.assert( vertexShaderSource != null, vsFilename );
+      console.assert( fragmentShaderSource != null, fsFilename );
+
+      gl.shaderSource( vertexShader, vertexShaderSource );
       gl.compileShader( vertexShader );
 
       if ( !suppressErrors && !gl.getShaderParameter( vertexShader, gl.COMPILE_STATUS ) ) {
-        console.log( "An error occurred compiling the vertex shader: " + gl.getShaderInfoLog( vertexShader ) );
+        console.log( "An error occurred compiling the vertex shader: " + vsFilename + "\n" + gl.getShaderInfoLog( vertexShader ) );
         return null;
       }
 
       var fragmentShader = gl.createShader( gl.FRAGMENT_SHADER );
-      gl.shaderSource( fragmentShader, fsFilename );
+      gl.shaderSource( fragmentShader, fragmentShaderSource );
       gl.compileShader( fragmentShader );
 
       if ( !suppressErrors && !gl.getShaderParameter( fragmentShader, gl.COMPILE_STATUS ) ) {
-        console.log( "An error occurred compiling the fragment shader: " + gl.getShaderInfoLog( fragmentShader ) );
+        console.log( "An error occurred compiling the fragment shader: " + fsFilename + "\n" + gl.getShaderInfoLog( fragmentShader ) );
         return null;
       }
 
