@@ -329,6 +329,23 @@ class Renderer {
       shader = lib.compileProgram( gl, "screenspacequad.vert", "noise_writer.frag", "noisewriter" );
       shader = lib.compileProgram( gl, "screenspacequad.vert", "volume_viewer.frag", "volumeviewer" );
       shader = lib.compileProgram( gl, "screenspacequad.vert", "depth-texture.frag", "render-depthtexture" );
+
+      if ( shader != null ) {
+        shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+        shader.attributes[ "aVertexTexCoord" ] = gl.getAttribLocation( shader.program, "aVertexTexCoord" );
+
+        shader.uniforms[ "screen_depth" ] = gl.getUniformLocation( shader.program, "screen_depth" );
+        shader.uniforms[ "uVMatrix" ] = gl.getUniformLocation( shader.program, "uVMatrix" );
+
+        shader.setup = ( gl, attributes, uniforms ) => {
+          gl.disableVertexAttribArray( 0 );
+          gl.disableVertexAttribArray( 1 );
+          gl.disableVertexAttribArray( 2 );
+          gl.enableVertexAttribArray( attributes.aVertexPosition );
+          gl.enableVertexAttribArray( attributes.aVertexTexCoord );
+        };
+      }
+
       shader = lib.compileProgram( gl, "passthrough.vert", "cube-sh.frag", "cube-spherical-harmonics" );
     }
 
@@ -742,20 +759,21 @@ class Renderer {
   }
 
   renderDepthBuffer( gl: WebGL2RenderingContext, depth, mvStack: gml.Mat4[] ) {
-    this.useProgram( gl, SHADER_PROGRAM.RENDER_DEPTH_TEXTURE );
+    let shader = this.repoV2.programs[ "render-depthtexture" ];
+    gl.useProgram( shader.program );
 
     let shaderVariables = this.programData[ this.currentProgram ].uniforms;
 
     gl.bindBuffer( gl.ARRAY_BUFFER, this.fullscreenQuad.renderData.vertexBuffer );
     gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.fullscreenQuad.renderData.indexBuffer );
-    gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
+    gl.vertexAttribPointer( shader.attributes.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
     gl.bindBuffer( gl.ARRAY_BUFFER, this.fullscreenQuad.renderData.vertexTexCoordBuffer );
-    gl.vertexAttribPointer( shaderVariables.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer( shader.attributes.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
 
-    gl.uniformMatrix4fv( shaderVariables.uView, false, mvStack[ mvStack.length - 1 ].m );
+    gl.uniformMatrix4fv( shader.uniforms.uVMatrix, false, mvStack[ mvStack.length - 1 ].m );
 
-    gl.uniform1i( shaderVariables.uDepth, 1 );
+    gl.uniform1i( shader.uniforms.screen_depth, 1 );
     gl.activeTexture( gl.TEXTURE1 );
     gl.bindTexture( gl.TEXTURE_2D, depth );
 
