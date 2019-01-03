@@ -311,6 +311,22 @@ class Renderer {
       }
 
       shader = lib.compileProgram( gl, "skybox.vert", "sky.frag", "sky" );
+      if ( shader != null ) {
+        shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+        shader.uniforms[ "uInverseProjectionMatrix" ] = gl.getUniformLocation( shader.program, "uInverseProjectionMatrix" );
+        shader.uniforms[ "uInverseViewMatrix" ] = gl.getUniformLocation( shader.program, "uInverseViewMatrix" );
+        shader.uniforms[ "uTime" ] = gl.getUniformLocation( shader.program, "uTime" )
+        shader.uniforms[ "uCombinedNoiseVolume" ] = gl.getUniformLocation( shader.program, "uCombinedNoiseVolume" )
+        shader.uniforms[ "uCloudiness" ] = gl.getUniformLocation( shader.program, "uCloudiness" )
+        shader.uniforms[ "uCloudSpeed" ] = gl.getUniformLocation( shader.program, "uCloudSpeed" )
+        shader.setup = ( gl, attributes, uniforms ) => {
+          gl.disableVertexAttribArray( 0 );
+          gl.disableVertexAttribArray( 1 );
+          gl.disableVertexAttribArray( 2 );
+          gl.enableVertexAttribArray( attributes.aVertexPosition );
+        };
+      }
+
       shader = lib.compileProgram( gl, "water.vert", "water.frag", "water" );
       if ( shader != null ) {
         shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
@@ -735,33 +751,30 @@ class Renderer {
       perspective = gml.makePerspective( gml.fromDegrees( 45 ), viewportW / viewportH, 0.1, 1000.0 );
     }
 
-    let shader = this.repoV2.programs.skybox;
+    let shader = null;
     if ( scene.environmentMap != null ) {
+      shader = this.repoV2.programs.skybox;
       gl.useProgram( shader.program );
       shader.setup( gl, shader.attributes, shader.uniforms );
-      // this.useProgram( gl, SHADER_PROGRAM.SKYBOX );
     } else {
-      this.useProgram( gl, SHADER_PROGRAM.SKY ); // this shader program automatically moves our quad near the far clip plane, so we don't need to transform it ourselves here
+      shader = this.repoV2.programs.sky;
+      gl.useProgram( shader.program ); // this shader program automatically moves our quad near the far clip plane, so we don't need to transform it ourselves here
+      shader.setup( gl, shader.attributes, shader.uniforms );
     }
 
-    let shaderVariables = this.programData[ this.currentProgram ].uniforms;
-
     let inverseProjectionMatrix = perspective.invert();
-    gl.uniformMatrix4fv( shaderVariables.uInverseProjection, false, inverseProjectionMatrix.m ); // TODO remove me
     gl.uniformMatrix4fv( shader.uniforms.uInverseProjectionMatrix, false, inverseProjectionMatrix.m );
 
     let inverseViewMatrix = mvStack[ mvStack.length - 1 ].invert().mat3;
-    gl.uniformMatrix3fv( shaderVariables.uInverseView, false, inverseViewMatrix.m ); // TODO remove me
     gl.uniformMatrix3fv( shader.uniforms.uInverseViewMatrix, false, inverseViewMatrix.m );
 
     if ( this.camera != null ) {
-      gl.uniform4fv( shaderVariables.uCameraPos, this.camera.matrix.translation.negate().v );
+      gl.uniform4fv( shader.uniforms.cPosition_World, this.camera.matrix.translation.negate().v );
     }
 
-    gl.uniform1f( shaderVariables.uTime, scene.time );
+    gl.uniform1f( shader.uniforms.uTime, scene.time );
 
     gl.bindBuffer( gl.ARRAY_BUFFER, this.fullscreenQuad.renderData.vertexBuffer );
-    gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
     gl.vertexAttribPointer( shader.attributes.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
     gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.fullscreenQuad.renderData.indexBuffer );
