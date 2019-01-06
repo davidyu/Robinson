@@ -892,6 +892,9 @@ class Renderer {
           let inverseProjectionMatrix = perspective.invert();
           gl.uniformMatrix4fv( shaderVariables.uInverseProjection, false, inverseProjectionMatrix.m );
         } else {
+          // TODO TODO TODO
+          this.useProgram( gl, SHADER_PROGRAM.WATER_SCREENSPACE ); // TODO remove me
+          // TODO TODO TODO
           let shader = this.repoV2.programs[ "water" ];
           gl.useProgram( shader.program );
           shader.setup( gl, shader.attributes, shader.uniforms );
@@ -921,13 +924,14 @@ class Renderer {
       }
 
       let shader = this.currentShader;
-      let shaderVariables = this.programData[ this.currentProgram ].uniforms;
+      let shaderVariables = this.currentProgram != null ? this.programData[ this.currentProgram ].uniforms : null;
       scene.lights.forEach( ( l, i ) => {
         let lightpos = mvStack[ mvStack.length - 1 ].transform( l.position );
-        gl.uniform4fv( shaderVariables.uLights[i].position, lightpos.v );
-        gl.uniform4fv( shaderVariables.uLights[i].color, l.color.v );
-        gl.uniform1i( shaderVariables.uLights[i].enabled, l.enabled ? 1 : 0 );
-        gl.uniform1f( shaderVariables.uLights[i].radius, l.radius );
+        // TODO TODO TODO
+        // gl.uniform4fv( shaderVariables.uLights[i].position, lightpos.v );
+        // gl.uniform4fv( shaderVariables.uLights[i].color, l.color.v );
+        // gl.uniform1i( shaderVariables.uLights[i].enabled, l.enabled ? 1 : 0 );
+        // gl.uniform1f( shaderVariables.uLights[i].radius, l.radius );
       } );
 
       gl.uniformMatrix4fv( shaderVariables.uPerspective, false, perspective.m );
@@ -936,16 +940,12 @@ class Renderer {
       }
 
       if ( this.camera != null ) {
-        gl.uniform4fv( shaderVariables.uCameraPos, this.camera.matrix.translation.v );
         if ( shader != null ) {
           gl.uniform4fv( shader.uniforms[ "cPosition_World" ], this.camera.matrix.translation.v );
         }
       }
 
       let primitiveModelView = mvStack[ mvStack.length - 1 ].multiply( p.transform );
-      gl.uniformMatrix4fv( shaderVariables.uModelView, false, primitiveModelView.m );
-      gl.uniformMatrix4fv( shaderVariables.uModelToWorld, false, p.transform.m );
-      gl.uniformMatrix4fv( shaderVariables.uView, false, mvStack[ mvStack.length - 1 ].m );
 
       if ( shader.uniforms != null ) {
         gl.uniformMatrix4fv( shader.uniforms[ "uMVMatrix" ], false, primitiveModelView.m );
@@ -955,10 +955,8 @@ class Renderer {
 
       // the normal matrix is defined as the upper 3x3 block of transpose( inverse( model-view ) )
       let normalMVMatrix = primitiveModelView.invert().transpose().mat3;
-      gl.uniformMatrix3fv( shaderVariables.uNormalModelView, false, normalMVMatrix.m );
 
       let normalWorldMatrix = p.transform.invert().transpose().mat3;
-      gl.uniformMatrix3fv( shaderVariables.uNormalWorld, false, normalWorldMatrix.m );
 
       if ( shader.uniforms != null ) {
         gl.uniformMatrix3fv( shader.uniforms[ "uNormalMVMatrix" ], false, normalMVMatrix.m );
@@ -968,39 +966,29 @@ class Renderer {
       let inverseViewMatrix = mvStack[ mvStack.length - 1 ].invert().mat3;
       if ( shader != null ) {
         gl.uniformMatrix3fv( shader.uniforms[ "uInverseViewMatrix" ], false, inverseViewMatrix.m );
-      } else {
-        gl.uniformMatrix3fv( shaderVariables.uInverseView, false, inverseViewMatrix.m );
       }
 
       gl.bindBuffer( gl.ARRAY_BUFFER, p.renderData.vertexBuffer );
-      gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
       if ( shader != null ) {
         gl.vertexAttribPointer( shader.attributes[ "aVertexPosition" ], 3, gl.FLOAT, false, 0, 0 );
       }
 
-      if ( shaderVariables.aMeshCoord >= 0 && p.renderData.meshCoordsBuffer != null ) {
+      if ( p.renderData.meshCoordsBuffer != null ) {
         gl.bindBuffer( gl.ARRAY_BUFFER, p.renderData.meshCoordsBuffer );
-        gl.vertexAttribPointer( shaderVariables.aMeshCoord, 2, gl.FLOAT, false, 0, 0 );
         if ( shader != null ) {
           gl.vertexAttribPointer( shader.attributes[ "aMeshCoord" ], 2, gl.FLOAT, false, 0, 0 );
         }
       }
 
-      if ( shaderVariables.aVertexTexCoord >= 0 ) {
-        gl.bindBuffer( gl.ARRAY_BUFFER, p.renderData.vertexTexCoordBuffer );
-        gl.vertexAttribPointer( shaderVariables.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
-        if ( shader != null ) {
-          gl.vertexAttribPointer( shader.attributes[ "aVertexTexCoord" ], 2, gl.FLOAT, false, 0, 0);
-        }
+      gl.bindBuffer( gl.ARRAY_BUFFER, p.renderData.vertexTexCoordBuffer );
+      if ( shader != null ) {
+        gl.vertexAttribPointer( shader.attributes[ "aVertexTexCoord" ], 2, gl.FLOAT, false, 0, 0);
       }
 
       gl.bindBuffer( gl.ARRAY_BUFFER, p.renderData.vertexNormalBuffer );
-      if ( shaderVariables.aVertexNormal >= 0 ) {
-        gl.vertexAttribPointer( shaderVariables.aVertexNormal, 3, gl.FLOAT, false, 0, 0 );
-        if ( shader != null ) {
-          gl.vertexAttribPointer( shader.attributes[ "aVertexNormal" ], 3, gl.FLOAT, false, 0, 0 );
-        }
+      if ( shader != null && shader.attributes[ "aVertexNormal" ] > 0 ) {
+        gl.vertexAttribPointer( shader.attributes[ "aVertexNormal" ], 3, gl.FLOAT, false, 0, 0 );
       }
 
       gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, p.renderData.indexBuffer );
@@ -1008,15 +996,13 @@ class Renderer {
       if ( scene.environmentMap != null ) {
         if ( shader != null ) {
           gl.uniform1i( shader.uniforms[ "environment" ], 0 );
-        } else {
-          gl.uniform1i( shaderVariables.uEnvMap, 0 ); // tells shader to refer to texture slot 1 for the uEnvMap uniform
         }
         gl.activeTexture( gl.TEXTURE0 );
         gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environmentMap.cubeMapTexture );
       }
 
       if ( scene.irradianceMap != null ) {
-        gl.uniform1i( shaderVariables.uIrradianceMap, 1 ); // tells shader to look at texture slot 1 for the uEnvMap uniform
+        gl.uniform1i( shader.uniforms.uIrradianceMap, 1 ); // tells shader to look at texture slot 1 for the uEnvMap uniform
         gl.activeTexture( gl.TEXTURE1 );
         gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.irradianceMap.cubeMapTexture );
       }
@@ -1135,7 +1121,8 @@ class Renderer {
           if ( scene.dynamicEnvironment ) {
             // render using specified shader
             // TODO: actually pass in shader into scene
-            scene.generateEnvironmentMapFromShader( this, gl, this.programData[ SHADER_PROGRAM.SKY ].program, this.programData[ SHADER_PROGRAM.SKY ].uniforms );
+            let shader = this.repoV2.programs[ "sky" ];
+            scene.generateEnvironmentMapFromShader( this, gl, shader, shader.attributes, shader.uniforms, null );
           } else if ( scene.environmentMap.loaded && scene.environmentMap.cubeMapTexture == null ) {
             // generate static cube map from face images - we only do this once
             scene.environmentMap.generateCubeMapFromSources( gl );
