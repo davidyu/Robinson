@@ -43,6 +43,10 @@ class ShaderLibrary {
   // this is called when a particular shader has been loaded
   shaderLoaded    : ( lib: ShaderLibrary, filename: string, source: string ) => void;  // ( lib, filename, source )
 
+  doneLoading() {
+    return this.outgoingRequests.length == 0;
+  }
+
   constructor() {
     this.allShadersLoaded = null;
     this.shaderLoaded = null;

@@ -356,6 +356,20 @@ class Renderer {
       }
       shader = lib.compileProgram( gl, "screenspacequad.vert", "water_screenspace.frag", "water-screenspace" );
       shader = lib.compileProgram( gl, "screenspacequad.vert", "noise_writer.frag", "noisewriter" );
+      if ( shader != null ) {
+        shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+        shader.attributes[ "aVertexTexCoord" ] = gl.getAttribLocation( shader.program, "aVertexTexCoord" );
+
+        shader.uniforms[ "uNoiseLayer" ] = gl.getUniformLocation( shader.program, "uNoiseLayer" );
+
+        shader.setup = ( gl, attributes, uniforms ) => {
+          gl.disableVertexAttribArray( 0 );
+          gl.disableVertexAttribArray( 1 );
+          gl.disableVertexAttribArray( 2 );
+          gl.enableVertexAttribArray( attributes.aVertexPosition );
+          gl.enableVertexAttribArray( attributes.aVertexTexCoord );
+        };
+      }
       shader = lib.compileProgram( gl, "screenspacequad.vert", "volume_viewer.frag", "volumeviewer" );
       shader = lib.compileProgram( gl, "screenspacequad.vert", "depth-texture.frag", "render-depthtexture" );
 
@@ -892,9 +906,6 @@ class Renderer {
           let inverseProjectionMatrix = perspective.invert();
           gl.uniformMatrix4fv( shaderVariables.uInverseProjection, false, inverseProjectionMatrix.m );
         } else {
-          // TODO TODO TODO
-          this.useProgram( gl, SHADER_PROGRAM.WATER_SCREENSPACE ); // TODO remove me
-          // TODO TODO TODO
           let shader = this.repoV2.programs[ "water" ];
           gl.useProgram( shader.program );
           shader.setup( gl, shader.attributes, shader.uniforms );
@@ -907,9 +918,12 @@ class Renderer {
           this.currentShader = shader;
         }
       } else if ( p.material instanceof NoiseMaterial ) {
-        this.useProgram( gl, SHADER_PROGRAM.NOISE_WRITER );
-        let shaderVariables = this.programData[ this.currentProgram ].uniforms
-        gl.uniform1f( shaderVariables.uNoiseLayer, ( <NoiseMaterial> p.material ).layer );
+        let shader = this.repoV2.programs[ "noisewriter" ];
+        gl.useProgram( shader.program );
+        shader.setup( gl, shader.attributes, shader.uniforms );
+        
+        gl.uniform1f( shader.uniforms[ "uNoiseLayer" ], ( <NoiseMaterial> p.material ).layer );
+        this.currentShader = shader;
       } else if ( p.material instanceof VolumeMaterial ) {
         let mat = p.material as VolumeMaterial;
         this.useProgram( gl, SHADER_PROGRAM.VOLUME_VIEWER );
@@ -934,7 +948,6 @@ class Renderer {
         // gl.uniform1f( shaderVariables.uLights[i].radius, l.radius );
       } );
 
-      gl.uniformMatrix4fv( shaderVariables.uPerspective, false, perspective.m );
       if ( shader != null ) {
         gl.uniformMatrix4fv( shader.uniforms[ "uPMatrix" ], false, perspective.m );
       }
@@ -1109,6 +1122,7 @@ class Renderer {
 
   render() {
     var gl = this.context;
+    if ( !this.repoV2.doneLoading() ) return;
     if ( gl ) {
       //
       // DRAW
