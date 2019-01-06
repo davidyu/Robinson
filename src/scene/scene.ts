@@ -146,8 +146,7 @@ class Scene {
                                          , gl        : WebGLRenderingContext & WebGL2RenderingContext
                                          , shader    : CompiledProgramData
                                          , attributes: ShaderVertexAttributes
-                                         , uniforms  : ShaderUniformsV2
-                                         , variables : ShaderUniforms )
+                                         , uniforms  : ShaderUniformsV2 )
   {
     let renderTargetFramebuffer = gl.createFramebuffer();
     gl.bindFramebuffer( gl.FRAMEBUFFER, renderTargetFramebuffer );
@@ -190,9 +189,6 @@ class Scene {
     gl.viewport( 0, 0, size, size );
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
-    gl.useProgram( shader.program );
-    shader.setup( gl, shader.attributes, shader.uniforms );
-
     let perspective = gml.makePerspective( gml.fromDegrees( 90 ), 1, 0.1, 100.0 );
 
     let rightView = new gml.Mat4( 0, 0,-1, 0
@@ -200,7 +196,7 @@ class Scene {
                                 ,-1, 0, 0, 0
                                 , 0, 0, 0, 1 );
 
-    this.renderFace( renderer, gl, shader, attributes, uniforms, variables, cubeMapRenderTarget, rightView, size, size, perspective, cameraPos );
+    this.renderFace( renderer, gl, shader, attributes, uniforms, cubeMapRenderTarget, rightView, size, size, perspective, cameraPos );
 
     // draw -x view
     gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_NEGATIVE_X, cubeMapRenderTarget, 0 );
@@ -209,7 +205,7 @@ class Scene {
                                , 0,-1, 0, 0
                                , 1, 0, 0, 0
                                , 0, 0, 0, 1 );
-    this.renderFace( renderer, gl, shader, attributes, uniforms, variables, cubeMapRenderTarget, leftView, size, size, perspective, cameraPos );
+    this.renderFace( renderer, gl, shader, attributes, uniforms, cubeMapRenderTarget, leftView, size, size, perspective, cameraPos );
 
     // draw +y view
     gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, cubeMapRenderTarget, 0 );
@@ -218,7 +214,7 @@ class Scene {
                              , 0, 0, 1, 0
                              , 0,-1, 0, 0
                              , 0, 0, 0, 1 );
-    this.renderFace( renderer, gl, shader, attributes, uniforms, variables, cubeMapRenderTarget, upView, size, size, perspective, cameraPos );
+    this.renderFace( renderer, gl, shader, attributes, uniforms, cubeMapRenderTarget, upView, size, size, perspective, cameraPos );
 
     // draw -y view
     gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, cubeMapRenderTarget, 0 );
@@ -227,7 +223,7 @@ class Scene {
                                , 0, 0,-1, 0
                                , 0, 1, 0, 0
                                , 0, 0, 0, 1 );
-    this.renderFace( renderer, gl, shader, attributes, uniforms, variables, cubeMapRenderTarget, downView, size, size, perspective, cameraPos );
+    this.renderFace( renderer, gl, shader, attributes, uniforms, cubeMapRenderTarget, downView, size, size, perspective, cameraPos );
 
     // draw +z view
     gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_Z, cubeMapRenderTarget, 0 );
@@ -236,7 +232,7 @@ class Scene {
                                 , 0,-1, 0, 0
                                 , 0, 0,-1, 0
                                 , 0, 0, 0, 1 );
-    this.renderFace( renderer, gl, shader, attributes, uniforms, variables, cubeMapRenderTarget, frontView, size, size, perspective, cameraPos );
+    this.renderFace( renderer, gl, shader, attributes, uniforms, cubeMapRenderTarget, frontView, size, size, perspective, cameraPos );
 
     // draw -z view
     gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, cubeMapRenderTarget, 0 );
@@ -245,7 +241,7 @@ class Scene {
                                , 0,-1, 0, 0
                                , 0, 0, 1, 0
                                , 0, 0, 0, 1 );
-    this.renderFace( renderer, gl, shader, attributes, uniforms, variables, cubeMapRenderTarget, backView, size, size, perspective, cameraPos );
+    this.renderFace( renderer, gl, shader, attributes, uniforms, cubeMapRenderTarget, backView, size, size, perspective, cameraPos );
 
     gl.bindTexture( gl.TEXTURE_CUBE_MAP, cubeMapRenderTarget );
     gl.generateMipmap( gl.TEXTURE_CUBE_MAP );
@@ -265,7 +261,6 @@ class Scene {
             , shader         : CompiledProgramData
             , attributes     : ShaderVertexAttributes
             , uniforms       : ShaderUniformsV2
-            , variables      : ShaderUniforms
             , cubeMapRT      : WebGLTexture
             , modelView      : gml.Mat4
             , viewportW      : number
@@ -273,16 +268,19 @@ class Scene {
             , perspective    : gml.Mat4
             , cameraPos      : gml.Vec4 )
   {
+    gl.useProgram( shader.program );
+    shader.setup( gl, shader.attributes, shader.uniforms );
+
     if ( this.fullscreen == null ) {
       this.fullscreen = new Quad();
       this.fullscreen.rebuildRenderData( gl );
     }
 
     let inverseProjectionMatrix = perspective.invert();
-    gl.uniformMatrix4fv( attributes.uInverseProjectionMatrix, false, inverseProjectionMatrix.m );
+    gl.uniformMatrix4fv( uniforms.uInverseProjectionMatrix, false, inverseProjectionMatrix.m );
 
     let inverseViewMatrix = modelView.invert().mat3;
-    gl.uniformMatrix3fv( attributes.uInverseViewMatrix, false, inverseViewMatrix.m );
+    gl.uniformMatrix3fv( uniforms.uInverseViewMatrix, false, inverseViewMatrix.m );
 
     gl.uniform4fv( uniforms.cPosition_World, cameraPos.v );
 

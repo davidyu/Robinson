@@ -1122,7 +1122,7 @@ class Renderer {
             // render using specified shader
             // TODO: actually pass in shader into scene
             let shader = this.repoV2.programs[ "sky" ];
-            scene.generateEnvironmentMapFromShader( this, gl, shader, shader.attributes, shader.uniforms, null );
+            scene.generateEnvironmentMapFromShader( this, gl, shader, shader.attributes, shader.uniforms );
           } else if ( scene.environmentMap.loaded && scene.environmentMap.cubeMapTexture == null ) {
             // generate static cube map from face images - we only do this once
             scene.environmentMap.generateCubeMapFromSources( gl );
