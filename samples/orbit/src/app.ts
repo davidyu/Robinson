@@ -87,7 +87,7 @@ function StartOrbit() {
     };
 
     shaderRepo = new ShaderRepository( ( repo ) => { app = new OrbitApp( params, repo ); } );
-    environmentMap = new CubeMap( "./posx.jpg", "./negx.jpg", "./posy.jpg", "./negy.jpg", "./posz.jpg", "./negz.jpg" );
+    environmentMap = new CubeMap( "./posx.jpg", "./negx.jpg", "./posy.jpg", "./negy.jpg", "./posz.jpg", "./negz.jpg", null, false );
 
     var testScene = new Scene( environmentMap, null );
     Scene.setActiveScene( testScene );
