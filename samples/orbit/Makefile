@@ -1,15 +1,15 @@
-.PHONY: folders debug
+.PHONY: folders debug art
 SHELL = /bin/bash
 
 SRC=src
 DIST=dist
 
-debug: folders shaders update page
+debug: folders shaders update page art
 	sh files.sh debug
 	tsc @files.txt --target ES5 --sourceMap --out $(DIST)/app.js
 	rm files.txt
 
-release: folders shaders update page
+release: folders shaders update page art
 	pushd ../../ && make lib && popd
 	cp ../../dist/robinson.d.ts .
 	cp ../../dist/robinson.js $(DIST)/
@@ -22,6 +22,9 @@ shaders:
 
 page:
 	cp app.html dist/
+
+art:
+	cp -rf art/*.jpg dist/
 
 update:
 	pushd vendor && sh update.sh && popd
