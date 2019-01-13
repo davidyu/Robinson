@@ -364,6 +364,41 @@ class Renderer {
       } else {
         shader = lib.compileProgram( gl, "basic.vert", "cook-torrance-legacy.frag", "cook-torrance" );
       }
+      if ( shader != null ) {
+        shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+        shader.attributes[ "aVertexNormal" ] = gl.getAttribLocation( shader.program, "aVertexNormal" );
+
+        shader.uniforms[ "uMMatrix" ] = gl.getUniformLocation( shader.program, "uMMatrix" );
+        shader.uniforms[ "uMVMatrix" ] = gl.getUniformLocation( shader.program, "uMVMatrix" );
+        shader.uniforms[ "uPMatrix" ] = gl.getUniformLocation( shader.program, "uPMatrix" );
+        shader.uniforms[ "uNormalMVMatrix" ] = gl.getUniformLocation( shader.program, "uNormalMVMatrix" );
+        shader.uniforms[ "uNormalWorldMatrix" ] = gl.getUniformLocation( shader.program, "uNormalWorldMatrix" );
+        shader.uniforms[ "uInverseViewMatrix" ] = gl.getUniformLocation( shader.program, "uInverseViewMatrix" );
+        shader.uniforms[ "environment" ] = gl.getUniformLocation( shader.program, "environment" )
+        shader.uniforms[ "irradiance" ] = gl.getUniformLocation( shader.program, "irradiance" )
+
+        for ( var i = 0; i < 10; i++ ) {
+          let lightUniform = {};
+          lightUniform["position"] = gl.getUniformLocation( shader.program, "lights[" + i + "].position" );
+          lightUniform["color"] = gl.getUniformLocation( shader.program, "lights[" + i + "].color" );
+          lightUniform["enabled"] = gl.getUniformLocation( shader.program, "lights[" + i + "].enabled" );
+          lightUniform["radius"] = gl.getUniformLocation( shader.program, "lights[" + i + "].radius" );
+          shader.lightUniforms.push( lightUniform );
+        }
+
+        shader.uniforms[ "diffuse" ] = gl.getUniformLocation( shader.program, "mat.diffuse" );
+        shader.uniforms[ "specular" ] = gl.getUniformLocation( shader.program, "mat.specular" );
+        shader.uniforms[ "roughness" ] = gl.getUniformLocation( shader.program, "mat.roughness" );
+        shader.uniforms[ "fresnel" ] = gl.getUniformLocation( shader.program, "mat.fresnel" );
+
+        shader.setup = ( gl, attributes, uniforms ) => {
+          gl.disableVertexAttribArray( 0 );
+          gl.disableVertexAttribArray( 1 );
+          gl.disableVertexAttribArray( 2 );
+          gl.enableVertexAttribArray( attributes.aVertexPosition );
+          gl.enableVertexAttribArray( attributes.aVertexNormal );
+        };
+      }
       shader = lib.compileProgram( gl, "skybox.vert", "skybox.frag", "skybox" );
       if ( shader != null ) {
         shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
@@ -955,7 +990,7 @@ class Renderer {
         gl.uniform1f ( shaderVariables.uMaterial.roughness, orennayar.roughness );
       } else if ( p.material instanceof LambertMaterial ) {
         let lambert = <LambertMaterial> p.material;
-        let shader = this.repoV2.programs[ "blinn-phong" ];
+        let shader = this.repoV2.programs[ "lambert" ];
         gl.useProgram( shader.program );
         shader.setup( gl, shader.attributes, shader.uniforms );
         
@@ -963,15 +998,17 @@ class Renderer {
 
         this.currentShader = shader;
       } else if ( p.material instanceof CookTorranceMaterial ) {
-        return;
-        this.useProgram( gl, SHADER_PROGRAM.COOK_TORRANCE );
-
         let cooktorrance = <CookTorranceMaterial> p.material;
-        let shaderVariables = this.programData[ SHADER_PROGRAM.COOK_TORRANCE ].uniforms;
-        gl.uniform4fv( shaderVariables.uMaterial.diffuse, cooktorrance.diffuse.v );
-        gl.uniform4fv( shaderVariables.uMaterial.specular, cooktorrance.specular.v );
-        gl.uniform1f ( shaderVariables.uMaterial.roughness, cooktorrance.roughness );
-        gl.uniform1f ( shaderVariables.uMaterial.fresnel, cooktorrance.fresnel );
+        let shader = this.repoV2.programs[ "cook-torrance" ];
+        gl.useProgram( shader.program );
+        shader.setup( gl, shader.attributes, shader.uniforms );
+        
+        gl.uniform4fv( shader.uniforms[ "diffuse" ], cooktorrance.diffuse.v );
+        gl.uniform4fv( shader.uniforms[ "specular" ], cooktorrance.specular.v );
+        gl.uniform1f ( shader.uniforms[ "roughness" ], cooktorrance.roughness );
+        gl.uniform1f ( shader.uniforms[ "fresnel" ], cooktorrance.fresnel );
+
+        this.currentShader = shader;
       } else if ( p.material instanceof WaterMaterial ) {
         if ( ( <WaterMaterial>p.material ).screenspace ) {
           this.useProgram( gl, SHADER_PROGRAM.WATER_SCREENSPACE );
