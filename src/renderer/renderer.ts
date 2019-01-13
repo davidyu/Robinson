@@ -326,6 +326,38 @@ class Renderer {
         };
       }
       shader = lib.compileProgram( gl, "basic.vert", "lambert.frag", "lambert" );
+      if ( shader != null ) {
+        shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+        shader.attributes[ "aVertexNormal" ] = gl.getAttribLocation( shader.program, "aVertexNormal" );
+
+        shader.uniforms[ "uMMatrix" ] = gl.getUniformLocation( shader.program, "uMMatrix" );
+        shader.uniforms[ "uMVMatrix" ] = gl.getUniformLocation( shader.program, "uMVMatrix" );
+        shader.uniforms[ "uPMatrix" ] = gl.getUniformLocation( shader.program, "uPMatrix" );
+        shader.uniforms[ "uNormalMVMatrix" ] = gl.getUniformLocation( shader.program, "uNormalMVMatrix" );
+        shader.uniforms[ "uNormalWorldMatrix" ] = gl.getUniformLocation( shader.program, "uNormalWorldMatrix" );
+        shader.uniforms[ "uInverseViewMatrix" ] = gl.getUniformLocation( shader.program, "uInverseViewMatrix" );
+        shader.uniforms[ "environment" ] = gl.getUniformLocation( shader.program, "environment" )
+        shader.uniforms[ "irradiance" ] = gl.getUniformLocation( shader.program, "irradiance" )
+
+        for ( var i = 0; i < 10; i++ ) {
+          let lightUniform = {};
+          lightUniform["position"] = gl.getUniformLocation( shader.program, "lights[" + i + "].position" );
+          lightUniform["color"] = gl.getUniformLocation( shader.program, "lights[" + i + "].color" );
+          lightUniform["enabled"] = gl.getUniformLocation( shader.program, "lights[" + i + "].enabled" );
+          lightUniform["radius"] = gl.getUniformLocation( shader.program, "lights[" + i + "].radius" );
+          shader.lightUniforms.push( lightUniform );
+        }
+
+        shader.uniforms[ "diffuse" ] = gl.getUniformLocation( shader.program, "mat.diffuse" );
+
+        shader.setup = ( gl, attributes, uniforms ) => {
+          gl.disableVertexAttribArray( 0 );
+          gl.disableVertexAttribArray( 1 );
+          gl.disableVertexAttribArray( 2 );
+          gl.enableVertexAttribArray( attributes.aVertexPosition );
+          gl.enableVertexAttribArray( attributes.aVertexNormal );
+        };
+      }
       shader = lib.compileProgram( gl, "basic.vert", "oren-nayar.frag", "oren-nayar" );
       if ( this.shaderLODExtension != null ) {
         shader = lib.compileProgram( gl, "basic.vert", "cook-torrance.frag", "cook-torrance" );
@@ -922,12 +954,14 @@ class Renderer {
         gl.uniform4fv( shaderVariables.uMaterial.diffuse, orennayar.diffuse.v );
         gl.uniform1f ( shaderVariables.uMaterial.roughness, orennayar.roughness );
       } else if ( p.material instanceof LambertMaterial ) {
-        return;
-        this.useProgram( gl, SHADER_PROGRAM.LAMBERT );
-
         let lambert = <LambertMaterial> p.material;
-        let shaderVariables = this.programData[ SHADER_PROGRAM.LAMBERT ].uniforms;
-        gl.uniform4fv( shaderVariables.uMaterial.diffuse, lambert.diffuse.v );
+        let shader = this.repoV2.programs[ "blinn-phong" ];
+        gl.useProgram( shader.program );
+        shader.setup( gl, shader.attributes, shader.uniforms );
+        
+        gl.uniform4fv( shader.uniforms[ "diffuse" ], lambert.diffuse.v );
+
+        this.currentShader = shader;
       } else if ( p.material instanceof CookTorranceMaterial ) {
         return;
         this.useProgram( gl, SHADER_PROGRAM.COOK_TORRANCE );
