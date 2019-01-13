@@ -289,6 +289,35 @@ class Renderer {
         };
       }
       shader = lib.compileProgram( gl, "basic.vert", "blinn-phong.frag", "blinn-phong" );
+      if ( shader != null ) {
+        shader.attributes[ "aVertexColor" ] = gl.getAttribLocation( shader.program, "aVertexColor" );
+        shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+        shader.attributes[ "aVertexNormal" ] = gl.getAttribLocation( shader.program, "aVertexNormal" );
+
+        shader.uniforms[ "uMMatrix" ] = gl.getUniformLocation( shader.program, "uMMatrix" );
+        shader.uniforms[ "uMVMatrix" ] = gl.getUniformLocation( shader.program, "uMVMatrix" );
+        shader.uniforms[ "uPMatrix" ] = gl.getUniformLocation( shader.program, "uPMatrix" );
+        shader.uniforms[ "uNormalMVMatrix" ] = gl.getUniformLocation( shader.program, "uNormalMVMatrix" );
+        shader.uniforms[ "uNormalWorldMatrix" ] = gl.getUniformLocation( shader.program, "uNormalWorldMatrix" );
+        shader.uniforms[ "uInverseViewMatrix" ] = gl.getUniformLocation( shader.program, "uInverseViewMatrix" );
+        shader.uniforms[ "environment" ] = gl.getUniformLocation( shader.program, "environment" )
+        shader.uniforms[ "irradiance" ] = gl.getUniformLocation( shader.program, "irradiance" )
+
+        for ( var i = 0; i < 10; i++ ) {
+          let lightUniform = {};
+          lightUniform["position"] = gl.getUniformLocation( shader.program, "lights[" + i + "].position" );
+          lightUniform["color"] = gl.getUniformLocation( shader.program, "lights[" + i + "].color" );
+          lightUniform["enabled"] = gl.getUniformLocation( shader.program, "lights[" + i + "].enabled" );
+          lightUniform["radius"] = gl.getUniformLocation( shader.program, "lights[" + i + "].radius" );
+          shader.lightUniforms.push( lightUniform );
+        }
+
+        shader.uniforms[ "ambient" ] = gl.getUniformLocation( shader.program, "mat.ambient" );
+        shader.uniforms[ "diffuse" ] = gl.getUniformLocation( shader.program, "mat.diffuse" );
+        shader.uniforms[ "specular" ] = gl.getUniformLocation( shader.program, "mat.specular" );
+        shader.uniforms[ "emissive" ] = gl.getUniformLocation( shader.program, "mat.emissive" );
+        shader.uniforms[ "shininess" ] = gl.getUniformLocation( shader.program, "mat.shininess" );
+      }
       shader = lib.compileProgram( gl, "basic.vert", "lambert.frag", "lambert" );
       shader = lib.compileProgram( gl, "basic.vert", "oren-nayar.frag", "oren-nayar" );
       if ( this.shaderLODExtension != null ) {

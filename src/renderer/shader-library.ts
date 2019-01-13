@@ -5,6 +5,7 @@
 // - attribute locations
 interface ShaderUniformsV2 { [ name: string ]: WebGLUniformLocation }
 interface ShaderVertexAttributes { [ name: string ]: GLint }
+interface LightUniform { [ name: string ]: WebGLUniformLocation }
 
 /***
  * A compiled program along with its uniforms and metadata about its sources
@@ -13,6 +14,7 @@ class CompiledProgramData {
   program: WebGLProgram;
   uniforms: ShaderUniformsV2;
   attributes: ShaderVertexAttributes;
+  lightUniforms: LightUniform[];
   sourceVSFilename: string;
   sourceFSFilename: string;
   setup: ( gl: WebGLRenderingContext & WebGL2RenderingContext, attributes: ShaderVertexAttributes, uniforms: ShaderUniformsV2 ) => void;
@@ -22,6 +24,7 @@ class CompiledProgramData {
     this.program = null;
     this.uniforms = {};
     this.attributes = {};
+    this.lightUniforms = [];
     this.setup = null;
   }
 }
