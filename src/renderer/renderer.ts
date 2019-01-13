@@ -290,7 +290,6 @@ class Renderer {
       }
       shader = lib.compileProgram( gl, "basic.vert", "blinn-phong.frag", "blinn-phong" );
       if ( shader != null ) {
-        shader.attributes[ "aVertexColor" ] = gl.getAttribLocation( shader.program, "aVertexColor" );
         shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
         shader.attributes[ "aVertexNormal" ] = gl.getAttribLocation( shader.program, "aVertexNormal" );
 
@@ -317,6 +316,14 @@ class Renderer {
         shader.uniforms[ "specular" ] = gl.getUniformLocation( shader.program, "mat.specular" );
         shader.uniforms[ "emissive" ] = gl.getUniformLocation( shader.program, "mat.emissive" );
         shader.uniforms[ "shininess" ] = gl.getUniformLocation( shader.program, "mat.shininess" );
+
+        shader.setup = ( gl, attributes, uniforms ) => {
+          gl.disableVertexAttribArray( 0 );
+          gl.disableVertexAttribArray( 1 );
+          gl.disableVertexAttribArray( 2 );
+          gl.enableVertexAttribArray( attributes.aVertexPosition );
+          gl.enableVertexAttribArray( attributes.aVertexNormal );
+        };
       }
       shader = lib.compileProgram( gl, "basic.vert", "lambert.frag", "lambert" );
       shader = lib.compileProgram( gl, "basic.vert", "oren-nayar.frag", "oren-nayar" );
@@ -888,22 +895,25 @@ class Renderer {
 
     scene.renderables.forEach( ( p, i ) => {
       if ( p.material instanceof BlinnPhongMaterial ) {
-        this.useProgram( gl, SHADER_PROGRAM.BLINN_PHONG );
-
         let blinnphong = <BlinnPhongMaterial> p.material;
-        let shaderVariables = this.programData[ SHADER_PROGRAM.BLINN_PHONG ].uniforms;
+        let shader = this.repoV2.programs[ "blinn-phong" ];
+        gl.useProgram( shader.program );
+        shader.setup( gl, shader.attributes, shader.uniforms );
+        
+        gl.uniform4fv( shader.uniforms[ "diffuse" ], blinnphong.diffuse.v );
+        gl.uniform4fv( shader.uniforms[ "ambient" ], blinnphong.ambient.v );
+        gl.uniform4fv( shader.uniforms[ "specular" ], blinnphong.specular.v );
+        gl.uniform4fv( shader.uniforms[ "emissive" ], blinnphong.emissive.v );
+        gl.uniform1f( shader.uniforms[ "shininess" ], blinnphong.shininess );
 
-        gl.uniform4fv( shaderVariables.uMaterial.diffuse, blinnphong.diffuse.v );
-        gl.uniform4fv( shaderVariables.uMaterial.ambient, blinnphong.ambient.v );
-        gl.uniform4fv( shaderVariables.uMaterial.specular, blinnphong.specular.v );
-        gl.uniform4fv( shaderVariables.uMaterial.emissive, blinnphong.emissive.v );
-        gl.uniform1f ( shaderVariables.uMaterial.shininess, blinnphong.shininess );
+        this.currentShader = shader;
       } else if ( p.material instanceof DebugMaterial ) {
         let shader = this.repoV2.programs[ "debug" ];
         gl.useProgram( shader.program );
         shader.setup( gl, shader.attributes, shader.uniforms );
         this.currentShader = shader;
       } else if ( p.material instanceof OrenNayarMaterial ) {
+        return;
         this.useProgram( gl, SHADER_PROGRAM.OREN_NAYAR );
 
         let orennayar = <OrenNayarMaterial> p.material;
@@ -912,12 +922,14 @@ class Renderer {
         gl.uniform4fv( shaderVariables.uMaterial.diffuse, orennayar.diffuse.v );
         gl.uniform1f ( shaderVariables.uMaterial.roughness, orennayar.roughness );
       } else if ( p.material instanceof LambertMaterial ) {
+        return;
         this.useProgram( gl, SHADER_PROGRAM.LAMBERT );
 
         let lambert = <LambertMaterial> p.material;
         let shaderVariables = this.programData[ SHADER_PROGRAM.LAMBERT ].uniforms;
         gl.uniform4fv( shaderVariables.uMaterial.diffuse, lambert.diffuse.v );
       } else if ( p.material instanceof CookTorranceMaterial ) {
+        return;
         this.useProgram( gl, SHADER_PROGRAM.COOK_TORRANCE );
 
         let cooktorrance = <CookTorranceMaterial> p.material;
@@ -969,12 +981,14 @@ class Renderer {
       let shader = this.currentShader;
       let shaderVariables = this.currentProgram != null ? this.programData[ this.currentProgram ].uniforms : null;
       scene.lights.forEach( ( l, i ) => {
+        if ( shader == null || shader.lightUniforms.length <= i ) return;
+
         let lightpos = mvStack[ mvStack.length - 1 ].transform( l.position );
-        // TODO TODO TODO
-        // gl.uniform4fv( shaderVariables.uLights[i].position, lightpos.v );
-        // gl.uniform4fv( shaderVariables.uLights[i].color, l.color.v );
-        // gl.uniform1i( shaderVariables.uLights[i].enabled, l.enabled ? 1 : 0 );
-        // gl.uniform1f( shaderVariables.uLights[i].radius, l.radius );
+
+        gl.uniform4fv( shader.lightUniforms[ "position" ], lightpos.v );
+        gl.uniform4fv( shader.lightUniforms[ "color" ], l.color.v );
+        gl.uniform1f( shader.lightUniforms[ "enabled" ], l.enabled ? 1 : 0 );
+        gl.uniform1f( shader.lightUniforms[ "radius" ], l.radius );
       } );
 
       if ( shader != null ) {
@@ -989,7 +1003,7 @@ class Renderer {
 
       let primitiveModelView = mvStack[ mvStack.length - 1 ].multiply( p.transform );
 
-      if ( shader.uniforms != null ) {
+      if ( shader != null && shader.uniforms != null ) {
         gl.uniformMatrix4fv( shader.uniforms[ "uMVMatrix" ], false, primitiveModelView.m );
         gl.uniformMatrix4fv( shader.uniforms[ "uMMatrix" ], false, p.transform.m );
         gl.uniformMatrix4fv( shader.uniforms[ "uVMatrix" ], false, mvStack[ mvStack.length - 1 ].m );
@@ -1000,7 +1014,7 @@ class Renderer {
 
       let normalWorldMatrix = p.transform.invert().transpose().mat3;
 
-      if ( shader.uniforms != null ) {
+      if ( shader != null && shader.uniforms != null ) {
         gl.uniformMatrix3fv( shader.uniforms[ "uNormalMVMatrix" ], false, normalMVMatrix.m );
         gl.uniformMatrix3fv( shader.uniforms[ "uNormalWorldMatrix" ], false, normalWorldMatrix.m );
       }
@@ -1033,22 +1047,23 @@ class Renderer {
         gl.vertexAttribPointer( shader.attributes[ "aVertexNormal" ], 3, gl.FLOAT, false, 0, 0 );
       }
 
-      gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, p.renderData.indexBuffer );
-
       if ( scene.environmentMap != null ) {
         if ( shader != null ) {
           gl.uniform1i( shader.uniforms[ "environment" ], 0 );
+          gl.activeTexture( gl.TEXTURE0 );
+          gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environmentMap.cubeMapTexture );
         }
-        gl.activeTexture( gl.TEXTURE0 );
-        gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environmentMap.cubeMapTexture );
       }
 
       if ( scene.irradianceMap != null ) {
-        gl.uniform1i( shader.uniforms.uIrradianceMap, 1 ); // tells shader to look at texture slot 1 for the uEnvMap uniform
-        gl.activeTexture( gl.TEXTURE1 );
-        gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.irradianceMap.cubeMapTexture );
+        if ( shader != null ) {
+          gl.uniform1i( shader.uniforms[ "irradiance" ], 1 ); // tells shader to look at texture slot 1 for the uEnvMap uniform
+          gl.activeTexture( gl.TEXTURE1 );
+          gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.irradianceMap.cubeMapTexture );
+        }
       }
 
+      gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, p.renderData.indexBuffer );
       gl.drawElements( gl.TRIANGLES, p.renderData.indices.length, gl.UNSIGNED_INT, 0 );
     } );
   }
