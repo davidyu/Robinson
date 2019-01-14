@@ -1079,25 +1079,16 @@ class Renderer {
 
         this.currentShader = shader;
       } else if ( p.material instanceof WaterMaterial ) {
-        if ( ( <WaterMaterial>p.material ).screenspace ) {
-          this.useProgram( gl, SHADER_PROGRAM.WATER_SCREENSPACE );
-          let shaderVariables = this.programData[ this.currentProgram ].uniforms
-          gl.uniform1f( shaderVariables.uTime, scene.time );
-          gl.uniform1f( shaderVariables.uCloudiness, scene.cloudiness );
-          let inverseProjectionMatrix = perspective.invert();
-          gl.uniformMatrix4fv( shaderVariables.uInverseProjection, false, inverseProjectionMatrix.m );
-        } else {
-          let shader = this.repoV2.programs[ "water" ];
-          gl.useProgram( shader.program );
-          shader.setup( gl, shader.attributes, shader.uniforms );
-          
-          gl.uniform1f( shader.uniforms[ "uTime" ], scene.time );
-          gl.uniform1f( shader.uniforms[ "uCloudiness" ], scene.cloudiness );
-          gl.uniform1f( shader.uniforms[ "uCloudSpeed" ], scene.cloudSpeed );
-          gl.uniform1i( shader.uniforms[ "uWireframe" ], ( <WaterMaterial>p.material ).wireframe ? 1 : 0 ); 
+        let shader = this.repoV2.programs[ "water" ];
+        gl.useProgram( shader.program );
+        shader.setup( gl, shader.attributes, shader.uniforms );
+        
+        gl.uniform1f( shader.uniforms[ "uTime" ], scene.time );
+        gl.uniform1f( shader.uniforms[ "uCloudiness" ], scene.cloudiness );
+        gl.uniform1f( shader.uniforms[ "uCloudSpeed" ], scene.cloudSpeed );
+        gl.uniform1i( shader.uniforms[ "uWireframe" ], ( <WaterMaterial>p.material ).wireframe ? 1 : 0 ); 
 
-          this.currentShader = shader;
-        }
+        this.currentShader = shader;
       } else if ( p.material instanceof NoiseMaterial ) {
         let shader = this.repoV2.programs[ "noisewriter" ];
         gl.useProgram( shader.program );
@@ -1240,21 +1231,7 @@ class Renderer {
   }
 
   renderIrradianceFromScene( gl: WebGL2RenderingContext, scene: Scene, pass: IRRADIANCE_PASS ) {
-    this.useProgram( gl, SHADER_PROGRAM.CUBE_SH );
-
-    let shaderVariables = this.programData[ this.currentProgram ].uniforms;
-
-    gl.uniformMatrix4fv( shaderVariables.uModelView, false, gml.Mat4.identity().m );
-    gl.uniformMatrix3fv( shaderVariables.uNormalModelView, false, gml.Mat3.identity().m );
-    gl.uniformMatrix4fv( shaderVariables.uPerspective, false, gml.Mat4.identity().m );
-    
-    if ( scene.environmentMap != null ) {
-      gl.uniform1i( shaderVariables.uEnvMap, 0 ); // tells GL to look at texture slot 0
-      gl.activeTexture( gl.TEXTURE0 );
-      gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environmentMap.cubeMapTexture );
-    }
-
-    gl.drawElements( gl.TRIANGLES, this.fullscreenQuad.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
+    // TODO
   }
 
   renderFullScreenTexture( gl: WebGL2RenderingContext, texture: WebGLTexture ) {
