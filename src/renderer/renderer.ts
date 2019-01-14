@@ -506,9 +506,23 @@ class Renderer {
           gl.enableVertexAttribArray( attributes.aVertexTexCoord );
         };
       }
-      shader = lib.compileProgram( gl, "screenspacequad.vert", "volume_viewer.frag", "volumeviewer" );
-      shader = lib.compileProgram( gl, "screenspacequad.vert", "depth-texture.frag", "render-depthtexture" );
+      shader = lib.compileProgram( gl, "screenspacequad.vert", "volume_viewer.frag", "volume-viewer" );
+      if ( shader != null ) {
+        shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+        shader.attributes[ "aVertexTexCoord" ] = gl.getAttribLocation( shader.program, "aVertexTexCoord" );
 
+        shader.uniforms[ "uNoiseLayer" ] = gl.getUniformLocation( shader.program, "uNoiseLayer" );
+        shader.uniforms[ "volume" ] = gl.getUniformLocation( shader.program, "volume" );
+
+        shader.setup = ( gl, attributes, uniforms ) => {
+          gl.disableVertexAttribArray( 0 );
+          gl.disableVertexAttribArray( 1 );
+          gl.disableVertexAttribArray( 2 );
+          gl.enableVertexAttribArray( attributes.aVertexPosition );
+          gl.enableVertexAttribArray( attributes.aVertexTexCoord );
+        };
+      }
+      shader = lib.compileProgram( gl, "screenspacequad.vert", "depth-texture.frag", "render-depthtexture" );
       if ( shader != null ) {
         shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
         shader.attributes[ "aVertexTexCoord" ] = gl.getAttribLocation( shader.program, "aVertexTexCoord" );
@@ -1071,13 +1085,15 @@ class Renderer {
         gl.uniform1f( shader.uniforms[ "uNoiseLayer" ], ( <NoiseMaterial> p.material ).layer );
         this.currentShader = shader;
       } else if ( p.material instanceof VolumeMaterial ) {
+        let shader = this.repoV2.programs[ "volume-viewer" ];
+        gl.useProgram( shader.program );
+        shader.setup( gl, shader.attributes, shader.uniforms );
+        
         let mat = p.material as VolumeMaterial;
-        this.useProgram( gl, SHADER_PROGRAM.VOLUME_VIEWER );
-        let shaderVariables = this.programData[ this.currentProgram ].uniforms
-        gl.uniform1f( shaderVariables.uNoiseLayer, mat.layer );
+        gl.uniform1f( shader.uniforms[ "uNoiseLayer" ], mat.layer );
 
         if ( mat.volumeTexture != null ) {
-          gl.uniform1i( shaderVariables.uVolume, 0 );
+          gl.uniform1i( shader.uniforms[ "volume" ], 0 );
           gl.activeTexture( gl.TEXTURE0 );
           gl.bindTexture( gl.TEXTURE_3D, mat.volumeTexture );
         }
