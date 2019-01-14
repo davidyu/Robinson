@@ -60,86 +60,6 @@ class ShaderFile {
   }
 }
 
-class ShaderRepository {
-  files: ShaderFile[];
-  loadDoneCallback: ( ShaderRepository ) => void;
-
-  constructor( loadDoneCallback:( ShaderRepository ) => void ) {
-    this.loadDoneCallback = loadDoneCallback;
-    this.files = [];
-    for ( var t in SHADERTYPE ) {
-      if ( !isNaN( <any> t ) ) {
-        this.files[ t ] = new ShaderFile();
-      }
-    }
-    this.loadShaders();
-  }
-
-  loadShaders() {
-    this.asyncLoadShader( "basic.vert"                , SHADERTYPE.SIMPLE_VERTEX                 , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "debug.vert"                , SHADERTYPE.DEBUG_VERTEX                  , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "lambert.frag"              , SHADERTYPE.LAMBERT_FRAGMENT              , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "blinn-phong.frag"          , SHADERTYPE.BLINN_PHONG_FRAGMENT          , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "debug.frag"                , SHADERTYPE.DEBUG_FRAGMENT                , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "oren-nayar.frag"           , SHADERTYPE.OREN_NAYAR_FRAGMENT           , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "cook-torrance.frag"        , SHADERTYPE.COOK_TORRANCE_FRAGMENT        , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "cook-torrance-legacy.frag" , SHADERTYPE.COOK_TORRANCE_FRAGMENT_NO_EXT , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "utils.frag"                , SHADERTYPE.UTILS                         , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "skybox.vert"               , SHADERTYPE.SKYBOX_VERTEX                 , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "skybox.frag"               , SHADERTYPE.SKYBOX_FRAG                   , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "sky.frag"                  , SHADERTYPE.SKY_FRAG                      , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "cube-sh.frag"              , SHADERTYPE.CUBE_SH_FRAG                  , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "passthrough.vert"          , SHADERTYPE.PASSTHROUGH_VERT              , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "water.vert"                , SHADERTYPE.WATER_VERT                    , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "water.frag"                , SHADERTYPE.WATER_FRAG                    , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "screenspacequad.vert"      , SHADERTYPE.SS_QUAD_VERT                  , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "water_screenspace.frag"    , SHADERTYPE.WATER_SS_FRAG                 , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "noise_writer.frag"         , SHADERTYPE.NOISE_WRITER_FRAG             , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "volume_viewer.frag"        , SHADERTYPE.VOLUME_VIEWER_FRAG            , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "post-process.frag"         , SHADERTYPE.POST_PROCESS_FRAG             , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } );
-    this.asyncLoadShader( "depth-texture.frag"        , SHADERTYPE.DEPTH_TEXTURE_FRAG            , ( stype , contents ) => { this.shaderLoaded( stype , contents ); } ); 
-  }
-
-  asyncLoadShader( name: string, stype: SHADERTYPE, loaded: ( stype: SHADERTYPE, contents: string ) => void ) {
-    var req = new XMLHttpRequest();
-    req.addEventListener( "load", evt => { loaded( stype, req.responseText ); } );
-    req.open( "GET", "./shaders/" + name, true );
-    req.send();
-  }
-
-  shaderLoaded( stype: SHADERTYPE, contents: string  ) {
-    this.files[ stype ].source = contents;
-    this.files[ stype ].loaded = true;
-
-    if ( this.requiredShadersLoaded() ) {
-      if ( this.loadDoneCallback != null ) {
-        this.loadDoneCallback( this );
-      }
-      this.loadDoneCallback = null;
-    }
-  }
-
-  requiredShadersLoaded(): boolean {
-    var loaded = true;
-    for ( let t in SHADERTYPE ) {
-      if ( parseInt( t, 10 ) >= 0 ) {
-        loaded = loaded && this.files[ t ].loaded;
-      }
-    }
-    return loaded;
-  }
-
-  allShadersLoaded(): boolean {
-    var allLoaded = true;
-    for ( var v in SHADERTYPE ) {
-      if ( !isNaN( <any> v ) ) {
-        allLoaded = allLoaded && this.files[ v ].loaded;
-      }
-    }
-    return allLoaded;
-  }
-}
-
 class ShaderSource {
   vs: string;
   fs: string;
@@ -232,7 +152,6 @@ class Renderer {
 
   // shader programs
   // the currently enabled program
-  currentProgram: SHADER_PROGRAM; // TODO remove me
   currentShader: CompiledProgramData;
 
   // procedural environment map generation
@@ -249,12 +168,9 @@ class Renderer {
 
   programData: ShaderProgramData[];
 
-  repo: ShaderRepository;
-
   fullscreenQuad: Quad;
 
-  constructor( viewportElement: HTMLCanvasElement, sr: ShaderRepository, backgroundColor: gml.Vec4 = new gml.Vec4( 0, 0, 0, 1 ) ) {
-    this.repo = sr;
+  constructor( viewportElement: HTMLCanvasElement, backgroundColor: gml.Vec4 = new gml.Vec4( 0, 0, 0, 1 ), shaderCompileCallback: () => void = null ) {
     this.repoV2 = new ShaderLibrary();
 
     var gl = viewportElement.getContext( "webgl2", { antialias: true } ) as any;
@@ -562,6 +478,10 @@ class Renderer {
       }
 
       shader = lib.compileProgram( gl, "passthrough.vert", "cube-sh.frag", "cube-spherical-harmonics" );
+
+      if ( shaderCompileCallback != null ) {
+        shaderCompileCallback();
+      }
     }
 
     this.repoV2.loadShader( "basic.vert" );
@@ -615,173 +535,6 @@ class Renderer {
     this.elementIndexExtension = gl.getExtension( "OES_element_index_uint" );
 
     this.programData = [];
-
-    // compile phong program
-    let phongProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
-                                                , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.BLINN_PHONG_FRAGMENT ].source );
-    if ( phongProgram == null ) {
-      alert( "Phong shader compilation failed. Please check the log for details." );
-      success = false;
-    }
-
-    this.programData[ SHADER_PROGRAM.BLINN_PHONG ] = new ShaderProgramData( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source, sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.BLINN_PHONG_FRAGMENT ].source );
-    this.programData[ SHADER_PROGRAM.BLINN_PHONG ].program = phongProgram;
-    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.BLINN_PHONG );
-
-    let lambertProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
-                                                  , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.LAMBERT_FRAGMENT ].source );
-    if ( lambertProgram == null ) {
-      alert( "Lambert shader compilation failed. Please check the log for details." );
-      success = false;
-    }
-
-    this.programData[ SHADER_PROGRAM.LAMBERT ] = new ShaderProgramData( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source, sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.LAMBERT_FRAGMENT ].source );
-    this.programData[ SHADER_PROGRAM.LAMBERT ].program = lambertProgram;
-    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.LAMBERT );
-
-    let debugProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.DEBUG_VERTEX ].source
-                                                , sr.files[ SHADERTYPE.DEBUG_FRAGMENT ].source );
-    if ( debugProgram == null ) {
-      alert( "Debug shader compilation failed. Please check the log for details." );
-      success = false;
-    }
-
-    this.programData[ SHADER_PROGRAM.DEBUG ] = new ShaderProgramData( sr.files[ SHADERTYPE.DEBUG_VERTEX ].source, sr.files[ SHADERTYPE.DEBUG_FRAGMENT ].source );
-    this.programData[ SHADER_PROGRAM.DEBUG ].program = debugProgram;
-    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.DEBUG );
-
-    let orenNayarProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
-                                                    , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.OREN_NAYAR_FRAGMENT ].source );
-    if ( orenNayarProgram == null ) {
-      alert( "Oren-Nayar shader compilation failed. Please check the log for details." );
-      success = false;
-    }
-
-    this.programData[ SHADER_PROGRAM.OREN_NAYAR ] = new ShaderProgramData( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source, sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.OREN_NAYAR_FRAGMENT ].source );
-    this.programData[ SHADER_PROGRAM.OREN_NAYAR ].program = orenNayarProgram;
-    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.OREN_NAYAR );
-
-    let cookTorranceProgram = null;
-    if ( this.shaderLODExtension != null ) {
-      cookTorranceProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
-                                                     , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.COOK_TORRANCE_FRAGMENT ].source );
-    } else {
-      cookTorranceProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source
-                                                     , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.COOK_TORRANCE_FRAGMENT_NO_EXT ].source );
-    }
-    if ( cookTorranceProgram == null ) {
-      alert( "Cook-Torrance shader compilation failed. Please check the log for details." );
-      success = false;
-    }
-
-    this.programData[ SHADER_PROGRAM.COOK_TORRANCE ] = new ShaderProgramData( sr.files[ SHADERTYPE.SIMPLE_VERTEX ].source, sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.COOK_TORRANCE_FRAGMENT_NO_EXT ].source );
-    this.programData[ SHADER_PROGRAM.COOK_TORRANCE ].program = cookTorranceProgram;
-    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.COOK_TORRANCE );
-
-    let skyboxProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SKYBOX_VERTEX ].source
-                                                 , sr.files[ SHADERTYPE.SKYBOX_FRAG ].source );
-    if ( skyboxProgram == null ) {
-      alert( "Skybox shader compilation failed. Please check the log for details." );
-      success = false;
-    }
-
-    this.programData[ SHADER_PROGRAM.SKYBOX ] = new ShaderProgramData( sr.files[ SHADERTYPE.SKYBOX_VERTEX ].source, sr.files[ SHADERTYPE.SKYBOX_FRAG ].source );
-    this.programData[ SHADER_PROGRAM.SKYBOX ].program = skyboxProgram;
-    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.SKYBOX );
-
-    let skyProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SKYBOX_VERTEX ].source
-                                              , sr.files[ SHADERTYPE.SKY_FRAG ].source );
-    if ( skyProgram == null ) {
-      alert( "Sky shader compilation failed. Please check the log for details." );
-      success = false;
-    }
-
-    this.programData[ SHADER_PROGRAM.SKY ] = new ShaderProgramData( sr.files[ SHADERTYPE.SKYBOX_VERTEX ].source, sr.files[ SHADERTYPE.SKY_FRAG ].source );
-    this.programData[ SHADER_PROGRAM.SKY ].program = skyProgram;
-    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.SKY );
-
-    let waterProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.WATER_VERT ].source
-                                                , sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.WATER_FRAG ].source );
-    if ( waterProgram == null ) {
-      alert( "Water shader compilation failed. Please check the log for details." );
-      success = false;
-    }
-
-    this.programData[ SHADER_PROGRAM.WATER ] = new ShaderProgramData( sr.files[ SHADERTYPE.WATER_VERT ].source, sr.files[ SHADERTYPE.UTILS ].source + sr.files[ SHADERTYPE.WATER_FRAG ].source );
-    this.programData[ SHADER_PROGRAM.WATER ].program = waterProgram;
-    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.WATER );
-
-    let waterSSProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SS_QUAD_VERT ].source
-                                                  , sr.files[ SHADERTYPE.WATER_SS_FRAG ].source );
-
-    if ( waterSSProgram == null ) {
-      alert( "Screenspace water compilation failed. Please check the log for details." );
-      success = false;
-    }
-
-    this.programData[ SHADER_PROGRAM.WATER_SCREENSPACE ] = new ShaderProgramData( sr.files[ SHADERTYPE.SS_QUAD_VERT ].source, sr.files[ SHADERTYPE.WATER_SS_FRAG ].source );
-    this.programData[ SHADER_PROGRAM.WATER_SCREENSPACE ].program = waterSSProgram;
-    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.WATER_SCREENSPACE );
-
-    let noiseWriterProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SS_QUAD_VERT ].source
-                                                      , sr.files[ SHADERTYPE.NOISE_WRITER_FRAG ].source );
-
-    if ( noiseWriterProgram == null ) {
-      alert( "Noise writer compilation failed. Please check the log for details." );
-      success = false;
-    }
-
-    this.programData[ SHADER_PROGRAM.NOISE_WRITER ] = new ShaderProgramData( sr.files[ SHADERTYPE.SS_QUAD_VERT ].source, sr.files[ SHADERTYPE.NOISE_WRITER_FRAG ].source );
-    this.programData[ SHADER_PROGRAM.NOISE_WRITER ].program = noiseWriterProgram;
-    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.NOISE_WRITER );
-
-    let volumeViewerProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SS_QUAD_VERT ].source
-                                                       , sr.files[ SHADERTYPE.VOLUME_VIEWER_FRAG ].source );
-
-    if ( volumeViewerProgram == null ) {
-      alert( "Volume viewer compilation failed. Please check the log for details." );
-      success = false;
-    }
-
-    this.programData[ SHADER_PROGRAM.VOLUME_VIEWER ] = new ShaderProgramData( sr.files[ SHADERTYPE.SS_QUAD_VERT ].source, sr.files[ SHADERTYPE.VOLUME_VIEWER_FRAG ].source );
-    this.programData[ SHADER_PROGRAM.VOLUME_VIEWER ].program = volumeViewerProgram;
-    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.VOLUME_VIEWER );
-
-    let postProcessProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SS_QUAD_VERT ].source
-                                                      , sr.files[ SHADERTYPE.POST_PROCESS_FRAG ].source );
-
-    if ( postProcessProgram == null ) {
-      alert( "post process compilation failed. Please check the log for details." );
-      success = false;
-    }
-
-    this.programData[ SHADER_PROGRAM.POST_PROCESS ] = new ShaderProgramData( sr.files[ SHADERTYPE.SS_QUAD_VERT ].source, sr.files[ SHADERTYPE.POST_PROCESS_FRAG ].source );
-    this.programData[ SHADER_PROGRAM.POST_PROCESS ].program = postProcessProgram;
-    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.POST_PROCESS );
-
-    let depthTextureProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.SS_QUAD_VERT ].source
-                                                       , sr.files[ SHADERTYPE.DEPTH_TEXTURE_FRAG ].source );
-
-    if ( depthTextureProgram == null ) {
-      alert( "depth texture compilation failed. Please check the log for details." );
-      success = false;
-    }
-
-    this.programData[ SHADER_PROGRAM.RENDER_DEPTH_TEXTURE ] = new ShaderProgramData( sr.files[ SHADERTYPE.SS_QUAD_VERT ].source, sr.files[ SHADERTYPE.DEPTH_TEXTURE_FRAG ].source );
-    this.programData[ SHADER_PROGRAM.RENDER_DEPTH_TEXTURE ].program = depthTextureProgram;
-    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.RENDER_DEPTH_TEXTURE );
-
-    let cubeMapSHProgram = this.compileShaderProgram( sr.files[ SHADERTYPE.PASSTHROUGH_VERT ].source
-                                                    , sr.files[ SHADERTYPE.CUBE_SH_FRAG ].source );
-
-    if ( cubeMapSHProgram == null ) {
-      alert( "Cube map shader compilation failed. Please check the log for details." );
-      success = false;
-    }
-
-    this.programData[ SHADER_PROGRAM.CUBE_SH ] = new ShaderProgramData( sr.files[ SHADERTYPE.PASSTHROUGH_VERT ].source, sr.files[ SHADERTYPE.CUBE_SH_FRAG ].source );
-    this.programData[ SHADER_PROGRAM.CUBE_SH ].program = cubeMapSHProgram;
-    this.cacheLitShaderProgramLocations( SHADER_PROGRAM.CUBE_SH );
 
     this.visualizeDepthBuffer = false;
 
@@ -979,8 +732,6 @@ class Renderer {
     let shader = this.repoV2.programs[ "render-depthtexture" ];
     gl.useProgram( shader.program );
 
-    let shaderVariables = this.programData[ this.currentProgram ].uniforms;
-
     gl.bindBuffer( gl.ARRAY_BUFFER, this.fullscreenQuad.renderData.vertexBuffer );
     gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.fullscreenQuad.renderData.indexBuffer );
     gl.vertexAttribPointer( shader.attributes.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
@@ -1112,7 +863,6 @@ class Renderer {
       }
 
       let shader = this.currentShader;
-      let shaderVariables = this.currentProgram != null ? this.programData[ this.currentProgram ].uniforms : null;
       scene.lights.forEach( ( l, i ) => {
         if ( shader == null || shader.lightUniforms.length <= i ) return;
 
@@ -1201,58 +951,12 @@ class Renderer {
     } );
   }
 
-  useProgram( gl: WebGL2RenderingContext, program: SHADER_PROGRAM ) {
-    gl.useProgram( this.programData[ program ].program );
-
-    let shaderVariables = this.programData[ program ].uniforms;
-
-    gl.disableVertexAttribArray( 0 );
-    gl.disableVertexAttribArray( 1 );
-    gl.disableVertexAttribArray( 2 );
-
-    if ( shaderVariables.aVertexPosition >= 0 ) {
-      gl.enableVertexAttribArray( shaderVariables.aVertexPosition );
-    }
-
-    if ( shaderVariables.aVertexNormal >= 0 ) {
-      gl.enableVertexAttribArray( shaderVariables.aVertexNormal );
-    }
-
-    if ( shaderVariables.aVertexTexCoord >= 0 ) {
-      gl.enableVertexAttribArray( shaderVariables.aVertexTexCoord );
-    }
-
-    if ( shaderVariables.aMeshCoord >= 0 ) {
-      gl.enableVertexAttribArray( shaderVariables.aMeshCoord );
-    }
-
-    this.currentProgram = program;
-    this.currentShader = null;
-  }
-
   renderIrradianceFromScene( gl: WebGL2RenderingContext, scene: Scene, pass: IRRADIANCE_PASS ) {
     // TODO
   }
 
   renderFullScreenTexture( gl: WebGL2RenderingContext, texture: WebGLTexture ) {
-    // this.useProgram( gl, SHADER_PROGRAM.UNLIT );
-
-    let shaderVariables = this.programData[ this.currentProgram ].uniforms;
-
-    gl.bindBuffer( gl.ARRAY_BUFFER, this.fullscreenQuad.renderData.vertexBuffer );
-    gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
-
-    gl.bindBuffer( gl.ARRAY_BUFFER, this.fullscreenQuad.renderData.vertexTexCoordBuffer );
-    gl.bufferData( gl.ARRAY_BUFFER, this.fullscreenQuad.renderData.textureCoords, gl.STATIC_DRAW );
-    gl.vertexAttribPointer( shaderVariables.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
-
-    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.fullscreenQuad.renderData.indexBuffer );
-
-    gl.uniform1i( shaderVariables.uMaterial.colorMap, 0 );
-    gl.activeTexture( gl.TEXTURE0 );
-    gl.bindTexture( gl.TEXTURE_2D, texture );
-
-    gl.drawElements( gl.TRIANGLES, this.fullscreenQuad.renderData.indices.length, gl.UNSIGNED_SHORT, 0 );
+    // TODO
   }
 
   renderIrradiance() {

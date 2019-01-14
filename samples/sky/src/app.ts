@@ -24,8 +24,8 @@ class SkyApp {
 
   FPSContainer: HTMLDivElement;
 
-  constructor( params: SkyAppParams, shaderRepo: ShaderRepository ) {
-    this.renderer = new Renderer( params.vp, shaderRepo );
+  constructor( params: SkyAppParams ) {
+    this.renderer = new Renderer( params.vp );
     this.editor = new ShaderEditor( this.renderer );
     this.dbg = new Debugger( this.renderer );
     this.orbitCenter = params.orbitCenter;
@@ -298,8 +298,7 @@ function StartSky() {
       orbitDistance: 0.001
     };
 
-    let shaderRepo = new ShaderRepository( ( repo ) => { 
-      app = new SkyApp( params, repo );
+      app = new SkyApp( params );
 
       let gl = app.renderer.context;
 
@@ -309,8 +308,9 @@ function StartSky() {
         return;
       }
 
-      app.editor.install();
-      app.dbg.install();
+    // install when shaders are finished loading and linking
+    //   app.editor.install();
+    //   app.dbg.install();
 
       noise = new Noise();
 
@@ -393,6 +393,6 @@ function StartSky() {
                                                           , new gml.Vec4( 1.0, 1.0, 1.0, 1 )
                                                           , 1.53
                                                           , true ) ) ); */
-    } );
+
   }
 }

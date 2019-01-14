@@ -163,8 +163,10 @@ class ShaderEditor {
 
     if ( this.renderer.context == null ) return;
 
-    this.vertexShaderEditor.setValue( this.renderer.programData[ 0 ].vert, -1 );
-    this.fragmentShaderEditor.setValue( this.renderer.programData[ 0 ].frag, -1 ); 
+    let defaultProgram = this.renderer.repoV2.programs[ Object.keys( this.renderer.repoV2.programs )[ 0 ] ];
+
+    this.vertexShaderEditor.setValue( this.renderer.repoV2.sources[ defaultProgram.sourceVSFilename ], -1 );
+    this.fragmentShaderEditor.setValue( this.renderer.repoV2.sources[ defaultProgram.sourceFSFilename ], -1 ); 
 
     this.vertexEditSessions = [];
     this.fragmentEditSessions = [];

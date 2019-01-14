@@ -1,4 +1,3 @@
-var shaderRepo: ShaderRepository = null; // global for debugging
 var scene: Scene;
 
 interface NoiseAppParams {
@@ -18,8 +17,8 @@ class NoiseApp {
   dragStart: gml.Vec2;
   lastMousePos: gml.Vec2;
 
-  constructor( params: NoiseAppParams, shaderRepo: ShaderRepository ) {
-    this.renderer = new Renderer( params.vp, shaderRepo );
+  constructor( params: NoiseAppParams ) {
+    this.renderer = new Renderer( params.vp );
     let pos    = new gml.Vec4( 0, 0, 1000, 1 )
     let aim    = new gml.Vec4( 0, 0, -1, 0 );
     let up     = gml.Vec4.up;
@@ -98,18 +97,16 @@ function StartNoiseWriter() {
       vp : <HTMLCanvasElement> document.getElementById( "big-viewport" ),
     };
 
-    shaderRepo = new ShaderRepository( ( repo ) => {
-      app = new NoiseApp( params, repo );
-      scene = new Scene( null, null, false, false );
-      Scene.setActiveScene( scene );
+    app = new NoiseApp( params );
+    scene = new Scene( null, null, false, false );
+    Scene.setActiveScene( scene );
 
-      // noise test ss quad
-      scene.addRenderable( new Quad( 1
-                                   , gml.Vec4.origin
-                                   , { x: gml.fromDegrees( 0 ), y: gml.fromDegrees( 0 ), z: gml.fromDegrees( 0 ) }
-                                   , app.noiseMat ) );
+    // noise test ss quad
+    scene.addRenderable( new Quad( 1
+                                 , gml.Vec4.origin
+                                 , { x: gml.fromDegrees( 0 ), y: gml.fromDegrees( 0 ), z: gml.fromDegrees( 0 ) }
+                                 , app.noiseMat ) );
 
-      window.requestAnimationFrame( updateAndDraw );
-    } );
+    window.requestAnimationFrame( updateAndDraw );
   }
 }
