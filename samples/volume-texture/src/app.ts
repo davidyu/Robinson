@@ -92,9 +92,10 @@ class NoiseApp {
 
       let reader = new FileReader();
       reader.addEventListener( "loadend", () => {
-        let texture = noise.textureFromPackedData( gl, new Uint8Array( reader.result ), 128 );
+        let buf = <ArrayBuffer> reader.result;
+        let texture = noise.textureFromPackedData( gl, new Uint8Array( buf ), 128 );
         this.noiseMat.volumeTexture = texture;
-        console.log( reader.result.size );
+        console.log( buf.byteLength );
       } );
       console.log( file );
       reader.readAsArrayBuffer( file );
