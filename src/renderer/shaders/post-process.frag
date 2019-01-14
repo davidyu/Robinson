@@ -18,9 +18,6 @@ const float zFar  = 1000.0;
 
 uniform float focus; // focus distance (in linear view z space...so it's 0 to 1)
 
-const vec3  sun_pos = normalize( vec3( 0.0, 1.0, 0.4 ) );
-const float sun_flare_size = 0.5;
-
 const float sampleDist = 1.0;
 const float sampleStrength = 2.2;
 const vec2 aspectcorrect = vec2( 1.0, 848.0/480.0 );

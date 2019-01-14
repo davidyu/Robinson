@@ -539,6 +539,28 @@ class Renderer {
         };
       }
 
+      shader = lib.compileProgram( gl, "screenspacequad.vert", "post-process.frag", "post-process" );
+      if ( shader != null ) {
+        shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+        shader.attributes[ "aVertexTexCoord" ] = gl.getAttribLocation( shader.program, "aVertexTexCoord" );
+
+        shader.uniforms[ "screen_depth" ] = gl.getUniformLocation( shader.program, "screen_depth" );
+        shader.uniforms[ "screen_color" ] = gl.getUniformLocation( shader.program, "screen_color" );
+
+        shader.uniforms[ "uInverseProjectionMatrix" ] = gl.getUniformLocation( shader.program, "uInverseProjectionMatrix" );
+        shader.uniforms[ "uInverseViewMatrix" ] = gl.getUniformLocation( shader.program, "uInverseViewMatrix" );
+        shader.uniforms[ "uVMatrix" ] = gl.getUniformLocation( shader.program, "uVMatrix" );
+        shader.uniforms[ "focus" ] = gl.getUniformLocation( shader.program, "focus" );
+
+        shader.setup = ( gl, attributes, uniforms ) => {
+          gl.disableVertexAttribArray( 0 );
+          gl.disableVertexAttribArray( 1 );
+          gl.disableVertexAttribArray( 2 );
+          gl.enableVertexAttribArray( attributes.aVertexPosition );
+          gl.enableVertexAttribArray( attributes.aVertexTexCoord );
+        };
+      }
+
       shader = lib.compileProgram( gl, "passthrough.vert", "cube-sh.frag", "cube-spherical-harmonics" );
     }
 
@@ -976,29 +998,28 @@ class Renderer {
   }
 
   renderPostProcessedImage( gl: WebGL2RenderingContext, color, depth, mvStack: gml.Mat4[] ) {
-    this.useProgram( gl, SHADER_PROGRAM.POST_PROCESS );
-
-    let shaderVariables = this.programData[ this.currentProgram ].uniforms;
+    let shader = this.repoV2.programs[ "post-process" ];
+    gl.useProgram( shader.program );
 
     gl.bindBuffer( gl.ARRAY_BUFFER, this.fullscreenQuad.renderData.vertexBuffer );
     gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.fullscreenQuad.renderData.indexBuffer );
-    gl.vertexAttribPointer( shaderVariables.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
+    gl.vertexAttribPointer( shader.attributes.aVertexPosition, 3, gl.FLOAT, false, 0, 0 );
 
     gl.bindBuffer( gl.ARRAY_BUFFER, this.fullscreenQuad.renderData.vertexTexCoordBuffer );
-    gl.vertexAttribPointer( shaderVariables.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer( shader.attributes.aVertexTexCoord, 2, gl.FLOAT, false, 0, 0);
 
-    gl.uniformMatrix4fv( shaderVariables.uView, false, mvStack[ mvStack.length - 1 ].m );
+    gl.uniformMatrix4fv( shader.uniforms.uVMatrix, false, mvStack[ mvStack.length - 1 ].m );
 
-    gl.uniform1i( shaderVariables.uColor, 0 );
+    gl.uniform1i( shader.uniforms.screen_color, 0 );
     gl.activeTexture( gl.TEXTURE0 );
     gl.bindTexture( gl.TEXTURE_2D, color );
 
-    gl.uniform1i( shaderVariables.uDepth, 1 );
+    gl.uniform1i( shader.uniforms.screen_depth, 1 );
     gl.activeTexture( gl.TEXTURE1 );
     gl.bindTexture( gl.TEXTURE_2D, depth );
 
     if ( this.camera != null ) {
-      gl.uniform1f( shaderVariables.uFocus, this.camera.focalDistance );
+      gl.uniform1f( shader.uniforms.focus, this.camera.focalDistance );
     }
 
     gl.drawElements( gl.TRIANGLES, this.fullscreenQuad.renderData.indices.length, gl.UNSIGNED_INT, 0 );
