@@ -17,6 +17,7 @@ class CompiledProgramData {
   lightUniforms: LightUniform[];
   sourceVSFilename: string;
   sourceFSFilename: string;
+  presetup: ( gl: WebGLRenderingContext & WebGL2RenderingContext, shader: CompiledProgramData ) => void;
   setup: ( gl: WebGLRenderingContext & WebGL2RenderingContext, attributes: ShaderVertexAttributes, uniforms: ShaderUniformsV2 ) => void;
   constructor( vs: string, fs: string ) {
     this.sourceVSFilename = vs;
@@ -26,6 +27,7 @@ class CompiledProgramData {
     this.attributes = {};
     this.lightUniforms = [];
     this.setup = null;
+    this.presetup = null;
   }
 }
 

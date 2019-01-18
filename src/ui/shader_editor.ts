@@ -150,7 +150,8 @@ class ShaderEditor {
         return;
       }
 
-      this.renderer.programData [ this.selectedShaderIndex ].program = program;
+      // this.renderer.programData [ this.selectedShaderIndex ].program = program;
+      this.renderer.repoV2.programs[ this.selectedShaderName ].program = program;
       this.renderer.cacheLitShaderProgramLocations( this.selectedShaderIndex );
     } else {
       console.log( "no renderer context! This is bad." );

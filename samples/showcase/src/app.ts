@@ -1,4 +1,3 @@
-var shaderRepo: ShaderRepository = null; // global for debugging
 var environmentMap: CubeMap = null;
 var irradianceMap: CubeMap = null;
 
@@ -21,8 +20,11 @@ class ShowcaseApp {
 
   dirty: boolean;
 
-  constructor( params: AppParams, shaderRepo: ShaderRepository ) {
-    this.renderer = new Renderer( params.vp, shaderRepo, new gml.Vec4( 0.8, 0.8, 0.8, 1 ) );
+  constructor( params: AppParams ) {
+    this.renderer = new Renderer( params.vp, new gml.Vec4( 0.8, 0.8, 0.8, 1 ), () => {
+      this.editor.install();
+    } );
+
     this.editor = new ShaderEditor( this.renderer );
     this.orbitCenter = params.orbitCenter;
     this.orbitDistance = params.orbitDistance;
@@ -101,11 +103,7 @@ function StartApp() {
       orbitDistance: 10
     };
 
-    shaderRepo = new ShaderRepository( ( repo ) => {
-      app = new ShowcaseApp( params, repo );
-
-      app.editor.install();
-    } );
+    app = new ShowcaseApp( params );
 
     environmentMap = new CubeMap( "./posx.jpg"
                                 , "./negx.jpg"

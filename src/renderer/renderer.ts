@@ -192,12 +192,15 @@ class Renderer {
 
       shader = lib.compileProgram( gl, "debug.vert", "debug.frag", "debug" );
       if ( shader != null ) {
-        shader.attributes[ "aVertexColor" ] = gl.getAttribLocation( shader.program, "aVertexColor" );
-        shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
-        shader.attributes[ "aVertexNormal" ] = gl.getAttribLocation( shader.program, "aVertexNormal" );
-        shader.uniforms[ "uMVMatrix" ] = gl.getUniformLocation( shader.program, "uMVMatrix" );
-        shader.uniforms[ "uPMatrix" ] = gl.getUniformLocation( shader.program, "uPMatrix" );
-        shader.uniforms[ "uNormalWorldMatrix" ] = gl.getUniformLocation( shader.program, "uNormalWorldMatrix" );
+        shader.presetup = ( gl, shader ) => {
+          shader.attributes[ "aVertexColor" ] = gl.getAttribLocation( shader.program, "aVertexColor" );
+          shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+          shader.attributes[ "aVertexNormal" ] = gl.getAttribLocation( shader.program, "aVertexNormal" );
+          shader.uniforms[ "uMVMatrix" ] = gl.getUniformLocation( shader.program, "uMVMatrix" );
+          shader.uniforms[ "uPMatrix" ] = gl.getUniformLocation( shader.program, "uPMatrix" );
+          shader.uniforms[ "uNormalWorldMatrix" ] = gl.getUniformLocation( shader.program, "uNormalWorldMatrix" );
+        }
+        shader.presetup( gl, shader );
         shader.setup = ( gl, attributes, uniforms ) => {
           gl.enableVertexAttribArray( attributes.aVertexPosition );
           gl.enableVertexAttribArray( attributes.aVertexNormal );
@@ -206,32 +209,36 @@ class Renderer {
       }
       shader = lib.compileProgram( gl, "basic.vert", "blinn-phong.frag", "blinn-phong" );
       if ( shader != null ) {
-        shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
-        shader.attributes[ "aVertexNormal" ] = gl.getAttribLocation( shader.program, "aVertexNormal" );
+        shader.presetup = ( gl, shader ) => {
+          shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+          shader.attributes[ "aVertexNormal" ] = gl.getAttribLocation( shader.program, "aVertexNormal" );
 
-        shader.uniforms[ "uMMatrix" ] = gl.getUniformLocation( shader.program, "uMMatrix" );
-        shader.uniforms[ "uMVMatrix" ] = gl.getUniformLocation( shader.program, "uMVMatrix" );
-        shader.uniforms[ "uPMatrix" ] = gl.getUniformLocation( shader.program, "uPMatrix" );
-        shader.uniforms[ "uNormalMVMatrix" ] = gl.getUniformLocation( shader.program, "uNormalMVMatrix" );
-        shader.uniforms[ "uNormalWorldMatrix" ] = gl.getUniformLocation( shader.program, "uNormalWorldMatrix" );
-        shader.uniforms[ "uInverseViewMatrix" ] = gl.getUniformLocation( shader.program, "uInverseViewMatrix" );
-        shader.uniforms[ "environment" ] = gl.getUniformLocation( shader.program, "environment" )
-        shader.uniforms[ "irradiance" ] = gl.getUniformLocation( shader.program, "irradiance" )
+          shader.uniforms[ "uMMatrix" ] = gl.getUniformLocation( shader.program, "uMMatrix" );
+          shader.uniforms[ "uMVMatrix" ] = gl.getUniformLocation( shader.program, "uMVMatrix" );
+          shader.uniforms[ "uPMatrix" ] = gl.getUniformLocation( shader.program, "uPMatrix" );
+          shader.uniforms[ "uNormalMVMatrix" ] = gl.getUniformLocation( shader.program, "uNormalMVMatrix" );
+          shader.uniforms[ "uNormalWorldMatrix" ] = gl.getUniformLocation( shader.program, "uNormalWorldMatrix" );
+          shader.uniforms[ "uInverseViewMatrix" ] = gl.getUniformLocation( shader.program, "uInverseViewMatrix" );
+          shader.uniforms[ "environment" ] = gl.getUniformLocation( shader.program, "environment" )
+          shader.uniforms[ "irradiance" ] = gl.getUniformLocation( shader.program, "irradiance" )
 
-        for ( var i = 0; i < 10; i++ ) {
-          let lightUniform = {};
-          lightUniform["position"] = gl.getUniformLocation( shader.program, "lights[" + i + "].position" );
-          lightUniform["color"] = gl.getUniformLocation( shader.program, "lights[" + i + "].color" );
-          lightUniform["enabled"] = gl.getUniformLocation( shader.program, "lights[" + i + "].enabled" );
-          lightUniform["radius"] = gl.getUniformLocation( shader.program, "lights[" + i + "].radius" );
-          shader.lightUniforms.push( lightUniform );
+          for ( var i = 0; i < 10; i++ ) {
+            let lightUniform = {};
+            lightUniform["position"] = gl.getUniformLocation( shader.program, "lights[" + i + "].position" );
+            lightUniform["color"] = gl.getUniformLocation( shader.program, "lights[" + i + "].color" );
+            lightUniform["enabled"] = gl.getUniformLocation( shader.program, "lights[" + i + "].enabled" );
+            lightUniform["radius"] = gl.getUniformLocation( shader.program, "lights[" + i + "].radius" );
+            shader.lightUniforms.push( lightUniform );
+          }
+
+          shader.uniforms[ "ambient" ] = gl.getUniformLocation( shader.program, "mat.ambient" );
+          shader.uniforms[ "diffuse" ] = gl.getUniformLocation( shader.program, "mat.diffuse" );
+          shader.uniforms[ "specular" ] = gl.getUniformLocation( shader.program, "mat.specular" );
+          shader.uniforms[ "emissive" ] = gl.getUniformLocation( shader.program, "mat.emissive" );
+          shader.uniforms[ "shininess" ] = gl.getUniformLocation( shader.program, "mat.shininess" );
         }
 
-        shader.uniforms[ "ambient" ] = gl.getUniformLocation( shader.program, "mat.ambient" );
-        shader.uniforms[ "diffuse" ] = gl.getUniformLocation( shader.program, "mat.diffuse" );
-        shader.uniforms[ "specular" ] = gl.getUniformLocation( shader.program, "mat.specular" );
-        shader.uniforms[ "emissive" ] = gl.getUniformLocation( shader.program, "mat.emissive" );
-        shader.uniforms[ "shininess" ] = gl.getUniformLocation( shader.program, "mat.shininess" );
+        shader.presetup( gl, shader );
 
         shader.setup = ( gl, attributes, uniforms ) => {
           gl.disableVertexAttribArray( 0 );
@@ -243,28 +250,32 @@ class Renderer {
       }
       shader = lib.compileProgram( gl, "basic.vert", "lambert.frag", "lambert" );
       if ( shader != null ) {
-        shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
-        shader.attributes[ "aVertexNormal" ] = gl.getAttribLocation( shader.program, "aVertexNormal" );
+        shader.presetup = ( gl, shader ) => {
+          shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+          shader.attributes[ "aVertexNormal" ] = gl.getAttribLocation( shader.program, "aVertexNormal" );
 
-        shader.uniforms[ "uMMatrix" ] = gl.getUniformLocation( shader.program, "uMMatrix" );
-        shader.uniforms[ "uMVMatrix" ] = gl.getUniformLocation( shader.program, "uMVMatrix" );
-        shader.uniforms[ "uPMatrix" ] = gl.getUniformLocation( shader.program, "uPMatrix" );
-        shader.uniforms[ "uNormalMVMatrix" ] = gl.getUniformLocation( shader.program, "uNormalMVMatrix" );
-        shader.uniforms[ "uNormalWorldMatrix" ] = gl.getUniformLocation( shader.program, "uNormalWorldMatrix" );
-        shader.uniforms[ "uInverseViewMatrix" ] = gl.getUniformLocation( shader.program, "uInverseViewMatrix" );
-        shader.uniforms[ "environment" ] = gl.getUniformLocation( shader.program, "environment" )
-        shader.uniforms[ "irradiance" ] = gl.getUniformLocation( shader.program, "irradiance" )
+          shader.uniforms[ "uMMatrix" ] = gl.getUniformLocation( shader.program, "uMMatrix" );
+          shader.uniforms[ "uMVMatrix" ] = gl.getUniformLocation( shader.program, "uMVMatrix" );
+          shader.uniforms[ "uPMatrix" ] = gl.getUniformLocation( shader.program, "uPMatrix" );
+          shader.uniforms[ "uNormalMVMatrix" ] = gl.getUniformLocation( shader.program, "uNormalMVMatrix" );
+          shader.uniforms[ "uNormalWorldMatrix" ] = gl.getUniformLocation( shader.program, "uNormalWorldMatrix" );
+          shader.uniforms[ "uInverseViewMatrix" ] = gl.getUniformLocation( shader.program, "uInverseViewMatrix" );
+          shader.uniforms[ "environment" ] = gl.getUniformLocation( shader.program, "environment" )
+          shader.uniforms[ "irradiance" ] = gl.getUniformLocation( shader.program, "irradiance" )
 
-        for ( var i = 0; i < 10; i++ ) {
-          let lightUniform = {};
-          lightUniform["position"] = gl.getUniformLocation( shader.program, "lights[" + i + "].position" );
-          lightUniform["color"] = gl.getUniformLocation( shader.program, "lights[" + i + "].color" );
-          lightUniform["enabled"] = gl.getUniformLocation( shader.program, "lights[" + i + "].enabled" );
-          lightUniform["radius"] = gl.getUniformLocation( shader.program, "lights[" + i + "].radius" );
-          shader.lightUniforms.push( lightUniform );
+          for ( var i = 0; i < 10; i++ ) {
+            let lightUniform = {};
+            lightUniform["position"] = gl.getUniformLocation( shader.program, "lights[" + i + "].position" );
+            lightUniform["color"] = gl.getUniformLocation( shader.program, "lights[" + i + "].color" );
+            lightUniform["enabled"] = gl.getUniformLocation( shader.program, "lights[" + i + "].enabled" );
+            lightUniform["radius"] = gl.getUniformLocation( shader.program, "lights[" + i + "].radius" );
+            shader.lightUniforms.push( lightUniform );
+          }
+
+          shader.uniforms[ "diffuse" ] = gl.getUniformLocation( shader.program, "mat.diffuse" );
         }
 
-        shader.uniforms[ "diffuse" ] = gl.getUniformLocation( shader.program, "mat.diffuse" );
+        shader.presetup( gl, shader );
 
         shader.setup = ( gl, attributes, uniforms ) => {
           gl.disableVertexAttribArray( 0 );
@@ -276,29 +287,33 @@ class Renderer {
       }
       shader = lib.compileProgram( gl, "basic.vert", "oren-nayar.frag", "oren-nayar" );
       if ( shader != null ) {
-        shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
-        shader.attributes[ "aVertexNormal" ] = gl.getAttribLocation( shader.program, "aVertexNormal" );
+        shader.presetup = ( gl, shader ) => {
+          shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+          shader.attributes[ "aVertexNormal" ] = gl.getAttribLocation( shader.program, "aVertexNormal" );
 
-        shader.uniforms[ "uMMatrix" ] = gl.getUniformLocation( shader.program, "uMMatrix" );
-        shader.uniforms[ "uMVMatrix" ] = gl.getUniformLocation( shader.program, "uMVMatrix" );
-        shader.uniforms[ "uPMatrix" ] = gl.getUniformLocation( shader.program, "uPMatrix" );
-        shader.uniforms[ "uNormalMVMatrix" ] = gl.getUniformLocation( shader.program, "uNormalMVMatrix" );
-        shader.uniforms[ "uNormalWorldMatrix" ] = gl.getUniformLocation( shader.program, "uNormalWorldMatrix" );
-        shader.uniforms[ "uInverseViewMatrix" ] = gl.getUniformLocation( shader.program, "uInverseViewMatrix" );
-        shader.uniforms[ "environment" ] = gl.getUniformLocation( shader.program, "environment" )
-        shader.uniforms[ "irradiance" ] = gl.getUniformLocation( shader.program, "irradiance" )
+          shader.uniforms[ "uMMatrix" ] = gl.getUniformLocation( shader.program, "uMMatrix" );
+          shader.uniforms[ "uMVMatrix" ] = gl.getUniformLocation( shader.program, "uMVMatrix" );
+          shader.uniforms[ "uPMatrix" ] = gl.getUniformLocation( shader.program, "uPMatrix" );
+          shader.uniforms[ "uNormalMVMatrix" ] = gl.getUniformLocation( shader.program, "uNormalMVMatrix" );
+          shader.uniforms[ "uNormalWorldMatrix" ] = gl.getUniformLocation( shader.program, "uNormalWorldMatrix" );
+          shader.uniforms[ "uInverseViewMatrix" ] = gl.getUniformLocation( shader.program, "uInverseViewMatrix" );
+          shader.uniforms[ "environment" ] = gl.getUniformLocation( shader.program, "environment" )
+          shader.uniforms[ "irradiance" ] = gl.getUniformLocation( shader.program, "irradiance" )
 
-        for ( var i = 0; i < 10; i++ ) {
-          let lightUniform = {};
-          lightUniform["position"] = gl.getUniformLocation( shader.program, "lights[" + i + "].position" );
-          lightUniform["color"] = gl.getUniformLocation( shader.program, "lights[" + i + "].color" );
-          lightUniform["enabled"] = gl.getUniformLocation( shader.program, "lights[" + i + "].enabled" );
-          lightUniform["radius"] = gl.getUniformLocation( shader.program, "lights[" + i + "].radius" );
-          shader.lightUniforms.push( lightUniform );
+          for ( var i = 0; i < 10; i++ ) {
+            let lightUniform = {};
+            lightUniform["position"] = gl.getUniformLocation( shader.program, "lights[" + i + "].position" );
+            lightUniform["color"] = gl.getUniformLocation( shader.program, "lights[" + i + "].color" );
+            lightUniform["enabled"] = gl.getUniformLocation( shader.program, "lights[" + i + "].enabled" );
+            lightUniform["radius"] = gl.getUniformLocation( shader.program, "lights[" + i + "].radius" );
+            shader.lightUniforms.push( lightUniform );
+          }
+
+          shader.uniforms[ "diffuse" ] = gl.getUniformLocation( shader.program, "mat.diffuse" );
+          shader.uniforms[ "roughness" ] = gl.getUniformLocation( shader.program, "mat.roughness" );
         }
 
-        shader.uniforms[ "diffuse" ] = gl.getUniformLocation( shader.program, "mat.diffuse" );
-        shader.uniforms[ "roughness" ] = gl.getUniformLocation( shader.program, "mat.roughness" );
+        shader.presetup( gl, shader );
 
         shader.setup = ( gl, attributes, uniforms ) => {
           gl.disableVertexAttribArray( 0 );
@@ -314,31 +329,35 @@ class Renderer {
         shader = lib.compileProgram( gl, "basic.vert", "cook-torrance-legacy.frag", "cook-torrance" );
       }
       if ( shader != null ) {
-        shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
-        shader.attributes[ "aVertexNormal" ] = gl.getAttribLocation( shader.program, "aVertexNormal" );
+        shader.presetup = ( gl, shader ) => {
+          shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+          shader.attributes[ "aVertexNormal" ] = gl.getAttribLocation( shader.program, "aVertexNormal" );
 
-        shader.uniforms[ "uMMatrix" ] = gl.getUniformLocation( shader.program, "uMMatrix" );
-        shader.uniforms[ "uMVMatrix" ] = gl.getUniformLocation( shader.program, "uMVMatrix" );
-        shader.uniforms[ "uPMatrix" ] = gl.getUniformLocation( shader.program, "uPMatrix" );
-        shader.uniforms[ "uNormalMVMatrix" ] = gl.getUniformLocation( shader.program, "uNormalMVMatrix" );
-        shader.uniforms[ "uNormalWorldMatrix" ] = gl.getUniformLocation( shader.program, "uNormalWorldMatrix" );
-        shader.uniforms[ "uInverseViewMatrix" ] = gl.getUniformLocation( shader.program, "uInverseViewMatrix" );
-        shader.uniforms[ "environment" ] = gl.getUniformLocation( shader.program, "environment" )
-        shader.uniforms[ "irradiance" ] = gl.getUniformLocation( shader.program, "irradiance" )
+          shader.uniforms[ "uMMatrix" ] = gl.getUniformLocation( shader.program, "uMMatrix" );
+          shader.uniforms[ "uMVMatrix" ] = gl.getUniformLocation( shader.program, "uMVMatrix" );
+          shader.uniforms[ "uPMatrix" ] = gl.getUniformLocation( shader.program, "uPMatrix" );
+          shader.uniforms[ "uNormalMVMatrix" ] = gl.getUniformLocation( shader.program, "uNormalMVMatrix" );
+          shader.uniforms[ "uNormalWorldMatrix" ] = gl.getUniformLocation( shader.program, "uNormalWorldMatrix" );
+          shader.uniforms[ "uInverseViewMatrix" ] = gl.getUniformLocation( shader.program, "uInverseViewMatrix" );
+          shader.uniforms[ "environment" ] = gl.getUniformLocation( shader.program, "environment" )
+          shader.uniforms[ "irradiance" ] = gl.getUniformLocation( shader.program, "irradiance" )
 
-        for ( var i = 0; i < 10; i++ ) {
-          let lightUniform = {};
-          lightUniform["position"] = gl.getUniformLocation( shader.program, "lights[" + i + "].position" );
-          lightUniform["color"] = gl.getUniformLocation( shader.program, "lights[" + i + "].color" );
-          lightUniform["enabled"] = gl.getUniformLocation( shader.program, "lights[" + i + "].enabled" );
-          lightUniform["radius"] = gl.getUniformLocation( shader.program, "lights[" + i + "].radius" );
-          shader.lightUniforms.push( lightUniform );
+          for ( var i = 0; i < 10; i++ ) {
+            let lightUniform = {};
+            lightUniform["position"] = gl.getUniformLocation( shader.program, "lights[" + i + "].position" );
+            lightUniform["color"] = gl.getUniformLocation( shader.program, "lights[" + i + "].color" );
+            lightUniform["enabled"] = gl.getUniformLocation( shader.program, "lights[" + i + "].enabled" );
+            lightUniform["radius"] = gl.getUniformLocation( shader.program, "lights[" + i + "].radius" );
+            shader.lightUniforms.push( lightUniform );
+          }
+
+          shader.uniforms[ "diffuse" ] = gl.getUniformLocation( shader.program, "mat.diffuse" );
+          shader.uniforms[ "specular" ] = gl.getUniformLocation( shader.program, "mat.specular" );
+          shader.uniforms[ "roughness" ] = gl.getUniformLocation( shader.program, "mat.roughness" );
+          shader.uniforms[ "fresnel" ] = gl.getUniformLocation( shader.program, "mat.fresnel" );
         }
 
-        shader.uniforms[ "diffuse" ] = gl.getUniformLocation( shader.program, "mat.diffuse" );
-        shader.uniforms[ "specular" ] = gl.getUniformLocation( shader.program, "mat.specular" );
-        shader.uniforms[ "roughness" ] = gl.getUniformLocation( shader.program, "mat.roughness" );
-        shader.uniforms[ "fresnel" ] = gl.getUniformLocation( shader.program, "mat.fresnel" );
+        shader.presetup( gl, shader );
 
         shader.setup = ( gl, attributes, uniforms ) => {
           gl.disableVertexAttribArray( 0 );
@@ -350,10 +369,15 @@ class Renderer {
       }
       shader = lib.compileProgram( gl, "skybox.vert", "skybox.frag", "skybox" );
       if ( shader != null ) {
-        shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
-        shader.uniforms[ "environment" ] = gl.getUniformLocation( shader.program, "environment" )
-        shader.uniforms[ "uInverseProjectionMatrix" ] = gl.getUniformLocation( shader.program, "uInverseProjectionMatrix" );
-        shader.uniforms[ "uInverseViewMatrix" ] = gl.getUniformLocation( shader.program, "uInverseViewMatrix" );
+        shader.presetup = ( gl, shader ) => {
+          shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+          shader.uniforms[ "environment" ] = gl.getUniformLocation( shader.program, "environment" )
+          shader.uniforms[ "uInverseProjectionMatrix" ] = gl.getUniformLocation( shader.program, "uInverseProjectionMatrix" );
+          shader.uniforms[ "uInverseViewMatrix" ] = gl.getUniformLocation( shader.program, "uInverseViewMatrix" );
+        }
+
+        shader.presetup( gl, shader );
+
         shader.setup = ( gl, attributes, uniforms ) => {
           gl.disableVertexAttribArray( 0 );
           gl.disableVertexAttribArray( 1 );
@@ -364,13 +388,18 @@ class Renderer {
 
       shader = lib.compileProgram( gl, "skybox.vert", "sky.frag", "sky" );
       if ( shader != null ) {
-        shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
-        shader.uniforms[ "uInverseProjectionMatrix" ] = gl.getUniformLocation( shader.program, "uInverseProjectionMatrix" );
-        shader.uniforms[ "uInverseViewMatrix" ] = gl.getUniformLocation( shader.program, "uInverseViewMatrix" );
-        shader.uniforms[ "uTime" ] = gl.getUniformLocation( shader.program, "uTime" )
-        shader.uniforms[ "uCombinedNoiseVolume" ] = gl.getUniformLocation( shader.program, "uCombinedNoiseVolume" )
-        shader.uniforms[ "uCloudiness" ] = gl.getUniformLocation( shader.program, "uCloudiness" )
-        shader.uniforms[ "uCloudSpeed" ] = gl.getUniformLocation( shader.program, "uCloudSpeed" )
+        shader.presetup = ( gl, shader ) => {
+          shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+          shader.uniforms[ "uInverseProjectionMatrix" ] = gl.getUniformLocation( shader.program, "uInverseProjectionMatrix" );
+          shader.uniforms[ "uInverseViewMatrix" ] = gl.getUniformLocation( shader.program, "uInverseViewMatrix" );
+          shader.uniforms[ "uTime" ] = gl.getUniformLocation( shader.program, "uTime" )
+          shader.uniforms[ "uCombinedNoiseVolume" ] = gl.getUniformLocation( shader.program, "uCombinedNoiseVolume" )
+          shader.uniforms[ "uCloudiness" ] = gl.getUniformLocation( shader.program, "uCloudiness" )
+          shader.uniforms[ "uCloudSpeed" ] = gl.getUniformLocation( shader.program, "uCloudSpeed" )
+        }
+
+        shader.presetup( gl, shader );
+
         shader.setup = ( gl, attributes, uniforms ) => {
           gl.disableVertexAttribArray( 0 );
           gl.disableVertexAttribArray( 1 );
@@ -381,22 +410,26 @@ class Renderer {
 
       shader = lib.compileProgram( gl, "water.vert", "water.frag", "water" );
       if ( shader != null ) {
-        shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
-        shader.attributes[ "aVertexNormal" ] = gl.getAttribLocation( shader.program, "aVertexNormal" );
-        shader.attributes[ "aMeshCoord" ] = gl.getAttribLocation( shader.program, "aMeshCoord" );
+        shader.presetup = ( gl, shader ) => {
+          shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+          shader.attributes[ "aVertexNormal" ] = gl.getAttribLocation( shader.program, "aVertexNormal" );
+          shader.attributes[ "aMeshCoord" ] = gl.getAttribLocation( shader.program, "aMeshCoord" );
 
-        shader.uniforms[ "uMMatrix" ] = gl.getUniformLocation( shader.program, "uMMatrix" );
-        shader.uniforms[ "uVMatrix" ] = gl.getUniformLocation( shader.program, "uVMatrix" );
-        shader.uniforms[ "uPMatrix" ] = gl.getUniformLocation( shader.program, "uPMatrix" );
-        shader.uniforms[ "uInverseProjectionMatrix" ] = gl.getUniformLocation( shader.program, "uInverseProjectionMatrix" );
-        shader.uniforms[ "uInverseViewMatrix" ] = gl.getUniformLocation( shader.program, "uInverseViewMatrix" );
-        shader.uniforms[ "uNormalMVMatrix" ] = gl.getUniformLocation( shader.program, "uNormalMVMatrix" );
-        shader.uniforms[ "uTime" ] = gl.getUniformLocation( shader.program, "uTime" );
-        shader.uniforms[ "cPosition_World" ] = gl.getUniformLocation( shader.program, "cPosition_World" );
-        shader.uniforms[ "uCloudSpeed" ] = gl.getUniformLocation( shader.program, "uCloudSpeed" );
-        shader.uniforms[ "uCloudiness" ] = gl.getUniformLocation( shader.program, "uCloudiness" );
-        shader.uniforms[ "uDrawWireframe" ] = gl.getUniformLocation( shader.program, "uDrawWireframe" );
-        shader.uniforms[ "environment" ] = gl.getUniformLocation( shader.program, "environment" )
+          shader.uniforms[ "uMMatrix" ] = gl.getUniformLocation( shader.program, "uMMatrix" );
+          shader.uniforms[ "uVMatrix" ] = gl.getUniformLocation( shader.program, "uVMatrix" );
+          shader.uniforms[ "uPMatrix" ] = gl.getUniformLocation( shader.program, "uPMatrix" );
+          shader.uniforms[ "uInverseProjectionMatrix" ] = gl.getUniformLocation( shader.program, "uInverseProjectionMatrix" );
+          shader.uniforms[ "uInverseViewMatrix" ] = gl.getUniformLocation( shader.program, "uInverseViewMatrix" );
+          shader.uniforms[ "uNormalMVMatrix" ] = gl.getUniformLocation( shader.program, "uNormalMVMatrix" );
+          shader.uniforms[ "uTime" ] = gl.getUniformLocation( shader.program, "uTime" );
+          shader.uniforms[ "cPosition_World" ] = gl.getUniformLocation( shader.program, "cPosition_World" );
+          shader.uniforms[ "uCloudSpeed" ] = gl.getUniformLocation( shader.program, "uCloudSpeed" );
+          shader.uniforms[ "uCloudiness" ] = gl.getUniformLocation( shader.program, "uCloudiness" );
+          shader.uniforms[ "uDrawWireframe" ] = gl.getUniformLocation( shader.program, "uDrawWireframe" );
+          shader.uniforms[ "environment" ] = gl.getUniformLocation( shader.program, "environment" )
+        }
+
+        shader.presetup( gl, shader );
 
         shader.setup = ( gl, attributes, uniforms ) => {
           gl.disableVertexAttribArray( 0 );
@@ -409,10 +442,14 @@ class Renderer {
       shader = lib.compileProgram( gl, "screenspacequad.vert", "water_screenspace.frag", "water-screenspace" );
       shader = lib.compileProgram( gl, "screenspacequad.vert", "noise_writer.frag", "noisewriter" );
       if ( shader != null ) {
-        shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
-        shader.attributes[ "aVertexTexCoord" ] = gl.getAttribLocation( shader.program, "aVertexTexCoord" );
+        shader.presetup = ( gl, shader ) => {
+          shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+          shader.attributes[ "aVertexTexCoord" ] = gl.getAttribLocation( shader.program, "aVertexTexCoord" );
 
-        shader.uniforms[ "uNoiseLayer" ] = gl.getUniformLocation( shader.program, "uNoiseLayer" );
+          shader.uniforms[ "uNoiseLayer" ] = gl.getUniformLocation( shader.program, "uNoiseLayer" );
+        }
+
+        shader.presetup( gl, shader );
 
         shader.setup = ( gl, attributes, uniforms ) => {
           gl.disableVertexAttribArray( 0 );
@@ -424,11 +461,15 @@ class Renderer {
       }
       shader = lib.compileProgram( gl, "screenspacequad.vert", "volume_viewer.frag", "volume-viewer" );
       if ( shader != null ) {
-        shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
-        shader.attributes[ "aVertexTexCoord" ] = gl.getAttribLocation( shader.program, "aVertexTexCoord" );
+        shader.presetup = ( gl, shader ) => {
+          shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+          shader.attributes[ "aVertexTexCoord" ] = gl.getAttribLocation( shader.program, "aVertexTexCoord" );
 
-        shader.uniforms[ "uNoiseLayer" ] = gl.getUniformLocation( shader.program, "uNoiseLayer" );
-        shader.uniforms[ "volume" ] = gl.getUniformLocation( shader.program, "volume" );
+          shader.uniforms[ "uNoiseLayer" ] = gl.getUniformLocation( shader.program, "uNoiseLayer" );
+          shader.uniforms[ "volume" ] = gl.getUniformLocation( shader.program, "volume" );
+        }
+
+        shader.presetup( gl, shader );
 
         shader.setup = ( gl, attributes, uniforms ) => {
           gl.disableVertexAttribArray( 0 );
@@ -440,11 +481,15 @@ class Renderer {
       }
       shader = lib.compileProgram( gl, "screenspacequad.vert", "depth-texture.frag", "render-depthtexture" );
       if ( shader != null ) {
-        shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
-        shader.attributes[ "aVertexTexCoord" ] = gl.getAttribLocation( shader.program, "aVertexTexCoord" );
+        shader.presetup = ( gl, shader ) => {
+          shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+          shader.attributes[ "aVertexTexCoord" ] = gl.getAttribLocation( shader.program, "aVertexTexCoord" );
 
-        shader.uniforms[ "screen_depth" ] = gl.getUniformLocation( shader.program, "screen_depth" );
-        shader.uniforms[ "uVMatrix" ] = gl.getUniformLocation( shader.program, "uVMatrix" );
+          shader.uniforms[ "screen_depth" ] = gl.getUniformLocation( shader.program, "screen_depth" );
+          shader.uniforms[ "uVMatrix" ] = gl.getUniformLocation( shader.program, "uVMatrix" );
+        }
+
+        shader.presetup( gl, shader );
 
         shader.setup = ( gl, attributes, uniforms ) => {
           gl.disableVertexAttribArray( 0 );
@@ -457,16 +502,20 @@ class Renderer {
 
       shader = lib.compileProgram( gl, "screenspacequad.vert", "post-process.frag", "post-process" );
       if ( shader != null ) {
-        shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
-        shader.attributes[ "aVertexTexCoord" ] = gl.getAttribLocation( shader.program, "aVertexTexCoord" );
+        shader.presetup = ( gl, shader ) => {
+          shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+          shader.attributes[ "aVertexTexCoord" ] = gl.getAttribLocation( shader.program, "aVertexTexCoord" );
 
-        shader.uniforms[ "screen_depth" ] = gl.getUniformLocation( shader.program, "screen_depth" );
-        shader.uniforms[ "screen_color" ] = gl.getUniformLocation( shader.program, "screen_color" );
+          shader.uniforms[ "screen_depth" ] = gl.getUniformLocation( shader.program, "screen_depth" );
+          shader.uniforms[ "screen_color" ] = gl.getUniformLocation( shader.program, "screen_color" );
 
-        shader.uniforms[ "uInverseProjectionMatrix" ] = gl.getUniformLocation( shader.program, "uInverseProjectionMatrix" );
-        shader.uniforms[ "uInverseViewMatrix" ] = gl.getUniformLocation( shader.program, "uInverseViewMatrix" );
-        shader.uniforms[ "uVMatrix" ] = gl.getUniformLocation( shader.program, "uVMatrix" );
-        shader.uniforms[ "focus" ] = gl.getUniformLocation( shader.program, "focus" );
+          shader.uniforms[ "uInverseProjectionMatrix" ] = gl.getUniformLocation( shader.program, "uInverseProjectionMatrix" );
+          shader.uniforms[ "uInverseViewMatrix" ] = gl.getUniformLocation( shader.program, "uInverseViewMatrix" );
+          shader.uniforms[ "uVMatrix" ] = gl.getUniformLocation( shader.program, "uVMatrix" );
+          shader.uniforms[ "focus" ] = gl.getUniformLocation( shader.program, "focus" );
+        }
+
+        shader.presetup( gl, shader );
 
         shader.setup = ( gl, attributes, uniforms ) => {
           gl.disableVertexAttribArray( 0 );
