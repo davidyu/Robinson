@@ -1,45 +1,3 @@
-enum SHADERTYPE {
-  SIMPLE_VERTEX,
-  LAMBERT_FRAGMENT,
-  BLINN_PHONG_FRAGMENT,
-  DEBUG_VERTEX,
-  DEBUG_FRAGMENT,
-  OREN_NAYAR_FRAGMENT,
-  COOK_TORRANCE_FRAGMENT,
-  COOK_TORRANCE_FRAGMENT_NO_EXT,
-  UTILS,
-  SKYBOX_VERTEX,
-  SKYBOX_FRAG,
-  SKY_FRAG,
-  CUBE_SH_FRAG,
-  PASSTHROUGH_VERT,
-  WATER_VERT,
-  SS_QUAD_VERT,
-  WATER_FRAG,
-  WATER_SS_FRAG,
-  NOISE_WRITER_FRAG,
-  VOLUME_VIEWER_FRAG,
-  POST_PROCESS_FRAG,
-  DEPTH_TEXTURE_FRAG
-};
-
-enum SHADER_PROGRAM {
-  DEBUG,
-  LAMBERT,
-  OREN_NAYAR,
-  BLINN_PHONG,
-  COOK_TORRANCE,
-  SKYBOX,
-  SKY,
-  WATER,
-  WATER_SCREENSPACE,
-  CUBE_SH,
-  NOISE_WRITER,
-  VOLUME_VIEWER,
-  POST_PROCESS,
-  RENDER_DEPTH_TEXTURE,
-};
-
 enum PASS {
   SHADOW,
   STANDARD_FORWARD,
@@ -49,89 +7,6 @@ enum IRRADIANCE_PASS {
   SH_COMPUTE,
   IRRADIANCE_COMPUTE,
 };
-
-class ShaderFile {
-  source: string;
-  loaded: boolean;
-
-  constructor( source: string = "", loaded: boolean = false ) {
-    this.source = source;
-    this.loaded = loaded;
-  }
-}
-
-class ShaderSource {
-  vs: string;
-  fs: string;
-  constructor( vs: string, fs: string ) {
-    this.vs = vs;
-    this.fs = fs;
-  }
-}
-
-class ShaderMaterialProperties {
-  ambient: WebGLUniformLocation;
-  diffuse: WebGLUniformLocation;
-  specular: WebGLUniformLocation;
-  emissive: WebGLUniformLocation;
-  shininess: WebGLUniformLocation;
-  roughness: WebGLUniformLocation;
-  fresnel: WebGLUniformLocation;
-  colorMap: WebGLUniformLocation;
-}
-
-class ShaderLightProperties {
-  position: WebGLUniformLocation;
-  color: WebGLUniformLocation;
-  enabled: WebGLUniformLocation;
-  radius: WebGLUniformLocation;
-}
-
-class ShaderUniforms {
-  aVertexPosition: number;
-  aVertexNormal: number;
-  aVertexTexCoord: number;
-  aMeshCoord: number;
-  uModelView: WebGLUniformLocation;
-  uView: WebGLUniformLocation;
-  uModelToWorld: WebGLUniformLocation;
-  uPerspective: WebGLUniformLocation;
-  uNormalModelView: WebGLUniformLocation;
-  uNormalWorld: WebGLUniformLocation;
-  uInverseProjection: WebGLUniformLocation;
-  uInverseView: WebGLUniformLocation;
-  uCameraPos: WebGLUniformLocation;
-  uEnvMap: WebGLUniformLocation;
-  uVolume: WebGLUniformLocation;
-  uWireframe: WebGLUniformLocation;
-  uProcSky: WebGLUniformLocation;
-  uIrradianceMap: WebGLUniformLocation;
-  uTime: WebGLUniformLocation;
-  uCloudiness: WebGLUniformLocation;
-  uCloudSpeed: WebGLUniformLocation;
-  uMaterial: ShaderMaterialProperties;
-  uLights: ShaderLightProperties[];
-  uNoiseLayer: WebGLUniformLocation;
-  uCombinedNoiseVolume: WebGLUniformLocation;
-  uColor: WebGLUniformLocation;
-  uDepth: WebGLUniformLocation;
-  uFocus: WebGLUniformLocation;
-
-  constructor() {}
-}
-
-class ShaderProgramData {
-  program: WebGLProgram;
-  uniforms: ShaderUniforms;
-  vert: string;
-  frag: string;
-  constructor( vert: string, frag: string ) {
-    this.vert = vert;
-    this.frag = frag;
-    this.program = null;
-    this.uniforms = new ShaderUniforms();
-  }
-}
 
 class Renderer {
   repoV2: ShaderLibrary;
@@ -165,8 +40,6 @@ class Renderer {
   postProcessColorTexture: WebGLTexture;
   postProcessDepthTexture: WebGLTexture;
   postProcessFramebuffer: WebGLFramebuffer;
-
-  programData: ShaderProgramData[];
 
   fullscreenQuad: Quad;
 
@@ -583,8 +456,6 @@ class Renderer {
     this.shaderLODExtension = gl.getExtension( "EXT_shader_texture_lod" );
     this.elementIndexExtension = gl.getExtension( "OES_element_index_uint" );
 
-    this.programData = [];
-
     this.visualizeDepthBuffer = false;
 
     {
@@ -612,73 +483,6 @@ class Renderer {
     this.postProcessColorTexture = gl.createTexture();
     this.postProcessDepthTexture = gl.createTexture();
     this.postProcessFramebuffer = gl.createFramebuffer();
-  }
-
-  cacheLitShaderProgramLocations( sp: SHADER_PROGRAM ) {
-    var gl = this.context;
-
-    let program = this.programData[ sp ].program;
-    let uniforms = this.programData[ sp ].uniforms;
-
-    uniforms.aVertexPosition = gl.getAttribLocation( program, "aVertexPosition" );
-    gl.enableVertexAttribArray( uniforms.aVertexPosition );
-
-    uniforms.aMeshCoord = gl.getAttribLocation( program, "aMeshCoord" );
-    if ( uniforms.aMeshCoord >= 0 ) {
-      gl.enableVertexAttribArray( uniforms.aMeshCoord );
-    }
-
-    uniforms.aVertexNormal = gl.getAttribLocation( program, "aVertexNormal" );
-    if ( uniforms.aVertexNormal >= 0 ) {
-      gl.enableVertexAttribArray( uniforms.aVertexNormal );
-    }
-
-    uniforms.aVertexTexCoord = gl.getAttribLocation( program, "aVertexTexCoord" );
-    if ( uniforms.aVertexTexCoord >= 0 ) {
-      gl.enableVertexAttribArray( uniforms.aVertexTexCoord );
-    }
-
-    uniforms.uModelView = gl.getUniformLocation( program, "uMVMatrix" );
-    uniforms.uView = gl.getUniformLocation( program, "uVMatrix" );
-    uniforms.uModelToWorld = gl.getUniformLocation( program, "uMMatrix" );
-    uniforms.uPerspective = gl.getUniformLocation( program, "uPMatrix" );
-    uniforms.uNormalModelView = gl.getUniformLocation( program, "uNormalMVMatrix" );
-    uniforms.uNormalWorld = gl.getUniformLocation( program, "uNormalWorldMatrix" );
-    uniforms.uInverseProjection = gl.getUniformLocation( program, "uInverseProjectionMatrix" );
-    uniforms.uInverseView = gl.getUniformLocation( program, "uInverseViewMatrix" );
-    uniforms.uCameraPos = gl.getUniformLocation( program, "cPosition_World" );
-    uniforms.uEnvMap = gl.getUniformLocation( program, "environment" );
-    uniforms.uVolume = gl.getUniformLocation( program, "volume" );
-    uniforms.uWireframe = gl.getUniformLocation( program, "uDrawWireframe" );
-    uniforms.uProcSky = gl.getUniformLocation( program, "proceduralSky" );
-    uniforms.uIrradianceMap = gl.getUniformLocation( program, "irradiance" );
-    uniforms.uTime = gl.getUniformLocation( program, "uTime" );
-    uniforms.uCloudiness = gl.getUniformLocation( program, "uCloudiness" );
-    uniforms.uCloudSpeed = gl.getUniformLocation( program, "uCloudSpeed" );
-    uniforms.uNoiseLayer = gl.getUniformLocation( program, "uNoiseLayer" );
-    uniforms.uCombinedNoiseVolume = gl.getUniformLocation( program, "uCombinedNoiseVolume" );
-    uniforms.uColor = gl.getUniformLocation( program, "screen_color" );
-    uniforms.uDepth = gl.getUniformLocation( program, "screen_depth" );
-    uniforms.uFocus = gl.getUniformLocation( program, "focus" );
-
-    uniforms.uMaterial = new ShaderMaterialProperties();
-    uniforms.uMaterial.ambient = gl.getUniformLocation( program, "mat.ambient" );
-    uniforms.uMaterial.diffuse = gl.getUniformLocation( program, "mat.diffuse" );
-    uniforms.uMaterial.specular = gl.getUniformLocation( program, "mat.specular" );
-    uniforms.uMaterial.emissive = gl.getUniformLocation( program, "mat.emissive" );
-    uniforms.uMaterial.shininess = gl.getUniformLocation( program, "mat.shininess" );
-    uniforms.uMaterial.roughness = gl.getUniformLocation( program, "mat.roughness" );
-    uniforms.uMaterial.fresnel = gl.getUniformLocation( program, "mat.fresnel" );
-    uniforms.uMaterial.colorMap = gl.getUniformLocation( program, "mat.colormap" );
-
-    uniforms.uLights = [];
-    for ( var i = 0; i < 10; i++ ) {
-      uniforms.uLights[i] = new ShaderLightProperties();
-      uniforms.uLights[i].position = gl.getUniformLocation( program, "lights[" + i + "].position" );
-      uniforms.uLights[i].color = gl.getUniformLocation( program, "lights[" + i + "].color" );
-      uniforms.uLights[i].enabled = gl.getUniformLocation( program, "lights[" + i + "].enabled" );
-      uniforms.uLights[i].radius = gl.getUniformLocation( program, "lights[" + i + "].radius" );
-    }
   }
 
   compileShaderProgram( vs: string, fs: string, suppressErrors: boolean = false ): WebGLProgram {
