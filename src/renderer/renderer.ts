@@ -439,7 +439,7 @@ class Renderer {
           gl.enableVertexAttribArray( attributes.aMeshCoord );
         };
       }
-      shader = lib.compileProgram( gl, "screenspacequad.vert", "water_screenspace.frag", "water-screenspace" );
+      shader = lib.compileProgram( gl, "screenspacequad.vert", "water_screenspace.frag", "screenspace water" );
       shader = lib.compileProgram( gl, "screenspacequad.vert", "noise_writer.frag", "noisewriter" );
       if ( shader != null ) {
         shader.presetup = ( gl, shader ) => {
@@ -459,7 +459,7 @@ class Renderer {
           gl.enableVertexAttribArray( attributes.aVertexTexCoord );
         };
       }
-      shader = lib.compileProgram( gl, "screenspacequad.vert", "volume_viewer.frag", "volume-viewer" );
+      shader = lib.compileProgram( gl, "screenspacequad.vert", "volume_viewer.frag", "volume viewer" );
       if ( shader != null ) {
         shader.presetup = ( gl, shader ) => {
           shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
@@ -479,7 +479,7 @@ class Renderer {
           gl.enableVertexAttribArray( attributes.aVertexTexCoord );
         };
       }
-      shader = lib.compileProgram( gl, "screenspacequad.vert", "depth-texture.frag", "render-depthtexture" );
+      shader = lib.compileProgram( gl, "screenspacequad.vert", "depth-texture.frag", "render depth texture" );
       if ( shader != null ) {
         shader.presetup = ( gl, shader ) => {
           shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
@@ -500,7 +500,7 @@ class Renderer {
         };
       }
 
-      shader = lib.compileProgram( gl, "screenspacequad.vert", "post-process.frag", "post-process" );
+      shader = lib.compileProgram( gl, "screenspacequad.vert", "post-process.frag", "postprocess" );
       if ( shader != null ) {
         shader.presetup = ( gl, shader ) => {
           shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
@@ -526,7 +526,7 @@ class Renderer {
         };
       }
 
-      shader = lib.compileProgram( gl, "passthrough.vert", "cube-sh.frag", "cube-spherical-harmonics" );
+      shader = lib.compileProgram( gl, "passthrough.vert", "cube-sh.frag", "cube spherical harmonics" );
 
       if ( shaderCompileCallback != null ) {
         shaderCompileCallback();
@@ -778,7 +778,7 @@ class Renderer {
   }
 
   renderDepthBuffer( gl: WebGL2RenderingContext, depth, mvStack: gml.Mat4[] ) {
-    let shader = this.repoV2.programs[ "render-depthtexture" ];
+    let shader = this.repoV2.programs[ "render depth texture" ];
     gl.useProgram( shader.program );
 
     gl.bindBuffer( gl.ARRAY_BUFFER, this.fullscreenQuad.renderData.vertexBuffer );
@@ -798,7 +798,7 @@ class Renderer {
   }
 
   renderPostProcessedImage( gl: WebGL2RenderingContext, color, depth, mvStack: gml.Mat4[] ) {
-    let shader = this.repoV2.programs[ "post-process" ];
+    let shader = this.repoV2.programs[ "postprocess" ];
     gl.useProgram( shader.program );
 
     gl.bindBuffer( gl.ARRAY_BUFFER, this.fullscreenQuad.renderData.vertexBuffer );
@@ -897,7 +897,7 @@ class Renderer {
         gl.uniform1f( shader.uniforms[ "uNoiseLayer" ], ( <NoiseMaterial> p.material ).layer );
         this.currentShader = shader;
       } else if ( p.material instanceof VolumeMaterial ) {
-        let shader = this.repoV2.programs[ "volume-viewer" ];
+        let shader = this.repoV2.programs[ "volume viewer" ];
         gl.useProgram( shader.program );
         shader.setup( gl, shader.attributes, shader.uniforms );
         
