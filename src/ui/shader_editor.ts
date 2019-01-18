@@ -150,9 +150,8 @@ class ShaderEditor {
         return;
       }
 
-      // this.renderer.programData [ this.selectedShaderIndex ].program = program;
       this.renderer.repoV2.programs[ this.selectedShaderName ].program = program;
-      this.renderer.cacheLitShaderProgramLocations( this.selectedShaderIndex );
+      this.renderer.repoV2.programs[ this.selectedShaderName ].presetup( gl, this.renderer.repoV2.programs[ this.selectedShaderName ] );
     } else {
       console.log( "no renderer context! This is bad." );
     }
@@ -161,11 +160,11 @@ class ShaderEditor {
   install() {
     let container = document.getElementById( "shader-editor" );
 
-    this.selectedShaderIndex = <SHADER_PROGRAM> 0;
+    this.selectedShaderName = Object.keys( this.renderer.repoV2.programs )[ 0 ];
 
     if ( this.renderer.context == null ) return;
 
-    let defaultProgram = this.renderer.repoV2.programs[ Object.keys( this.renderer.repoV2.programs )[ 0 ] ];
+    let defaultProgram = this.renderer.repoV2.programs[ this.selectedShaderName ];
 
     this.vertexShaderEditor.setValue( this.renderer.repoV2.sources[ defaultProgram.sourceVSFilename ], -1 );
     this.fragmentShaderEditor.setValue( this.renderer.repoV2.sources[ defaultProgram.sourceFSFilename ], -1 ); 
@@ -176,7 +175,7 @@ class ShaderEditor {
     this.visibleShaders = []; // rebuild this list each time
 
     let sources = this.renderer.repoV2.sources;
-    for ( var programName in this.renderer.repoV2.programs ) {
+    for ( let programName in this.renderer.repoV2.programs ) {
       let program = this.renderer.repoV2.programs[ programName ];
       let vertexSession = ace.createEditSession( sources[ program.sourceVSFilename ], <any> "ace/mode/glsl" );
       vertexSession.on( "change", ( e ) => {
@@ -195,6 +194,7 @@ class ShaderEditor {
       this.shaderList.appendChild( li );
       li.onclick = () => {
         if ( this.selectedShader != li ) {
+          this.selectedShaderName = programName;
           // this.selectedShaderIndex = index;
           this.vertexShaderEditor.setSession( vertexSession );
           this.fragmentShaderEditor.setSession( fragSession );
