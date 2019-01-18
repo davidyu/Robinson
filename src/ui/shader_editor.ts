@@ -11,7 +11,6 @@ class ShaderEditor {
   shaderList: HTMLUListElement;
   shaderEditor: HTMLDivElement;
   selectedShader: HTMLLIElement;
-  selectedShaderIndex: number;
   selectedShaderName: string;
   vertexShaderEditor;
   fragmentShaderEditor;
@@ -79,7 +78,7 @@ class ShaderEditor {
   }
 
   rebuildSelectedShader( session: AceAjax.IEditSession ) {
-    console.assert( session == this.vertexShaderEditor.session || session == this.fragmentShaderEditor.assertion );
+    console.assert( session == this.vertexShaderEditor.session || session == this.fragmentShaderEditor.session );
 
     let gl = this.renderer.context;
     if ( gl ) {
@@ -179,11 +178,13 @@ class ShaderEditor {
       let program = this.renderer.repoV2.programs[ programName ];
       let vertexSession = ace.createEditSession( sources[ program.sourceVSFilename ], <any> "ace/mode/glsl" );
       vertexSession.on( "change", ( e ) => {
+        // console.log( "changed " + program.sourceVSFilename );
         this.rebuildSelectedShader( vertexSession );
       } );
       this.vertexEditSessions.push( vertexSession );
       let fragSession = ace.createEditSession( sources[ program.sourceFSFilename ], <any> "ace/mode/glsl" );
       fragSession.on( "change", ( e ) => {
+        // console.log( "changed " + program.sourceFSFilename );
         this.rebuildSelectedShader( fragSession );
       } );
       this.fragmentEditSessions.push( fragSession );
@@ -195,7 +196,6 @@ class ShaderEditor {
       li.onclick = () => {
         if ( this.selectedShader != li ) {
           this.selectedShaderName = programName;
-          // this.selectedShaderIndex = index;
           this.vertexShaderEditor.setSession( vertexSession );
           this.fragmentShaderEditor.setSession( fragSession );
           this.selectedShader.setAttribute( "class", "shader-entry" ); // deselect
@@ -204,43 +204,6 @@ class ShaderEditor {
         }
       }
     }
-
-      /*
-    for ( var programName in SHADER_PROGRAM ) {
-      if ( isNaN( <any> programName ) ) {
-        // skip hidden shaders
-        let index = parseInt( SHADER_PROGRAM[ programName ] );
-        // if ( this.hiddenShaders.indexOf( <SHADER_PROGRAM> index ) != -1 ) continue;
-        this.visibleShaders.push( <SHADER_PROGRAM> index );
-
-        let vertexSession = ace.createEditSession( this.renderer.programData[ index ].vert, <any> "ace/mode/glsl" );
-        vertexSession.on( "change", ( e ) => {
-          this.rebuildSelectedShader( vertexSession );
-        } );
-        this.vertexEditSessions.push( vertexSession );
-        let fragSession = ace.createEditSession( this.renderer.programData[ index ].frag, <any> "ace/mode/glsl" );
-        fragSession.on( "change", ( e ) => {
-          this.rebuildSelectedShader( fragSession );
-        } );
-        this.fragmentEditSessions.push( fragSession );
-
-        let li = document.createElement( "li" );
-        li.innerText = this.prettifyEnum( programName );
-        li.setAttribute( "class", "shader-entry" );
-        this.shaderList.appendChild( li );
-        li.onclick = () => {
-          if ( this.selectedShader != li ) {
-            this.selectedShaderIndex = index;
-            this.vertexShaderEditor.setSession( vertexSession );
-            this.fragmentShaderEditor.setSession( fragSession );
-            this.selectedShader.setAttribute( "class", "shader-entry" ); // deselect
-            this.selectedShader = li;
-            li.setAttribute( "class", "selected shader-entry" );
-          }
-        }
-      }
-    }
-       */
 
     this.selectedShader = <HTMLLIElement> this.shaderList.firstElementChild;
     this.selectedShader.setAttribute( "class", "selected shader-entry" );
