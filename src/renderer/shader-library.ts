@@ -32,6 +32,8 @@ class CompiledProgramData {
 }
 
 class ShaderLibrary {
+  gl: WebGLRenderingContext & WebGL2RenderingContext;
+
   // the contents of the shader (.vert or .frag) files we load/edit at runtime
   sources  : { [ filename: string ] : string };
 
@@ -44,7 +46,7 @@ class ShaderLibrary {
   // CALLBACKS
 
   // this is called when all shaders have been loaded
-  allShadersLoaded: ( ShaderLibrary ) => void; 
+  allShadersLoaded: (( gl: WebGLRenderingContext & WebGL2RenderingContext, lib: ShaderLibrary ) => void)[]; 
   // this is called when a particular shader has been loaded
   shaderLoaded    : ( lib: ShaderLibrary, filename: string, source: string ) => void;  // ( lib, filename, source )
 
@@ -52,8 +54,9 @@ class ShaderLibrary {
     return this.outgoingRequests.length == 0;
   }
 
-  constructor() {
-    this.allShadersLoaded = null;
+  constructor( gl: WebGLRenderingContext & WebGL2RenderingContext ) {
+    this.gl = gl;
+    this.allShadersLoaded = [];
     this.shaderLoaded = null;
     this.outgoingRequests = [];
     this.sources = {};
@@ -72,8 +75,10 @@ class ShaderLibrary {
       // remove me from the outgoing request list
       this.outgoingRequests = this.outgoingRequests.filter( r => r != req );
 
-      if ( this.outgoingRequests.length == 0 && this.allShadersLoaded != null ) {
-        this.allShadersLoaded( this );
+      if ( this.outgoingRequests.length == 0 && this.allShadersLoaded.length > 0 ) {
+        for ( let i = 0; i < this.allShadersLoaded.length; i++ ) {
+          this.allShadersLoaded[i]( this.gl, this );
+        }
       }
     } );
 

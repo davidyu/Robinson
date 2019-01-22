@@ -44,13 +44,13 @@ class Renderer {
   fullscreenQuad: Quad;
 
   constructor( viewportElement: HTMLCanvasElement, backgroundColor: gml.Vec4 = new gml.Vec4( 0, 0, 0, 1 ), shaderCompileCallback: () => void = null ) {
-    this.shaderLibrary = new ShaderLibrary();
-
     var gl = viewportElement.getContext( "webgl2", { antialias: true } ) as any;
 
     if ( !gl ) return;
 
-    this.shaderLibrary.allShadersLoaded = ( lib: ShaderLibrary ): void => {
+    this.shaderLibrary = new ShaderLibrary( gl );
+
+    this.shaderLibrary.allShadersLoaded.push( ( gl, lib: ShaderLibrary ): void => {
       // augment source files TODO preprocessor directives
       lib.sources[ "blinn-phong.frag" ] = lib.sources[ "utils.frag" ] + lib.sources[ "blinn-phong.frag" ];
       lib.sources[ "lambert.frag" ] = lib.sources[ "utils.frag" ] + lib.sources[ "lambert.frag" ];
@@ -332,26 +332,6 @@ class Renderer {
           gl.enableVertexAttribArray( attributes.aVertexTexCoord );
         };
       }
-      shader = lib.compileProgram( gl, "screenspacequad.vert", "volume_viewer.frag", "volume viewer" );
-      if ( shader != null ) {
-        shader.presetup = ( gl, shader ) => {
-          shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
-          shader.attributes[ "aVertexTexCoord" ] = gl.getAttribLocation( shader.program, "aVertexTexCoord" );
-
-          shader.uniforms[ "uNoiseLayer" ] = gl.getUniformLocation( shader.program, "uNoiseLayer" );
-          shader.uniforms[ "volume" ] = gl.getUniformLocation( shader.program, "volume" );
-        }
-
-        shader.presetup( gl, shader );
-
-        shader.setup = ( gl, attributes, uniforms ) => {
-          gl.disableVertexAttribArray( 0 );
-          gl.disableVertexAttribArray( 1 );
-          gl.disableVertexAttribArray( 2 );
-          gl.enableVertexAttribArray( attributes.aVertexPosition );
-          gl.enableVertexAttribArray( attributes.aVertexTexCoord );
-        };
-      }
       shader = lib.compileProgram( gl, "screenspacequad.vert", "depth-texture.frag", "render depth texture" );
       if ( shader != null ) {
         shader.presetup = ( gl, shader ) => {
@@ -404,7 +384,7 @@ class Renderer {
       if ( shaderCompileCallback != null ) {
         shaderCompileCallback();
       }
-    }
+    } );
 
     this.shaderLibrary.loadShader( "basic.vert" );
     this.shaderLibrary.loadShader( "debug.vert" );

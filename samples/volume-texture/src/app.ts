@@ -33,6 +33,30 @@ class NoiseApp {
 
     this.textureDataDownloadElement = <HTMLAnchorElement> document.getElementById( "download-texture" );
 
+    this.renderer.loadShader( "volume_viewer.frag" );
+    this.renderer.shaderLibrary.allShadersLoaded.push( ( gl, lib ) => {
+      let shader = lib.compileProgram( gl, "screenspacequad.vert", "volume_viewer.frag", "volume viewer" );
+      if ( shader != null ) {
+        shader.presetup = ( gl, shader ) => {
+          shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+          shader.attributes[ "aVertexTexCoord" ] = gl.getAttribLocation( shader.program, "aVertexTexCoord" );
+
+          shader.uniforms[ "uNoiseLayer" ] = gl.getUniformLocation( shader.program, "uNoiseLayer" );
+          shader.uniforms[ "volume" ] = gl.getUniformLocation( shader.program, "volume" );
+        }
+
+        shader.presetup( gl, shader );
+
+        shader.setup = ( gl, attributes, uniforms ) => {
+          gl.disableVertexAttribArray( 0 );
+          gl.disableVertexAttribArray( 1 );
+          gl.disableVertexAttribArray( 2 );
+          gl.enableVertexAttribArray( attributes.aVertexPosition );
+          gl.enableVertexAttribArray( attributes.aVertexTexCoord );
+        };
+      }
+    } );
+
     params.vp.addEventListener( 'mousedown', ev => {
       switch ( ev.button ) {
         case 0: // left
