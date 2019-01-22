@@ -9,7 +9,7 @@ enum IRRADIANCE_PASS {
 };
 
 class Renderer {
-  repoV2: ShaderLibrary;
+  shaderLibrary: ShaderLibrary;
 
   enableTracing: boolean; // for debugging
 
@@ -44,13 +44,13 @@ class Renderer {
   fullscreenQuad: Quad;
 
   constructor( viewportElement: HTMLCanvasElement, backgroundColor: gml.Vec4 = new gml.Vec4( 0, 0, 0, 1 ), shaderCompileCallback: () => void = null ) {
-    this.repoV2 = new ShaderLibrary();
+    this.shaderLibrary = new ShaderLibrary();
 
     var gl = viewportElement.getContext( "webgl2", { antialias: true } ) as any;
 
     if ( !gl ) return;
 
-    this.repoV2.allShadersLoaded = ( lib: ShaderLibrary ): void => {
+    this.shaderLibrary.allShadersLoaded = ( lib: ShaderLibrary ): void => {
       // augment source files TODO preprocessor directives
       lib.sources[ "blinn-phong.frag" ] = lib.sources[ "utils.frag" ] + lib.sources[ "blinn-phong.frag" ];
       lib.sources[ "lambert.frag" ] = lib.sources[ "utils.frag" ] + lib.sources[ "lambert.frag" ];
@@ -406,28 +406,27 @@ class Renderer {
       }
     }
 
-    this.repoV2.loadShader( "basic.vert" );
-    this.repoV2.loadShader( "debug.vert" );
-    this.repoV2.loadShader( "passthrough.vert" );
-    this.repoV2.loadShader( "lambert.frag" );
-    this.repoV2.loadShader( "blinn-phong.frag" );
-    this.repoV2.loadShader( "debug.frag" );
-    this.repoV2.loadShader( "oren-nayar.frag" );
-    this.repoV2.loadShader( "cook-torrance.frag" );
-    this.repoV2.loadShader( "cook-torrance-legacy.frag" );
-    this.repoV2.loadShader( "utils.frag" );
-    this.repoV2.loadShader( "skybox.vert" );
-    this.repoV2.loadShader( "skybox.frag" );
-    this.repoV2.loadShader( "sky.frag" );
-    this.repoV2.loadShader( "cube-sh.frag" );
-    this.repoV2.loadShader( "water.vert" );
-    this.repoV2.loadShader( "water.frag" );
-    this.repoV2.loadShader( "screenspacequad.vert" );
-    this.repoV2.loadShader( "water_screenspace.frag" );
-    this.repoV2.loadShader( "noise_writer.frag" );
-    this.repoV2.loadShader( "volume_viewer.frag" );
-    this.repoV2.loadShader( "post-process.frag" );
-    this.repoV2.loadShader( "depth-texture.frag" ); 
+    this.shaderLibrary.loadShader( "basic.vert" );
+    this.shaderLibrary.loadShader( "debug.vert" );
+    this.shaderLibrary.loadShader( "passthrough.vert" );
+    this.shaderLibrary.loadShader( "lambert.frag" );
+    this.shaderLibrary.loadShader( "blinn-phong.frag" );
+    this.shaderLibrary.loadShader( "debug.frag" );
+    this.shaderLibrary.loadShader( "oren-nayar.frag" );
+    this.shaderLibrary.loadShader( "cook-torrance.frag" );
+    this.shaderLibrary.loadShader( "cook-torrance-legacy.frag" );
+    this.shaderLibrary.loadShader( "utils.frag" );
+    this.shaderLibrary.loadShader( "skybox.vert" );
+    this.shaderLibrary.loadShader( "skybox.frag" );
+    this.shaderLibrary.loadShader( "sky.frag" );
+    this.shaderLibrary.loadShader( "cube-sh.frag" );
+    this.shaderLibrary.loadShader( "water.vert" );
+    this.shaderLibrary.loadShader( "water.frag" );
+    this.shaderLibrary.loadShader( "screenspacequad.vert" );
+    this.shaderLibrary.loadShader( "water_screenspace.frag" );
+    this.shaderLibrary.loadShader( "noise_writer.frag" );
+    this.shaderLibrary.loadShader( "post-process.frag" );
+    this.shaderLibrary.loadShader( "depth-texture.frag" ); 
 
 
     gl.viewport( 0, 0, viewportElement.width, viewportElement.height );
@@ -483,6 +482,10 @@ class Renderer {
     this.postProcessColorTexture = gl.createTexture();
     this.postProcessDepthTexture = gl.createTexture();
     this.postProcessFramebuffer = gl.createFramebuffer();
+  }
+
+  loadShader( filepath: string ) {
+    this.shaderLibrary.loadShader( filepath );
   }
 
   compileShaderProgram( vs: string, fs: string, suppressErrors: boolean = false ): WebGLProgram {
@@ -545,11 +548,11 @@ class Renderer {
 
     let shader = null;
     if ( scene.environmentMap != null ) {
-      shader = this.repoV2.programs.skybox;
+      shader = this.shaderLibrary.programs.skybox;
       gl.useProgram( shader.program );
       shader.setup( gl, shader.attributes, shader.uniforms );
     } else {
-      shader = this.repoV2.programs.sky;
+      shader = this.shaderLibrary.programs.sky;
       gl.useProgram( shader.program ); // this shader program automatically moves our quad near the far clip plane, so we don't need to transform it ourselves here
       shader.setup( gl, shader.attributes, shader.uniforms );
     }
@@ -572,7 +575,7 @@ class Renderer {
     gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this.fullscreenQuad.renderData.indexBuffer );
 
     if ( scene.environmentMap != null ) {
-      let shader = this.repoV2.programs.skybox;
+      let shader = this.shaderLibrary.programs.skybox;
       gl.uniform1i( shader.uniforms.environment, 0 );
       gl.activeTexture( gl.TEXTURE0 );
       gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environmentMap.cubeMapTexture );
@@ -582,7 +585,7 @@ class Renderer {
   }
 
   renderDepthBuffer( gl: WebGL2RenderingContext, depth, mvStack: gml.Mat4[] ) {
-    let shader = this.repoV2.programs[ "render depth texture" ];
+    let shader = this.shaderLibrary.programs[ "render depth texture" ];
     gl.useProgram( shader.program );
 
     gl.bindBuffer( gl.ARRAY_BUFFER, this.fullscreenQuad.renderData.vertexBuffer );
@@ -602,7 +605,7 @@ class Renderer {
   }
 
   renderPostProcessedImage( gl: WebGL2RenderingContext, color, depth, mvStack: gml.Mat4[] ) {
-    let shader = this.repoV2.programs[ "postprocess" ];
+    let shader = this.shaderLibrary.programs[ "postprocess" ];
     gl.useProgram( shader.program );
 
     gl.bindBuffer( gl.ARRAY_BUFFER, this.fullscreenQuad.renderData.vertexBuffer );
@@ -635,7 +638,7 @@ class Renderer {
     scene.renderables.forEach( ( p, i ) => {
       if ( p.material instanceof BlinnPhongMaterial ) {
         let blinnphong = <BlinnPhongMaterial> p.material;
-        let shader = this.repoV2.programs[ "blinn-phong" ];
+        let shader = this.shaderLibrary.programs[ "blinn-phong" ];
         gl.useProgram( shader.program );
         shader.setup( gl, shader.attributes, shader.uniforms );
         
@@ -647,13 +650,13 @@ class Renderer {
 
         this.currentShader = shader;
       } else if ( p.material instanceof DebugMaterial ) {
-        let shader = this.repoV2.programs[ "debug" ];
+        let shader = this.shaderLibrary.programs[ "debug" ];
         gl.useProgram( shader.program );
         shader.setup( gl, shader.attributes, shader.uniforms );
         this.currentShader = shader;
       } else if ( p.material instanceof OrenNayarMaterial ) {
         let orennayar = <OrenNayarMaterial> p.material;
-        let shader = this.repoV2.programs[ "oren-nayar" ];
+        let shader = this.shaderLibrary.programs[ "oren-nayar" ];
         gl.useProgram( shader.program );
         shader.setup( gl, shader.attributes, shader.uniforms );
         
@@ -663,7 +666,7 @@ class Renderer {
         this.currentShader = shader;
       } else if ( p.material instanceof LambertMaterial ) {
         let lambert = <LambertMaterial> p.material;
-        let shader = this.repoV2.programs[ "lambert" ];
+        let shader = this.shaderLibrary.programs[ "lambert" ];
         gl.useProgram( shader.program );
         shader.setup( gl, shader.attributes, shader.uniforms );
         
@@ -672,7 +675,7 @@ class Renderer {
         this.currentShader = shader;
       } else if ( p.material instanceof CookTorranceMaterial ) {
         let cooktorrance = <CookTorranceMaterial> p.material;
-        let shader = this.repoV2.programs[ "cook-torrance" ];
+        let shader = this.shaderLibrary.programs[ "cook-torrance" ];
         gl.useProgram( shader.program );
         shader.setup( gl, shader.attributes, shader.uniforms );
         
@@ -683,7 +686,7 @@ class Renderer {
 
         this.currentShader = shader;
       } else if ( p.material instanceof WaterMaterial ) {
-        let shader = this.repoV2.programs[ "water" ];
+        let shader = this.shaderLibrary.programs[ "water" ];
         gl.useProgram( shader.program );
         shader.setup( gl, shader.attributes, shader.uniforms );
         
@@ -694,14 +697,14 @@ class Renderer {
 
         this.currentShader = shader;
       } else if ( p.material instanceof NoiseMaterial ) {
-        let shader = this.repoV2.programs[ "noisewriter" ];
+        let shader = this.shaderLibrary.programs[ "noisewriter" ];
         gl.useProgram( shader.program );
         shader.setup( gl, shader.attributes, shader.uniforms );
         
         gl.uniform1f( shader.uniforms[ "uNoiseLayer" ], ( <NoiseMaterial> p.material ).layer );
         this.currentShader = shader;
       } else if ( p.material instanceof VolumeMaterial ) {
-        let shader = this.repoV2.programs[ "volume viewer" ];
+        let shader = this.shaderLibrary.programs[ "volume viewer" ];
         gl.useProgram( shader.program );
         shader.setup( gl, shader.attributes, shader.uniforms );
         
@@ -842,7 +845,7 @@ class Renderer {
 
   render() {
     var gl = this.context;
-    if ( !this.repoV2.doneLoading() ) return;
+    if ( !this.shaderLibrary.doneLoading() ) return;
     if ( gl ) {
       //
       // DRAW
@@ -855,7 +858,7 @@ class Renderer {
           if ( scene.dynamicEnvironment ) {
             // render using specified shader
             // TODO: actually pass in shader into scene
-            let shader = this.repoV2.programs[ "sky" ];
+            let shader = this.shaderLibrary.programs[ "sky" ];
             scene.generateEnvironmentMapFromShader( this, gl, shader, shader.attributes, shader.uniforms );
           } else if ( scene.environmentMap.loaded && scene.environmentMap.cubeMapTexture == null ) {
             // generate static cube map from face images - we only do this once

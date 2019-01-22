@@ -140,8 +140,8 @@ class ShaderEditor {
         return;
       }
 
-      this.renderer.repoV2.programs[ this.selectedShaderName ].program = program;
-      this.renderer.repoV2.programs[ this.selectedShaderName ].presetup( gl, this.renderer.repoV2.programs[ this.selectedShaderName ] );
+      this.renderer.shaderLibrary.programs[ this.selectedShaderName ].program = program;
+      this.renderer.shaderLibrary.programs[ this.selectedShaderName ].presetup( gl, this.renderer.shaderLibrary.programs[ this.selectedShaderName ] );
     } else {
       console.log( "no renderer context! This is bad." );
     }
@@ -150,21 +150,21 @@ class ShaderEditor {
   install() {
     let container = document.getElementById( "shader-editor" );
 
-    this.selectedShaderName = Object.keys( this.renderer.repoV2.programs )[ 0 ];
+    this.selectedShaderName = Object.keys( this.renderer.shaderLibrary.programs )[ 0 ];
 
     if ( this.renderer.context == null ) return;
 
-    let defaultProgram = this.renderer.repoV2.programs[ this.selectedShaderName ];
+    let defaultProgram = this.renderer.shaderLibrary.programs[ this.selectedShaderName ];
 
-    this.vertexShaderEditor.setValue( this.renderer.repoV2.sources[ defaultProgram.sourceVSFilename ], -1 );
-    this.fragmentShaderEditor.setValue( this.renderer.repoV2.sources[ defaultProgram.sourceFSFilename ], -1 ); 
+    this.vertexShaderEditor.setValue( this.renderer.shaderLibrary.sources[ defaultProgram.sourceVSFilename ], -1 );
+    this.fragmentShaderEditor.setValue( this.renderer.shaderLibrary.sources[ defaultProgram.sourceFSFilename ], -1 ); 
 
     this.vertexEditSessions = [];
     this.fragmentEditSessions = [];
 
-    let sources = this.renderer.repoV2.sources;
-    for ( let programName in this.renderer.repoV2.programs ) {
-      let program = this.renderer.repoV2.programs[ programName ];
+    let sources = this.renderer.shaderLibrary.sources;
+    for ( let programName in this.renderer.shaderLibrary.programs ) {
+      let program = this.renderer.shaderLibrary.programs[ programName ];
       let vertexSession = ace.createEditSession( sources[ program.sourceVSFilename ], <any> "ace/mode/glsl" );
       vertexSession.on( "change", ( e ) => {
         // console.log( "changed " + program.sourceVSFilename );
