@@ -39,6 +39,7 @@ class SkyApp {
 
     this.renderer.shaderLibrary.loadShader( "water.vert" );
     this.renderer.shaderLibrary.loadShader( "water.frag" );
+    this.renderer.shaderLibrary.loadShader( "sky.frag" );
 
     this.renderer.shaderLibrary.allShadersLoaded.push( ( gl, lib ) => {
       let shader = lib.compileProgram( gl, "water.vert", "water.frag", "water" );
@@ -70,6 +71,28 @@ class SkyApp {
           gl.disableVertexAttribArray( 2 );
           gl.enableVertexAttribArray( attributes.aVertexPosition );
           gl.enableVertexAttribArray( attributes.aMeshCoord );
+        };
+      }
+
+      shader = lib.compileProgram( gl, "skybox.vert", "sky.frag", "sky" );
+      if ( shader != null ) {
+        shader.presetup = ( gl, shader ) => {
+          shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+          shader.uniforms[ "uInverseProjectionMatrix" ] = gl.getUniformLocation( shader.program, "uInverseProjectionMatrix" );
+          shader.uniforms[ "uInverseViewMatrix" ] = gl.getUniformLocation( shader.program, "uInverseViewMatrix" );
+          shader.uniforms[ "uTime" ] = gl.getUniformLocation( shader.program, "uTime" )
+          shader.uniforms[ "uCombinedNoiseVolume" ] = gl.getUniformLocation( shader.program, "uCombinedNoiseVolume" )
+          shader.uniforms[ "uCloudiness" ] = gl.getUniformLocation( shader.program, "uCloudiness" )
+          shader.uniforms[ "uCloudSpeed" ] = gl.getUniformLocation( shader.program, "uCloudSpeed" )
+        }
+
+        shader.presetup( gl, shader );
+
+        shader.setup = ( gl, attributes, uniforms ) => {
+          gl.disableVertexAttribArray( 0 );
+          gl.disableVertexAttribArray( 1 );
+          gl.disableVertexAttribArray( 2 );
+          gl.enableVertexAttribArray( attributes.aVertexPosition );
         };
       }
     } );

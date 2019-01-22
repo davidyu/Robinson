@@ -259,28 +259,6 @@ class Renderer {
         };
       }
 
-      shader = lib.compileProgram( gl, "skybox.vert", "sky.frag", "sky" );
-      if ( shader != null ) {
-        shader.presetup = ( gl, shader ) => {
-          shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
-          shader.uniforms[ "uInverseProjectionMatrix" ] = gl.getUniformLocation( shader.program, "uInverseProjectionMatrix" );
-          shader.uniforms[ "uInverseViewMatrix" ] = gl.getUniformLocation( shader.program, "uInverseViewMatrix" );
-          shader.uniforms[ "uTime" ] = gl.getUniformLocation( shader.program, "uTime" )
-          shader.uniforms[ "uCombinedNoiseVolume" ] = gl.getUniformLocation( shader.program, "uCombinedNoiseVolume" )
-          shader.uniforms[ "uCloudiness" ] = gl.getUniformLocation( shader.program, "uCloudiness" )
-          shader.uniforms[ "uCloudSpeed" ] = gl.getUniformLocation( shader.program, "uCloudSpeed" )
-        }
-
-        shader.presetup( gl, shader );
-
-        shader.setup = ( gl, attributes, uniforms ) => {
-          gl.disableVertexAttribArray( 0 );
-          gl.disableVertexAttribArray( 1 );
-          gl.disableVertexAttribArray( 2 );
-          gl.enableVertexAttribArray( attributes.aVertexPosition );
-        };
-      }
-
       shader = lib.compileProgram( gl, "screenspacequad.vert", "water_screenspace.frag", "screenspace water" );
       shader = lib.compileProgram( gl, "screenspacequad.vert", "noise_writer.frag", "noisewriter" );
       if ( shader != null ) {
@@ -367,7 +345,6 @@ class Renderer {
     this.shaderLibrary.loadShader( "utils.frag" );
     this.shaderLibrary.loadShader( "skybox.vert" );
     this.shaderLibrary.loadShader( "skybox.frag" );
-    this.shaderLibrary.loadShader( "sky.frag" );
     this.shaderLibrary.loadShader( "cube-sh.frag" );
     this.shaderLibrary.loadShader( "screenspacequad.vert" );
     this.shaderLibrary.loadShader( "water_screenspace.frag" );
