@@ -19,6 +19,30 @@ class NoiseApp {
 
   constructor( params: NoiseAppParams ) {
     this.renderer = new Renderer( params.vp );
+    this.renderer.shaderLibrary.loadShader( "noise.frag" );
+
+    this.renderer.shaderLibrary.allShadersLoaded.push( ( gl, lib ) => {
+      let shader = lib.compileProgram( gl, "screenspacequad.vert", "noise.frag", "noisewriter" );
+      if ( shader != null ) {
+        shader.presetup = ( gl, shader ) => {
+          shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+          shader.attributes[ "aVertexTexCoord" ] = gl.getAttribLocation( shader.program, "aVertexTexCoord" );
+
+          shader.uniforms[ "uNoiseLayer" ] = gl.getUniformLocation( shader.program, "uNoiseLayer" );
+        }
+
+        shader.presetup( gl, shader );
+
+        shader.setup = ( gl, attributes, uniforms ) => {
+          gl.disableVertexAttribArray( 0 );
+          gl.disableVertexAttribArray( 1 );
+          gl.disableVertexAttribArray( 2 );
+          gl.enableVertexAttribArray( attributes.aVertexPosition );
+          gl.enableVertexAttribArray( attributes.aVertexTexCoord );
+        };
+      }
+    } );
+
     let pos    = new gml.Vec4( 0, 0, 1000, 1 )
     let aim    = new gml.Vec4( 0, 0, -1, 0 );
     let up     = gml.Vec4.up;
