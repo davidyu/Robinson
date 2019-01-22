@@ -19,6 +19,7 @@ release: folders shaders update page
 
 shaders:
 	cp -rf ../../dist/shaders $(DIST)/
+	cp -rf src/shaders $(DIST)/
 
 page:
 	cp app.html dist/

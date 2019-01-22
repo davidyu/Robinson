@@ -19,6 +19,7 @@ shaders: folders
 	@# build shaders from samples also
 	@cp samples/ocean/src/shaders/* $(DIST)/shaders
 	@cp samples/volume-texture/src/shaders/* $(DIST)/shaders
+	@cp samples/noisewriter/src/shaders/* $(DIST)/shaders
 	@cp -rf $(TEST)/shaders/* $(DIST)/test/
 	@cp $(TEST)/package.json $(DIST)/test/
 	@cp $(SRC)/renderer/shaders/* $(DIST)/test/

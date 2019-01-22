@@ -54,7 +54,6 @@ var sources = [
   new ProgramSource( 'screenspacequad.vert' , 'volume_viewer.frag'    , false ) ,
   new ProgramSource( 'screenspacequad.vert' , 'post-process.frag'     , false ) ,
   new ProgramSource( 'screenspacequad.vert' , 'depth-texture.frag'    , false ) ,
-  new ProgramSource( 'passthrough.vert'     , 'cube-sh.frag'          , false ) ,
 ];
 
 // TODO get rid of this hack; maybe perform a shader processing step
