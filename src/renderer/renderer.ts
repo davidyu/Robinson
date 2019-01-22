@@ -259,7 +259,6 @@ class Renderer {
         };
       }
 
-      shader = lib.compileProgram( gl, "screenspacequad.vert", "water_screenspace.frag", "screenspace water" );
       shader = lib.compileProgram( gl, "screenspacequad.vert", "noise_writer.frag", "noisewriter" );
       if ( shader != null ) {
         shader.presetup = ( gl, shader ) => {
@@ -347,7 +346,6 @@ class Renderer {
     this.shaderLibrary.loadShader( "skybox.frag" );
     this.shaderLibrary.loadShader( "cube-sh.frag" );
     this.shaderLibrary.loadShader( "screenspacequad.vert" );
-    this.shaderLibrary.loadShader( "water_screenspace.frag" );
     this.shaderLibrary.loadShader( "noise_writer.frag" );
     this.shaderLibrary.loadShader( "post-process.frag" );
     this.shaderLibrary.loadShader( "depth-texture.frag" ); 

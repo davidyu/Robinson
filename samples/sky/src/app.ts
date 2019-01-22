@@ -39,6 +39,7 @@ class SkyApp {
 
     this.renderer.shaderLibrary.loadShader( "water.vert" );
     this.renderer.shaderLibrary.loadShader( "water.frag" );
+    this.renderer.shaderLibrary.loadShader( "water_screenspace.frag" );
     this.renderer.shaderLibrary.loadShader( "sky.frag" );
 
     this.renderer.shaderLibrary.allShadersLoaded.push( ( gl, lib ) => {
@@ -95,6 +96,8 @@ class SkyApp {
           gl.enableVertexAttribArray( attributes.aVertexPosition );
         };
       }
+
+      shader = lib.compileProgram( gl, "screenspacequad.vert", "water_screenspace.frag", "screenspace water" );
     } );
 
     {
