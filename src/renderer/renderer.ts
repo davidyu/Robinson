@@ -325,8 +325,6 @@ class Renderer {
         };
       }
 
-      shader = lib.compileProgram( gl, "passthrough.vert", "cube-sh.frag", "cube spherical harmonics" );
-
       if ( shaderCompileCallback != null ) {
         shaderCompileCallback();
       }
@@ -344,7 +342,6 @@ class Renderer {
     this.shaderLibrary.loadShader( "utils.frag" );
     this.shaderLibrary.loadShader( "skybox.vert" );
     this.shaderLibrary.loadShader( "skybox.frag" );
-    this.shaderLibrary.loadShader( "cube-sh.frag" );
     this.shaderLibrary.loadShader( "screenspacequad.vert" );
     this.shaderLibrary.loadShader( "noise_writer.frag" );
     this.shaderLibrary.loadShader( "post-process.frag" );
