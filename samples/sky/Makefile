@@ -21,6 +21,7 @@ data:
 	cp -rf data/*.blob $(DIST)/
 
 shaders:
+	cp -rf $(SRC)/shaders $(DIST)/
 	cp -rf ../../dist/shaders $(DIST)/
 
 dependencies:
