@@ -37,6 +37,43 @@ class SkyApp {
     this.dragStart = new gml.Vec2( 0, 0 );
     this.lastMousePos = new gml.Vec2( 0, 0 );
 
+    this.renderer.shaderLibrary.loadShader( "water.vert" );
+    this.renderer.shaderLibrary.loadShader( "water.frag" );
+
+    this.renderer.shaderLibrary.allShadersLoaded.push( ( gl, lib ) => {
+      let shader = lib.compileProgram( gl, "water.vert", "water.frag", "water" );
+      if ( shader != null ) {
+        shader.presetup = ( gl, shader ) => {
+          shader.attributes[ "aVertexPosition" ] = gl.getAttribLocation( shader.program, "aVertexPosition" );
+          shader.attributes[ "aVertexNormal" ] = gl.getAttribLocation( shader.program, "aVertexNormal" );
+          shader.attributes[ "aMeshCoord" ] = gl.getAttribLocation( shader.program, "aMeshCoord" );
+
+          shader.uniforms[ "uMMatrix" ] = gl.getUniformLocation( shader.program, "uMMatrix" );
+          shader.uniforms[ "uVMatrix" ] = gl.getUniformLocation( shader.program, "uVMatrix" );
+          shader.uniforms[ "uPMatrix" ] = gl.getUniformLocation( shader.program, "uPMatrix" );
+          shader.uniforms[ "uInverseProjectionMatrix" ] = gl.getUniformLocation( shader.program, "uInverseProjectionMatrix" );
+          shader.uniforms[ "uInverseViewMatrix" ] = gl.getUniformLocation( shader.program, "uInverseViewMatrix" );
+          shader.uniforms[ "uNormalMVMatrix" ] = gl.getUniformLocation( shader.program, "uNormalMVMatrix" );
+          shader.uniforms[ "uTime" ] = gl.getUniformLocation( shader.program, "uTime" );
+          shader.uniforms[ "cPosition_World" ] = gl.getUniformLocation( shader.program, "cPosition_World" );
+          shader.uniforms[ "uCloudSpeed" ] = gl.getUniformLocation( shader.program, "uCloudSpeed" );
+          shader.uniforms[ "uCloudiness" ] = gl.getUniformLocation( shader.program, "uCloudiness" );
+          shader.uniforms[ "uDrawWireframe" ] = gl.getUniformLocation( shader.program, "uDrawWireframe" );
+          shader.uniforms[ "environment" ] = gl.getUniformLocation( shader.program, "environment" )
+        }
+
+        shader.presetup( gl, shader );
+
+        shader.setup = ( gl, attributes, uniforms ) => {
+          gl.disableVertexAttribArray( 0 );
+          gl.disableVertexAttribArray( 1 );
+          gl.disableVertexAttribArray( 2 );
+          gl.enableVertexAttribArray( attributes.aVertexPosition );
+          gl.enableVertexAttribArray( attributes.aMeshCoord );
+        };
+      }
+    } );
+
     {
       let baseAim = new gml.Vec4( 0, 0, -1, 0 );
       let rotY = gml.Mat4.rotateY( this.yaw );
