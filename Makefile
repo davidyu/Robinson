@@ -15,7 +15,10 @@ dependencies: folders
 	@cp $(SRC)/lib/*.js $(DIST)/lib
 
 shaders: folders
-	@cp $(SRC)/renderer/shaders/* $(DIST)/shaders 
+	@cp $(SRC)/renderer/shaders/* $(DIST)/shaders
+	@# build shaders from samples also
+	@cp samples/ocean/src/shaders/* $(DIST)/shaders
+	@cp samples/volume-texture/src/shaders/* $(DIST)/shaders
 	@cp -rf $(TEST)/shaders/* $(DIST)/test/
 	@cp $(TEST)/package.json $(DIST)/test/
 	@cp $(SRC)/renderer/shaders/* $(DIST)/test/
