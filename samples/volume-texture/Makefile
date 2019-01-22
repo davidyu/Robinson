@@ -18,6 +18,7 @@ release: folders shaders update page
 	rm files.txt robinson.d.ts
 
 shaders:
+	cp -rf $(SRC)/shaders $(DIST)/
 	cp -rf ../../dist/shaders $(DIST)/
 
 page:
