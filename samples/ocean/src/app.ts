@@ -25,7 +25,10 @@ class SkyApp {
   FPSContainer: HTMLDivElement;
 
   constructor( params: SkyAppParams ) {
-    this.renderer = new Renderer( params.vp );
+    this.renderer = new Renderer( params.vp, new gml.Vec4( 0, 0, 0, 1 ), () => {
+      app.editor.install();
+      app.dbg.install();
+    } );
     this.editor = new ShaderEditor( this.renderer );
     this.dbg = new Debugger( this.renderer );
     this.orbitCenter = params.orbitCenter;
@@ -42,7 +45,9 @@ class SkyApp {
     this.renderer.shaderLibrary.loadShader( "water_screenspace.frag" );
     this.renderer.shaderLibrary.loadShader( "sky.frag" );
 
-    this.renderer.shaderLibrary.allShadersLoaded.push( ( gl, lib ) => {
+    this.renderer.shaderLibrary.allShadersLoaded.unshift( ( gl, lib ) => {
+      lib.sources[ "water.frag" ] = lib.sources[ "utils.frag" ] + lib.sources[ "water.frag" ];
+
       let shader = lib.compileProgram( gl, "water.vert", "water.frag", "water" );
       if ( shader != null ) {
         shader.presetup = ( gl, shader ) => {
@@ -359,10 +364,6 @@ function StartSky() {
         label.style.visibility = "visible";
         return;
       }
-
-    // install when shaders are finished loading and linking
-    //   app.editor.install();
-    //   app.dbg.install();
 
       noise = new Noise();
 
