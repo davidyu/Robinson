@@ -617,6 +617,7 @@ class Renderer {
       }
 
       let shader = this.currentShader;
+
       scene.lights.forEach( ( l, i ) => {
         if ( shader == null || shader.lightUniforms.length <= i ) return;
 
@@ -680,7 +681,7 @@ class Renderer {
       }
 
       gl.bindBuffer( gl.ARRAY_BUFFER, p.renderData.vertexNormalBuffer );
-      if ( shader != null && shader.attributes[ "aVertexNormal" ] > 0 ) {
+      if ( shader != null && shader.attributes[ "aVertexNormal" ] >= 0 ) {
         gl.vertexAttribPointer( shader.attributes[ "aVertexNormal" ], 3, gl.FLOAT, false, 0, 0 );
       }
 
