@@ -12,6 +12,7 @@ class Renderer {
   shaderLibrary: ShaderLibrary;
 
   enableTracing: boolean; // for debugging
+  enablePostProcessing: boolean;
 
   viewportW: number;
   viewportH: number;
@@ -380,6 +381,8 @@ class Renderer {
     this.postProcessColorTexture = gl.createTexture();
     this.postProcessDepthTexture = gl.createTexture();
     this.postProcessFramebuffer = gl.createFramebuffer();
+
+    this.enablePostProcessing = false;
   }
 
   loadShader( filepath: string ) {
@@ -785,24 +788,29 @@ class Renderer {
         //
         // RENDER TO POST-PROCESS FRAMEBUFFER
         //
+        if ( this.enablePostProcessing ) {
+          gl.bindTexture( gl.TEXTURE_2D, this.postProcessColorTexture );
+          gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
+          gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
+          gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
+          gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.viewportW, this.viewportH, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 
-        gl.bindTexture( gl.TEXTURE_2D, this.postProcessColorTexture );
-        gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
-        gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
-        gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
-        gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.viewportW, this.viewportH, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+          gl.bindTexture( gl.TEXTURE_2D, this.postProcessDepthTexture );
+          gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
+          gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
+          gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
+          gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
+          gl.texImage2D( gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT16, this.viewportW, this.viewportH, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null );
 
-        gl.bindTexture( gl.TEXTURE_2D, this.postProcessDepthTexture );
-        gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
-        gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
-        gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
-        gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
-        gl.texImage2D( gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT16, this.viewportW, this.viewportH, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null );
-
-        gl.bindFramebuffer( gl.FRAMEBUFFER, this.postProcessFramebuffer );
-        gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.postProcessColorTexture, 0 );
-        gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.postProcessDepthTexture, 0 );
+          gl.bindFramebuffer( gl.FRAMEBUFFER, this.postProcessFramebuffer );
+          gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.postProcessColorTexture, 0 );
+          gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.postProcessDepthTexture, 0 );
+        }
+        else
+        {
+          gl.bindFramebuffer( gl.FRAMEBUFFER, null ); // default
+        }
 
         gl.viewport( 0, 0, this.viewportW, this.viewportH );
         gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
@@ -821,19 +829,23 @@ class Renderer {
 
         // 
         // RENDER POST-PROCESSED IMAGE TO SCREEN
+        //
 
-        gl.bindFramebuffer( gl.FRAMEBUFFER, null );
-        gl.viewport( 0, 0, this.viewportW, this.viewportH );
+        if ( this.enablePostProcessing ) {
+          // TODO lift depth buffer out of this
+          gl.bindFramebuffer( gl.FRAMEBUFFER, null );
+          gl.viewport( 0, 0, this.viewportW, this.viewportH );
 
-        // for debugging, coppy depth texture...
-        if ( this.visualizeDepthBuffer ) {
-          if ( this.enableTracing ) console.time( "render depth buffer" );
-          this.renderDepthBuffer( gl, this.postProcessDepthTexture, mvStack );
-          if ( this.enableTracing ) console.timeEnd( "render depth buffer" );
-        } else {
-          if ( this.enableTracing ) console.time( "post processing" );
-          this.renderPostProcessedImage( gl, this.postProcessColorTexture, this.postProcessDepthTexture, mvStack );
-          if ( this.enableTracing ) console.timeEnd( "post processing" );
+          // for debugging, coppy depth texture...
+          if ( this.visualizeDepthBuffer ) {
+            if ( this.enableTracing ) console.time( "render depth buffer" );
+            this.renderDepthBuffer( gl, this.postProcessDepthTexture, mvStack );
+            if ( this.enableTracing ) console.timeEnd( "render depth buffer" );
+          } else {
+            if ( this.enableTracing ) console.time( "post processing" );
+            this.renderPostProcessedImage( gl, this.postProcessColorTexture, this.postProcessDepthTexture, mvStack );
+            if ( this.enableTracing ) console.timeEnd( "post processing" );
+          }
         }
       }
     }

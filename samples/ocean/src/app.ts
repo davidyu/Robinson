@@ -40,6 +40,7 @@ class SkyApp {
     this.dragStart = new gml.Vec2( 0, 0 );
     this.lastMousePos = new gml.Vec2( 0, 0 );
 
+    this.renderer.enablePostProcessing = true;
     this.renderer.shaderLibrary.loadShader( "water.vert" );
     this.renderer.shaderLibrary.loadShader( "water.frag" );
     this.renderer.shaderLibrary.loadShader( "water_screenspace.frag" );
