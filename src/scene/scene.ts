@@ -88,6 +88,10 @@ class CubeMap {
     this.isPlaceholder = true;
   }
 
+  shouldGenerateCubeMap(): boolean {
+    return this.loaded && ( this.cubeMapTexture == null || this.isPlaceholder );
+  }
+
   generateCubeMapFromSources( gl: WebGLRenderingContext ) {
     this.cubeMapTexture = gl.createTexture();
     gl.bindTexture( gl.TEXTURE_CUBE_MAP, this.cubeMapTexture );
