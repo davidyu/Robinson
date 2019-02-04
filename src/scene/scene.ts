@@ -89,7 +89,7 @@ class CubeMap {
 
   faceLoaded( ctype: CUBEMAPTYPE, finishedLoading: () => void ) {
     this.facesLoaded++;
-    if ( this.loaded ) {
+    if ( this.loaded && finishedLoading != null ) {
       finishedLoading();
     }
   }
