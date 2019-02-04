@@ -20,6 +20,10 @@
       display: flex;     /* for my children, the tabs and the tab-contents */
     }
 
+    .options-container {
+      padding: 20px;
+    }
+
     .tabs {
       flex: 0 1 auto; /* I should grow to fit content in me */
       clear: both;
@@ -102,9 +106,14 @@
               <input type="radio" id="tab-2" name="tab-group-1" onchange="changeTab('shader-editor')" checked>
               <label for="tab-2">Shaders</label>
           </div>
+          <div class="tab">
+              <input type="radio" id="tab-3" name="tab-group-1" onchange="changeTab('debugger')">
+              <label for="tab-3">Debugger</label>
+          </div>
       </div>
       <div class="tab-contents">
         <div id="shader-editor" class="tab-content" style="display:flex;"></div>
+        <div id="debugger" class="tab-content"></div>
       </div>
     </div>
   </div>

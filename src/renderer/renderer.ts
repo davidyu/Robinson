@@ -485,7 +485,7 @@ class Renderer {
     gl.drawElements( gl.TRIANGLES, this.fullscreenQuad.renderData.indices.length, gl.UNSIGNED_INT, 0 );
   }
 
-  renderDepthBuffer( gl: WebGL2RenderingContext, depth, mvStack: gml.Mat4[] ) {
+  renderDepthBuffer( gl: WebGL2RenderingContext, depthTexture, mvStack: gml.Mat4[] ) {
     let shader = this.shaderLibrary.programs[ "render depth texture" ];
     gl.useProgram( shader.program );
 
@@ -500,7 +500,7 @@ class Renderer {
 
     gl.uniform1i( shader.uniforms.screen_depth, 1 );
     gl.activeTexture( gl.TEXTURE1 );
-    gl.bindTexture( gl.TEXTURE_2D, depth );
+    gl.bindTexture( gl.TEXTURE_2D, depthTexture );
 
     gl.drawElements( gl.TRIANGLES, this.fullscreenQuad.renderData.indices.length, gl.UNSIGNED_INT, 0 );
   }
@@ -788,7 +788,10 @@ class Renderer {
         //
         // RENDER TO POST-PROCESS FRAMEBUFFER
         //
-        if ( this.enablePostProcessing ) {
+
+        if ( this.enablePostProcessing || this.visualizeDepthBuffer ) {
+          // use post process framebuffer as depth buffer framebuffer
+          // reads a bit strange, but makes our logic simpler
           gl.bindTexture( gl.TEXTURE_2D, this.postProcessColorTexture );
           gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
           gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
@@ -809,7 +812,7 @@ class Renderer {
         }
         else
         {
-          gl.bindFramebuffer( gl.FRAMEBUFFER, null ); // default
+          gl.bindFramebuffer( gl.FRAMEBUFFER, null ); // render to main screen buffer
         }
 
         gl.viewport( 0, 0, this.viewportW, this.viewportH );
@@ -831,21 +834,16 @@ class Renderer {
         // RENDER POST-PROCESSED IMAGE TO SCREEN
         //
 
-        if ( this.enablePostProcessing ) {
-          // TODO lift depth buffer out of this
-          gl.bindFramebuffer( gl.FRAMEBUFFER, null );
-          gl.viewport( 0, 0, this.viewportW, this.viewportH );
-
-          // for debugging, coppy depth texture...
-          if ( this.visualizeDepthBuffer ) {
-            if ( this.enableTracing ) console.time( "render depth buffer" );
-            this.renderDepthBuffer( gl, this.postProcessDepthTexture, mvStack );
-            if ( this.enableTracing ) console.timeEnd( "render depth buffer" );
-          } else {
-            if ( this.enableTracing ) console.time( "post processing" );
-            this.renderPostProcessedImage( gl, this.postProcessColorTexture, this.postProcessDepthTexture, mvStack );
-            if ( this.enableTracing ) console.timeEnd( "post processing" );
-          }
+        if ( this.visualizeDepthBuffer ) {
+          gl.bindFramebuffer( gl.FRAMEBUFFER, null ); // render to main screen buffer
+          if ( this.enableTracing ) console.time( "render depth buffer" );
+          this.renderDepthBuffer( gl, this.postProcessDepthTexture, mvStack );
+          if ( this.enableTracing ) console.timeEnd( "render depth buffer" );
+        } else if ( this.enablePostProcessing ) {
+          gl.bindFramebuffer( gl.FRAMEBUFFER, null ); // render to main screen buffer
+          if ( this.enableTracing ) console.time( "post processing" );
+          this.renderPostProcessedImage( gl, this.postProcessColorTexture, this.postProcessDepthTexture, mvStack );
+          if ( this.enableTracing ) console.timeEnd( "post processing" );
         }
       }
     }

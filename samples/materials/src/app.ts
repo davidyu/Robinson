@@ -10,6 +10,7 @@ interface AppParams {
 class ShowcaseApp {
   renderer: Renderer;
   editor: ShaderEditor;
+  dbg: Debugger;
   camera: Camera;
 
   // camera building parameters
@@ -18,20 +19,19 @@ class ShowcaseApp {
   yaw: gml.Angle;
   pitch: gml.Angle;
 
-  dirty: boolean;
-
   constructor( params: AppParams ) {
     this.renderer = new Renderer( params.vp, new gml.Vec4( 0.8, 0.8, 0.8, 1 ), () => {
       this.editor.install();
+      this.dbg.install();
     } );
 
     this.editor = new ShaderEditor( this.renderer );
+    this.dbg = new Debugger( this.renderer );
     this.orbitCenter = params.orbitCenter;
     this.orbitDistance = params.orbitDistance;
     this.yaw = gml.fromDegrees( 180 );
     this.pitch = gml.fromDegrees( 0 );
     this.renderer.setCamera( this.camera );
-    this.dirty = true;
 
     // camera parameters - save camera distance from target
     // construct location along viewing sphere
@@ -45,7 +45,6 @@ class ShowcaseApp {
       // reconstruct camera matrix from dx and dy
       this.yaw = this.yaw.add( gml.fromRadians( e.deltaX * WHEEL_PIXEL_TO_RADIAN ).negate() ).reduceToOneTurn();
       this.pitch = this.pitch.add( gml.fromRadians( e.deltaY * WHEEL_PIXEL_TO_RADIAN ) ).reduceToOneTurn();
-      this.dirty = true;
     } );
 
 
@@ -56,30 +55,26 @@ class ShowcaseApp {
     hammer.on( "panmove", e => {
       this.yaw = this.yaw.add( gml.fromRadians( -e.velocityX * PAN_PIXEL_TO_RADIAN ).negate() ).reduceToOneTurn();
       this.pitch = this.pitch.add( gml.fromRadians( -e.velocityY * PAN_PIXEL_TO_RADIAN ) ).reduceToOneTurn();
-      this.dirty = true;
     } );
   }
 
   public fixedUpdate() {
-    if ( this.dirty ) {
-      // rebuild camera
-      let baseAim = new gml.Vec4( 0, 0, -1, 0 );
+    // rebuild camera
+    let baseAim = new gml.Vec4( 0, 0, -1, 0 );
 
-      let rotY = gml.Mat4.rotateY( this.yaw );
-      let rotRight = rotY.transform( gml.Vec4.right );
+    let rotY = gml.Mat4.rotateY( this.yaw );
+    let rotRight = rotY.transform( gml.Vec4.right );
 
-      let rotX = gml.Mat4.rotate( rotRight, this.pitch );
-      let rotAim = rotX.transform( rotY.transform( baseAim ) ).normalized;
-      let rotUp = rotRight.cross( rotAim );
+    let rotX = gml.Mat4.rotate( rotRight, this.pitch );
+    let rotAim = rotX.transform( rotY.transform( baseAim ) ).normalized;
+    let rotUp = rotRight.cross( rotAim );
 
-      let rotPos = this.orbitCenter.add( rotAim.negate().multiply( this.orbitDistance ) );
+    let rotPos = this.orbitCenter.add( rotAim.negate().multiply( this.orbitDistance ) );
 
-      this.camera = new Camera( rotPos, rotAim, rotUp, rotRight );
-      this.renderer.setCamera( this.camera );
-      this.renderer.update();
-      this.renderer.render();
-      this.dirty = false;
-    }
+    this.camera = new Camera( rotPos, rotAim, rotUp, rotRight );
+    this.renderer.setCamera( this.camera );
+    this.renderer.update();
+    this.renderer.render();
   }
 }
 
@@ -101,7 +96,7 @@ function StartApp() {
                                 , "./negy.jpg"
                                 , "./posz.jpg"
                                 , "./negz.jpg"
-                                , () => { app.dirty = true; }
+                                , null
                                 , false );
     
     irradianceMap = new CubeMap( "./irradiance_posx.jpg"
@@ -110,7 +105,7 @@ function StartApp() {
                                , "./irradiance_negy.jpg"
                                , "./irradiance_posz.jpg"
                                , "./irradiance_negz.jpg"
-                               , () => { app.dirty = true; }
+                               , null
                                , false );
 
     var testScene = new Scene( environmentMap, irradianceMap );
