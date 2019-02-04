@@ -44,6 +44,9 @@ class Renderer {
 
   fullscreenQuad: Quad;
 
+  // placeholder black texture
+  blackTexture: WebGLTexture;
+
   constructor( viewportElement: HTMLCanvasElement, backgroundColor: gml.Vec4 = new gml.Vec4( 0, 0, 0, 1 ), shaderCompileCallback: () => void = null ) {
     var gl = viewportElement.getContext( "webgl2", { antialias: true } ) as any;
 
@@ -383,6 +386,8 @@ class Renderer {
     this.postProcessFramebuffer = gl.createFramebuffer();
 
     this.enablePostProcessing = false;
+
+    this.blackTexture = gl.createTexture();
   }
 
   loadShader( filepath: string ) {
@@ -453,6 +458,7 @@ class Renderer {
       gl.useProgram( shader.program );
       shader.setup( gl, shader.attributes, shader.uniforms );
     } else {
+      // this shouldn't be here...sky should not be hard coded as part of the renderer
       shader = this.shaderLibrary.programs.sky;
       gl.useProgram( shader.program ); // this shader program automatically moves our quad near the far clip plane, so we don't need to transform it ourselves here
       shader.setup( gl, shader.attributes, shader.uniforms );
@@ -689,11 +695,9 @@ class Renderer {
       }
 
       if ( scene.environmentMap != null ) {
-        if ( shader != null ) {
-          gl.uniform1i( shader.uniforms[ "environment" ], 0 );
-          gl.activeTexture( gl.TEXTURE0 );
-          gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environmentMap.cubeMapTexture );
-        }
+        gl.uniform1i( shader.uniforms[ "environment" ], 0 );
+        gl.activeTexture( gl.TEXTURE0 );
+        gl.bindTexture( gl.TEXTURE_CUBE_MAP, scene.environmentMap.cubeMapTexture );
       }
 
       if ( scene.irradianceMap != null ) {
@@ -723,8 +727,7 @@ class Renderer {
       var scene = Scene.getActiveScene();
       if ( scene ) {
         // SET UP ENVIRONMENT MAP
-        let cubeMapTexture = null;
-        if ( scene.environmentMap != null && scene.environmentMap.loaded && scene.environmentMap.cubeMapTexture == null ) {
+        if ( scene.environmentMap != null && scene.environmentMap.loaded && ( scene.environmentMap.cubeMapTexture == null || scene.environmentMap.isPlaceholder ) ) {
           scene.environmentMap.generateCubeMapFromSources( gl );
         }
 
@@ -762,7 +765,7 @@ class Renderer {
             // TODO: actually pass in shader into scene
             let shader = this.shaderLibrary.programs[ "sky" ];
             scene.generateEnvironmentMapFromShader( this, gl, shader, shader.attributes, shader.uniforms );
-          } else if ( scene.environmentMap.loaded && scene.environmentMap.cubeMapTexture == null ) {
+          } else if ( scene.environmentMap.loaded && ( scene.environmentMap.cubeMapTexture == null || scene.environmentMap.isPlaceholder ) ) {
             // generate static cube map from face images - we only do this once
             scene.environmentMap.generateCubeMapFromSources( gl );
           }
@@ -773,7 +776,7 @@ class Renderer {
         // SET UP IRRADIANCE MAP
         // TODO implement
         let irradianceTexture = null;
-        if ( scene.irradianceMap != null && scene.irradianceMap.loaded && scene.irradianceMap.cubeMapTexture == null ) {
+        if ( scene.irradianceMap != null && scene.irradianceMap.loaded && ( scene.irradianceMap.cubeMapTexture == null || scene.irradianceMap.isPlaceholder ) ) {
           scene.irradianceMap.generateCubeMapFromSources( gl );
         }
 

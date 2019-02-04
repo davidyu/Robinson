@@ -18,6 +18,7 @@ class CubeMap {
 
   // resulting texture
   cubeMapTexture: WebGLTexture;
+  isPlaceholder: boolean;
 
   constructor( gl: WebGLTexture, dynamic: boolean );
   constructor( px: string, nx: string, py: string, ny: string, pz: string, nz: string, finishedLoading: () => void, dynamic: boolean );
@@ -26,6 +27,7 @@ class CubeMap {
     if ( args.length == 2 ) {
       this.cubeMapTexture = args[0];
       this.dynamic = args[1];
+      this.isPlaceholder = false;
       // we're generating a cube map from a shader, at constructor time
       // This should just take in a cubeMapTexture
     } else if ( args.length == 8 ) {
@@ -42,6 +44,7 @@ class CubeMap {
       this.faces = [];
       this.facesLoaded = 0;
       this.cubeMapTexture = null;
+      this.isPlaceholder = false;
 
       for ( var t in CUBEMAPTYPE ) {
         if ( !isNaN( <any> t ) ) {
@@ -57,6 +60,32 @@ class CubeMap {
       this.asyncLoadFace( nz, CUBEMAPTYPE.NEG_Z, finishedLoading );
       this.dynamic = dynamic;
     }
+  }
+
+  generatePlaceholderCubemap( gl: WebGLRenderingContext & WebGL2RenderingContext ) {
+    // generate placeholder
+    let onepixel = [];
+    onepixel.push( 255 ); // R
+    onepixel.push( 255 ); // G
+    onepixel.push( 255 ); // B
+
+    let data = new Uint8Array( onepixel );
+
+    this.cubeMapTexture = gl.createTexture();
+    gl.bindTexture( gl.TEXTURE_CUBE_MAP, this.cubeMapTexture );
+    gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_BASE_LEVEL, 0 );
+    gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAX_LEVEL, 0 );
+    gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
+    gl.texParameteri( gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+    gl.texImage2D( gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, data );
+    gl.texImage2D( gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, data );
+    gl.texImage2D( gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, data );
+    gl.texImage2D( gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, data );
+    gl.texImage2D( gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, data );
+    gl.texImage2D( gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, data );
+    gl.bindTexture( gl.TEXTURE_CUBE_MAP, null );
+
+    this.isPlaceholder = true;
   }
 
   generateCubeMapFromSources( gl: WebGLRenderingContext ) {
@@ -76,6 +105,8 @@ class CubeMap {
 
     gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
     gl.bindTexture( gl.TEXTURE_CUBE_MAP, null );
+
+    this.isPlaceholder = false;
   }
 
   bindCubeMapFace( gl: WebGLRenderingContext, face: number, image: HTMLImageElement ) {

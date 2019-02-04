@@ -88,8 +88,6 @@ function StartApp() {
       orbitDistance: 10
     };
 
-    app = new ShowcaseApp( params );
-
     environmentMap = new CubeMap( "./posx.jpg"
                                 , "./negx.jpg"
                                 , "./posy.jpg"
@@ -108,7 +106,13 @@ function StartApp() {
                                , null
                                , false );
 
+    app = new ShowcaseApp( params );
+
+    environmentMap.generatePlaceholderCubemap( app.renderer.context );
+    irradianceMap.generatePlaceholderCubemap( app.renderer.context );
+
     var testScene = new Scene( environmentMap, irradianceMap );
+
     Scene.setActiveScene( testScene );
 
     // sphere 1, Lambert
