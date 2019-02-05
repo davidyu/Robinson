@@ -6,4 +6,12 @@ class LambertMaterial extends Material {
     super();
     this.diffuse = diffuse;
   }
+
+  setMaterialProperties( gl: WebGLRenderingContext & WebGL2RenderingContext, shaderLibrary: ShaderLibrary ) {
+    let shader = shaderLibrary.programs[ "lambert" ];
+    gl.useProgram( shader.program );
+    shader.setup( gl, shader.attributes, shader.uniforms );
+    gl.uniform4fv( shader.uniforms[ "diffuse" ], this.diffuse.v );
+    return shader;
+  }
 }
