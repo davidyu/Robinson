@@ -573,7 +573,8 @@ class Renderer {
         this.currentShader = shader;
       } else if ( p.material instanceof LambertMaterial ) {
         let lambert = <LambertMaterial> p.material;
-        let shader = lambert.setMaterialProperties( gl, this.shaderLibrary );
+        let shader = this.shaderLibrary.programs[ lambert.getShaderName() ];
+        lambert.setMaterialProperties( gl, shader );
         this.currentShader = shader;
       } else if ( p.material instanceof CookTorranceMaterial ) {
         let cooktorrance = <CookTorranceMaterial> p.material;
