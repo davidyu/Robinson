@@ -15,4 +15,17 @@ class CookTorranceMaterial extends Material {
     this.roughness = roughness;
     this.fresnel = fresnel;
   }
+
+  getShaderName(): string {
+    return "cook-torrance";
+  }
+
+  setMaterialProperties( gl: WebGLRenderingContext & WebGL2RenderingContext, shader: CompiledProgramData ) {
+    gl.useProgram( shader.program );
+    shader.setup( gl, shader.attributes, shader.uniforms );
+    gl.uniform4fv( shader.uniforms[ "diffuse" ], this.diffuse.v );
+    gl.uniform4fv( shader.uniforms[ "specular" ], this.specular.v );
+    gl.uniform1f ( shader.uniforms[ "roughness" ], this.roughness );
+    gl.uniform1f ( shader.uniforms[ "fresnel" ], this.fresnel );
+  }
 }

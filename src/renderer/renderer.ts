@@ -578,15 +578,8 @@ class Renderer {
         this.currentShader = shader;
       } else if ( p.material instanceof CookTorranceMaterial ) {
         let cooktorrance = <CookTorranceMaterial> p.material;
-        let shader = this.shaderLibrary.programs[ "cook-torrance" ];
-        gl.useProgram( shader.program );
-        shader.setup( gl, shader.attributes, shader.uniforms );
-        
-        gl.uniform4fv( shader.uniforms[ "diffuse" ], cooktorrance.diffuse.v );
-        gl.uniform4fv( shader.uniforms[ "specular" ], cooktorrance.specular.v );
-        gl.uniform1f ( shader.uniforms[ "roughness" ], cooktorrance.roughness );
-        gl.uniform1f ( shader.uniforms[ "fresnel" ], cooktorrance.fresnel );
-
+        let shader = this.shaderLibrary.programs[ cooktorrance.getShaderName() ];
+        cooktorrance.setMaterialProperties( gl, shader );
         this.currentShader = shader;
       } else if ( p.material instanceof WaterMaterial ) {
         let shader = this.shaderLibrary.programs[ "water" ];
