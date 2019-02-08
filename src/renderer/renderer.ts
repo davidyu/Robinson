@@ -545,16 +545,8 @@ class Renderer {
     scene.renderables.forEach( ( p, i ) => {
       if ( p.material instanceof BlinnPhongMaterial ) {
         let blinnphong = <BlinnPhongMaterial> p.material;
-        let shader = this.shaderLibrary.programs[ "blinn-phong" ];
-        gl.useProgram( shader.program );
-        shader.setup( gl, shader.attributes, shader.uniforms );
-        
-        gl.uniform4fv( shader.uniforms[ "diffuse" ], blinnphong.diffuse.v );
-        gl.uniform4fv( shader.uniforms[ "ambient" ], blinnphong.ambient.v );
-        gl.uniform4fv( shader.uniforms[ "specular" ], blinnphong.specular.v );
-        gl.uniform4fv( shader.uniforms[ "emissive" ], blinnphong.emissive.v );
-        gl.uniform1f( shader.uniforms[ "shininess" ], blinnphong.shininess );
-
+        let shader = this.shaderLibrary.programs[ blinnphong.getShaderName() ];
+        blinnphong.setMaterialProperties( gl, shader );
         this.currentShader = shader;
       } else if ( p.material instanceof DebugMaterial ) {
         let shader = this.shaderLibrary.programs[ "debug" ];

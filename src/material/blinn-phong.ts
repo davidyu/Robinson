@@ -18,5 +18,20 @@ class BlinnPhongMaterial extends Material {
     this.emissive = emissive;
     this.shininess = shininess;
   }
+
+  getShaderName(): string {
+    return "blinn-phong";
+  }
+
+  setMaterialProperties( gl: WebGLRenderingContext & WebGL2RenderingContext, shader: CompiledProgramData ) {
+    gl.useProgram( shader.program );
+    shader.setup( gl, shader.attributes, shader.uniforms );
+
+    gl.uniform4fv( shader.uniforms[ "diffuse" ], this.diffuse.v );
+    gl.uniform4fv( shader.uniforms[ "ambient" ], this.ambient.v );
+    gl.uniform4fv( shader.uniforms[ "specular" ], this.specular.v );
+    gl.uniform4fv( shader.uniforms[ "emissive" ], this.emissive.v );
+    gl.uniform1f( shader.uniforms[ "shininess" ], this.shininess );
+  }
 }
 
