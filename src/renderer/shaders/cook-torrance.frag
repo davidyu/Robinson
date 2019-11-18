@@ -1,4 +1,12 @@
+#version 300 es
+
 precision mediump float;
+
+// utils.inc forward decls
+float attenuate( float distance, float radius );
+vec4 gamma_compress( vec4 linear );
+vec4 gamma_expand( vec4 c );
+// end utils.inc forward decls
 
 // fs in/vs out
 in mediump vec4 vPosition;        // vertex position in view space, no need to convert
@@ -75,12 +83,12 @@ void main( void ) {
         color += ( ( mat.specular * specular ) + mat.diffuse ) * attenuation * light.color * max( LdotN, 0.0 );
     }
 
-    vec4 ibl_diffuse = engamma( texture( irradiance, reflected ) ) * mat.diffuse;
+    vec4 ibl_diffuse = gamma_expand( texture( irradiance, reflected ) ) * mat.diffuse;
 
     float lod = mat.roughness * environmentMipMaps;
-    vec4 ibl_specular = engamma( textureLod( environment, reflected, lod ) ) * mat.specular;
+    vec4 ibl_specular = gamma_expand( textureLod( environment, reflected, lod ) ) * mat.specular;
 
     color += ibl_diffuse * mat.roughness + ibl_specular * ( 1.0 - mat.roughness );
 
-    fragColor = degamma( color );
+    fragColor = gamma_compress( color );
 }

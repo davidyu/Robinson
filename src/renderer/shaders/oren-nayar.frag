@@ -1,4 +1,12 @@
+#version 300 es
+
 precision mediump float;
+
+// utils.inc forward decls
+float attenuate( float distance, float radius );
+vec4 gamma_compress( vec4 linear );
+vec4 gamma_expand( vec4 c );
+// end utils.inc forward decls
 
 // fs in/vs out
 in mediump vec4 vPosition;  // vertex position in view space, no need to convert
@@ -72,8 +80,8 @@ void main( void ) {
         color += attenuation * mat.diffuse * light.color * max( LdotN, 0.0 ) * ( A + B * max( 0.0, gamma ) * C );
     }
 
-    vec4 ibl_diffuse = engamma( texture( irradiance, reflected ) ) * mat.diffuse;
+    vec4 ibl_diffuse = gamma_expand( texture( irradiance, reflected ) ) * mat.diffuse;
     color += ibl_diffuse;
 
-    fragColor = degamma( color );
+    fragColor = gamma_compress( color );
 }

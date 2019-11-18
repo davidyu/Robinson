@@ -1,4 +1,12 @@
+#version 300 es
+
 precision mediump float;
+
+// utils.inc forward decls
+float attenuate( float distance, float radius );
+vec4 gamma_compress( vec4 linear );
+vec4 gamma_expand( vec4 c );
+// end utils.inc forward decls
 
 // we assume all input colors have no built-in gamma correction, and apply gamma
 // correction at the very end in this fragment shader
@@ -56,8 +64,8 @@ void main( void ) {
         color += attenuation * mat.diffuse * light.color * max( dot( normal, lightdir ), 0.0 );
     }
 
-    vec4 ibl_diffuse = engamma( texture( irradiance, reflected ) ) * mat.diffuse;
+    vec4 ibl_diffuse = gamma_expand( texture( irradiance, reflected ) ) * mat.diffuse;
     color += ibl_diffuse;
 
-    fragColor = degamma( color );
+    fragColor = gamma_compress( color );
 }
