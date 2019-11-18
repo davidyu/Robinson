@@ -128,6 +128,9 @@ class SkyApp {
     }
 
     frameLimiterOption.onchange = changeFrameLimit;
+    let e = document.createEvent( "HTMLEvents" );
+    e.initEvent( "change", false, true );
+    frameLimiterOption.dispatchEvent( e );
 
     let cloudinessSlider = <HTMLInputElement> document.getElementById( "cloud-slider" );
     let cloudSpeedSlider = <HTMLInputElement> document.getElementById( "wind-slider" );
