@@ -47,7 +47,7 @@ class SkyApp {
     this.renderer.shaderLibrary.loadShader( "sky.frag" );
 
     this.renderer.shaderLibrary.allShadersLoaded.unshift( ( gl, lib ) => {
-      lib.sources[ "water.frag" ] = lib.sources[ "utils.frag" ] + lib.sources[ "water.frag" ];
+      lib.sources[ "water.frag" ] = lib.sources[ "water.frag" ] + lib.sources[ "utils.inc" ];
 
       let shader = lib.compileProgram( gl, "water.vert", "water.frag", "water" );
       if ( shader != null ) {

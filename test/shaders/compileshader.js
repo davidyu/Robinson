@@ -1,9 +1,9 @@
 // simple structure that stores the names of the shaders
 // and loads them
-function ProgramSource( vs, fs, shouldPrependUtils ) {
+function ProgramSource( vs, fs, shouldAppendUtils ) {
   this.vs_name = vs;
   this.fs_name = fs;
-  this.shouldPrependUtils = shouldPrependUtils;
+  this.shouldAppendUtils = shouldAppendUtils;
   this.vs = null;
   this.fs = null;
 
@@ -21,7 +21,7 @@ function ProgramSource( vs, fs, shouldPrependUtils ) {
         done();
       }
     } );
-    vs_req.open( "GET", '/base/' + this.vs_name, true );
+    vs_req.open( "GET", '/base/shaders/' + this.vs_name, true );
     vs_req.send();
 
     // load fragment shader
@@ -35,7 +35,7 @@ function ProgramSource( vs, fs, shouldPrependUtils ) {
         done();
       }
     } );
-    fs_req.open( "GET", '/base/' + this.fs_name, true );
+    fs_req.open( "GET", '/base/shaders/' + this.fs_name, true );
     fs_req.send();
   };
 }
@@ -50,14 +50,13 @@ var sources = [
   new ProgramSource( 'skybox.vert'          , 'sky.frag'              , false ) ,
   new ProgramSource( 'water.vert'           , 'water.frag'            , true  ) ,
   new ProgramSource( 'screenspacequad.vert' , 'water_screenspace.frag', false ) ,
-  new ProgramSource( 'screenspacequad.vert' , 'noise_writer.frag'     , false ) ,
+  new ProgramSource( 'screenspacequad.vert' , 'noise.frag'            , false ) ,
   new ProgramSource( 'screenspacequad.vert' , 'volume_viewer.frag'    , false ) ,
   new ProgramSource( 'screenspacequad.vert' , 'post-process.frag'     , false ) ,
   new ProgramSource( 'screenspacequad.vert' , 'depth-texture.frag'    , false ) ,
 ];
 
-// TODO get rid of this hack; maybe perform a shader processing step
-var util_frag_source = null;
+var utils_inc = null;
 
 // handy little function from webgl-compile-shader
 // source: https://github.com/mattdesl/webgl-compile-shader/
@@ -100,18 +99,18 @@ describe( "shader", function() {
         s.loadShaders( done );
       } );
     } );
-    it ( 'utils.frag should load', function( done ) {
+    it ( 'utils.inc should load', function( done ) {
       var req = new XMLHttpRequest();
       req.addEventListener( "load", function( evt ) {
-        if ( req.responseText == null ) {
+        if ( req.status != 200 ) {
           done( false );
         }
-        util_frag_source = req.responseText;
-        if ( util_frag_source != null ) {
+        utils_inc = req.responseText;
+        if ( utils_inc != null ) {
           done();
         }
       } );
-      req.open( "GET", '/base/utils.frag', true );
+      req.open( "GET", '/base/shaders/utils.inc', true );
       req.send();
     } );
   } );
@@ -136,8 +135,8 @@ describe( "shader", function() {
 
         var fragmentShader = gl.createShader( gl.FRAGMENT_SHADER );
 
-        if ( s.shouldPrependUtils ) {
-          gl.shaderSource( fragmentShader, util_frag_source + s.fs );
+        if ( s.shouldAppendUtils ) {
+          gl.shaderSource( fragmentShader, s.fs + utils_inc );
         } else {
           gl.shaderSource( fragmentShader, s.fs );
         }

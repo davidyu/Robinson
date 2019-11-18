@@ -1,7 +1,3 @@
-#version 300 es
-
-precision mediump float;
-
 float attenuate( float distance, float radius ) {
     distance = max( distance - radius, 0.0 );
     float d = distance / radius + 1.0;
@@ -13,13 +9,14 @@ float attenuate( float distance, float radius ) {
     return max( ( unbounded - cutoff ) / ( 1.0 - cutoff ), 0.0 );
 }
 
-vec4 degamma( vec4 linear ) {
+vec4 gamma_compress( vec4 linear ) {
+    // encode gamma - files are usually encoded in this gamma space
     const float screenGamma = 2.2;
     return pow( linear, vec4( 1.0 / screenGamma ) );
 }
 
-vec4 engamma( vec4 c ) {
+vec4 gamma_expand( vec4 c ) {
+    // decode gamma - monitors apply this automatically
     const float screenGamma = 2.2;
     return pow( c, vec4( screenGamma ) );
 }
-

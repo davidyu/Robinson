@@ -1,3 +1,12 @@
+#version 300 es
+
+precision mediump float;
+
+// utils.inc forward decls
+vec4 gamma_compress( vec4 linear );
+vec4 gamma_expand( vec4 c );
+// end utils.inc forward decls
+
 uniform vec4 cPosition_World;
 uniform float uTime;
 
@@ -180,13 +189,13 @@ void main( void ) {
     vec3 normal = normalize( uNormalMVMatrix * get_normal( vPosition_World.xz * sea_scale, cached_height, dist * 0.001 ) );
 
     vec3 reflected = uInverseViewMatrix * ( -reflect( view, normal ) );
-    vec4 ibl_specular = engamma( texture( environment, reflected ) );
+    vec4 ibl_specular = gamma_expand( texture( environment, reflected ) );
     
     vec3 lightdir = normalize( uVMatrix * vec4( sun_light_dir, 0 ) ).xyz;
 
     vec3 sea_water_color_mixed = mix( sea_water_color, sea_water_color_cloudy, uCloudiness );
 
-    vec4 refracted = engamma( vec4( sea_base_color + diffuse( normal, lightdir, 80.0 ) * sea_water_color_mixed * 0.12, 1.0 ) ); 
+    vec4 refracted = gamma_expand( vec4( sea_base_color + diffuse( normal, lightdir, 80.0 ) * sea_water_color_mixed * 0.12, 1.0 ) ); 
 
     float fresnel = 1.0 - max( dot(-normal,-view), 0.0 );
     fresnel = pow(fresnel,3.0) * 0.45;
@@ -195,14 +204,14 @@ void main( void ) {
 
     float atten = max( 1.0 - dot( dist, dist ) * 0.001, 0.0 );
 
-    color += engamma( vec4( sea_water_color_mixed * cached_height * 0.18 * atten, 1.0 ) );
+    color += gamma_expand( vec4( sea_water_color_mixed * cached_height * 0.18 * atten, 1.0 ) );
 
-    color += engamma( vec4( get_specular( normal, lightdir, -view, 100.0 ) ) );
+    color += gamma_expand( vec4( get_specular( normal, lightdir, -view, 100.0 ) ) );
    
     // expensive - optimize
     color = mix( color, vec4( 1.0, 1.0, 1.0, 1.0 ), foam( vPosition_World.xz * sea_scale, cached_height ) );
 
-    fragColor = degamma( color );
+    fragColor = gamma_compress( color );
 
     if ( uDrawWireframe ) {
         vec2 vRel = fract( vQuadCoord );

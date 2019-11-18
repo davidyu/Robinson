@@ -15,14 +15,13 @@ dependencies: folders
 	@cp $(SRC)/lib/*.js $(DIST)/lib
 
 shaders: folders
-	@cp $(SRC)/renderer/shaders/* $(DIST)/shaders
+	@cp $(SRC)/renderer/shaders/* $(DIST)/test/shaders
 	@# build shaders from samples also
-	@cp samples/ocean/src/shaders/* $(DIST)/shaders
-	@cp samples/volume-texture/src/shaders/* $(DIST)/shaders
-	@cp samples/noisewriter/src/shaders/* $(DIST)/shaders
+	@cp samples/ocean/src/shaders/* $(DIST)/test/shaders
+	@cp samples/volume-texture/src/shaders/* $(DIST)/test/shaders
+	@cp samples/noisewriter/src/shaders/* $(DIST)/test/shaders
 	@cp -rf $(TEST)/shaders/* $(DIST)/test/
 	@cp $(TEST)/package.json $(DIST)/test/
-	@cp $(SRC)/renderer/shaders/* $(DIST)/test/
 	@( pushd $(DIST)/test > /dev/null && npm install --silent > /dev/null && popd > /dev/null )
 	@pushd $(DIST)/test > /dev/null && ./node_modules/.bin/karma start && popd > /dev/null
 
@@ -31,8 +30,8 @@ all: app
 folders:
 	@mkdir -p $(DIST)
 	@mkdir -p $(DIST)/lib
-	@mkdir -p $(DIST)/shaders
 	@mkdir -p $(DIST)/test
+	@mkdir -p $(DIST)/test/shaders
 
 update:
 	pushd $(SRC)/lib && sh update.sh && popd
